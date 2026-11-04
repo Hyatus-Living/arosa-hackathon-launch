@@ -20,7 +20,7 @@ LAYERS = {
     'A-WALL': (7, 'Walls, cut'), 'A-WALL-PATT': (8, 'Wall fill'), 'A-DOOR': (3, 'Doors and swings'), 'A-GLAZ': (5, 'Windows'),
     'A-AREA': (9, 'Room boundaries'), 'A-AREA-IDEN': (7, 'Room names and areas'), 'A-FLOR-STRS': (2, 'Stairs'), 'A-FLOR-EVTR': (2, 'Elevators'),
     'A-ANNO-DIMS': (1, 'Dimensions'), 'A-ANNO-TEXT': (7, 'Titles and notes'), 'A-ANNO-IDEN': (6, 'Unit and door marks'),
-    'C-PROP-LINE': (3, 'Lot lines from the city tax map'), 'C-BLDG': (8, 'Building footprint'),
+    'C-PROP-LINE': (3, 'Lot lines; source stated in drawing notes'), 'C-BLDG': (8, 'Building footprint'),
 }
 
 
@@ -159,9 +159,9 @@ def write(plan, out_dir):
         offset = x - minx * INCH
         msp.add_blockref(name, (offset, 0), dxfattribs={'layer': '0'})
         msp.add_text(title, height=18, dxfattribs={'layer': 'A-ANNO-TEXT'}).set_placement((x, (maxy + 12) * INCH))
-        msp.add_text(package.SURVEY_NOTE, height=8, dxfattribs={'layer': 'A-ANNO-TEXT'}).set_placement((x, (maxy + 8) * INCH))
+        msp.add_text(package.survey_note(plan), height=8, dxfattribs={'layer': 'A-ANNO-TEXT'}).set_placement((x, (maxy + 8) * INCH))
         x += (maxx - minx + 40) * INCH
-    msp.add_text(package.SCOPE_NOTE, height=8, dxfattribs={'layer': 'A-ANNO-TEXT'}).set_placement((0, -40 * INCH))
+    msp.add_text(package.scope_note(plan), height=8, dxfattribs={'layer': 'A-ANNO-TEXT'}).set_placement((0, -40 * INCH))
     auditor = doc.audit()
     if auditor.has_errors:
         raise ValueError(f'The DXF failed its audit: {[str(e.message) for e in auditor.errors][:5]}')

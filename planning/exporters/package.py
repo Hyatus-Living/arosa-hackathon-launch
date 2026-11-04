@@ -19,13 +19,12 @@ import architecture as arch
 FOOT = 0.3048
 SQFT = FOOT * FOOT
 SURVEY_NOTE = "Lot lines come from the city's tax map, not a survey."
+UNVERIFIED_SURVEY_NOTE = 'Lot lines and site dimensions are unverified; obtain a licensed survey before relying on them.'
 SCOPE_NOTE = 'Pre-filing package, not for filing: a DOB filing needs drawings sealed by a registered architect or engineer.'
 ZR_EDITION = 'NYC Zoning Resolution as amended December 5, 2024'
 OUT_OF_SCOPE = [
-    ('Survey', 'Lot lines, dimensions and area come from the city tax map; a licensed survey sets them.'),
     ('Structure', 'Structural system, foundations and member sizes are not designed.'),
     ('Mechanical, electrical, plumbing and fire protection', 'Systems, risers, shafts and sprinklers are not sized or drawn.'),
-    ('Energy code', 'NYC Energy Conservation Code compliance and Local Law 97 emissions limits are not checked.'),
 ]
 # How private a room is: a door swings into the more private room it joins, so off the corridor into a
 # unit, a stair or the lobby.
@@ -34,6 +33,25 @@ PUBLIC = {'corridor', 'lobby'}
 SHAFTS = {'stair', 'elevator'}
 MAX_RISER = 7 / 12 * FOOT  # NYC BC 2022 1011.5.2: risers at most 7 in
 TREAD = 11 / 12 * FOOT     # and treads at least 11 in
+
+
+def survey_note(plan):
+    source = (plan.get('zoning') or {}).get('lot', {}).get('source')
+    if source == 'tax-lot':
+        return SURVEY_NOTE
+    if source == 'rectangle':
+        return 'Lot outline is a rectangle from recorded frontage and depth, not a survey.'
+    return UNVERIFIED_SURVEY_NOTE
+
+
+def nyc_zoning(plan):
+    # acres.outlines/1 is the NYC Zoning Resolution envelope contract, not a
+    # jurisdiction inferred from a plan name, source URL or assumed dimensions.
+    return (plan.get('zoning') or {}).get('schema') == 'acres.outlines/1'
+
+
+def scope_note(plan):
+    return SCOPE_NOTE if nyc_zoning(plan) else 'Concept package, not for permitting or construction; local requirements need professional review.'
 
 
 def feet_inches(metres):
@@ -208,6 +226,7 @@ def selfcheck(plan, account=None):
     outside this package. Layout checks come from the plan's layout report (plan.layout), zoning items
     from the zoning account."""
     passes, architect = [], []
+    survey = survey_note(plan)
     layout = plan.get('layout')
     if layout:
         if layout.get('edited'):
@@ -220,9 +239,9 @@ def selfcheck(plan, account=None):
                 passes.append(item)
             else:
                 architect.append({**item, 'text': item['text'] + ' (an assumption, not a fixed rule)'})
-        architect += [{'text': text, 'cite': None} for text in layout.get('architect', []) if 'not a survey' not in text]  # the survey line leads the list
+        architect += [{'text': text, 'cite': None} for text in layout.get('architect', []) if text != survey and 'not a survey' not in text]  # the survey line leads the list
     else:
-        architect.append({'text': 'This plan was drawn or edited by hand, so the building code layout checks did not run on it.', 'cite': None})
+        architect.append({'text': 'This plan has no saved layout-check report, so building-code layout checks are not available.', 'cite': None})
     if account:
         far, h, cov, du = account['far'], account['height'], account['lotCoverage'], account['dwellingUnits']
         zoning_items = [
@@ -239,14 +258,18 @@ def selfcheck(plan, account=None):
             architect.append({'text': f"Drawn floor larger than its zoning outline: {', '.join(account['outsideOutline'])}", 'cite': None})
         gap = account['taxMapAreaSqft'] / account['lotAreaSqft'] - 1
         if abs(gap) > 0.05:
-            architect.append({'text': f"The tax map polygon measures {account['taxMapAreaSqft']:,.0f} sq ft against {account['lotAreaSqft']:,.0f} sq ft on record; confirm by survey.", 'cite': None})
+            source = 'tax map polygon' if plan['zoning']['lot']['source'] == 'tax-lot' else 'supplied lot outline'
+            architect.append({'text': f"The {source} measures {account['taxMapAreaSqft']:,.0f} sq ft against {account['lotAreaSqft']:,.0f} sq ft on record; confirm by survey.", 'cite': None})
         if account['parking'].get('required') is None and not account['parking'].get('manhattanCore'):
             architect.append({'text': 'Required parking depends on the transit zone, which is not resolved for this lot.', 'cite': 'ZR 25-21 to 25-23'})
     else:
         architect.append({'text': 'This plan carries no zoning envelope, so its zoning figures are not checked.', 'cite': None})
-    architect.insert(0, {'text': SURVEY_NOTE, 'cite': None})
+    architect.insert(0, {'text': survey, 'cite': None})
+    energy = ('NYC Energy Conservation Code compliance and Local Law 97 emissions limits are not checked.' if nyc_zoning(plan)
+              else 'Applicable energy-code and building-emissions requirements are not checked.')
+    out_of_scope = [('Survey', survey), *OUT_OF_SCOPE, ('Energy code', energy)]
     return {'schema': 'acres.selfcheck/1', 'planId': plan['id'], 'revision': plan['revision'], 'passes': passes, 'architect': architect,
-            'outOfScope': [{'text': f'{name}: {why}', 'cite': None} for name, why in OUT_OF_SCOPE]}
+            'outOfScope': [{'text': f'{name}: {why}', 'cite': None} for name, why in out_of_scope]}
 
 
 def stair_runs(ring, height):

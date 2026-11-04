@@ -175,6 +175,7 @@ class Floors(unittest.TestCase):
                 self.assertGreater(report['score']['candidates'], 20)
                 self.assertIn('chosen from', report['why']['summary'])
                 self.assertTrue(report['why']['satisfied'] and report['why']['architect'])
+                self.assertFalse(any('tax map' in note for note in report['why']['architect']))
 
     def test_lot_shape_picks_the_typology(self):
         # On a 25 ft lot the corridor runs across the lot from the core, a unit on the street and one on the rear yard

@@ -356,12 +356,12 @@ def write_plan(path, plan, account=None):
     if account and zoning:
         far, h, cov, du = account['far'], account['height'], account['lotCoverage'], account['dwellingUnits']
         pset(building, 'Arosa_Zoning', {
-            'District': zoning['district'], 'LotAreaSqft': float(account['lotAreaSqft']), 'TaxMapLotAreaSqft': float(account['taxMapAreaSqft']),
+            'District': zoning['district'], 'LotAreaSqft': float(account['lotAreaSqft']), ('TaxMapLotAreaSqft' if zoning['lot']['source'] == 'tax-lot' else 'OutlineLotAreaSqft'): float(account['taxMapAreaSqft']),
             'FloorAreaRatioAllowed': float(far['allowed']), 'FloorAreaRatio': float(far['used']), 'ZoningFloorAreaAllowedSqft': float(far['allowedSqft']),
             'ZoningFloorAreaSqft': float(account['totals']['zfaSqft']), 'DwellingUnits': du['units'], 'DwellingUnitsAllowed': du.get('maxUnits'),
             'BuildingHeightFeet': float(h['buildingFeet']), 'HeightLimitFeet': None if h.get('limitFeet') is None else float(h['limitFeet']),
             'BaseHeightFeet': None if h.get('baseFeet') is None else float(h['baseFeet']), 'LotCoveragePercent': float(cov['percent']),
-            'LotCoverageAllowedPercent': float(cov['allowedPercent']), 'ZoningResolution': package.ZR_EDITION, 'LotLines': package.SURVEY_NOTE})
+            'LotCoverageAllowedPercent': float(cov['allowedPercent']), 'ZoningResolution': package.ZR_EDITION, 'LotLines': package.survey_note(plan)})
     check(f)
     f.write(path)
     return ids_out

@@ -10,6 +10,7 @@ import re
 import tempfile
 import unittest
 import zipfile
+from copy import deepcopy
 from math import ceil, cos, sin
 
 import ezdxf
@@ -443,6 +444,8 @@ class Package(unittest.TestCase):
         self.assertEqual(architect[0], package.SURVEY_NOTE)
         self.assertEqual(sum('not a survey' in t for t in architect), 1)
         self.assertEqual([c['text'].split(':')[0] for c in check['outOfScope']], ['Survey', 'Structure', 'Mechanical, electrical, plumbing and fire protection', 'Energy code'])
+        self.assertIn('NYC Energy Conservation Code', check['outOfScope'][-1]['text'])
+        self.assertIn('DOB filing', ' | '.join(texts(self.pages[0])))
 
     def test_the_dxf_reads_back_clean_with_the_plan_elements(self):
         d = ezdxf.readfile(os.path.join(self.dir, 'drawings.dxf'))
@@ -468,6 +471,56 @@ class Package(unittest.TestCase):
             self.assertNotIn('zd1.pdf', z.namelist())
         check = load(os.path.join(out_dir, 'selfcheck.json'))
         self.assertTrue(any('no zoning envelope' in c['text'] for c in check['architect']))
+
+    def test_unsited_and_non_nyc_sources_do_not_inherit_tax_map_or_nyc_claims(self):
+        for sources in ([], [{'kind': 'public-record', 'ref': 'Portland property record; no boundary survey attached.'},
+                             {'kind': 'user-assumption', 'ref': 'All model dimensions are hypothetical.'}]):
+            with self.subTest(sources=sources), tempfile.TemporaryDirectory() as out_dir:
+                doc = building(storeys=3)
+                doc['sources'] = sources
+                original = deepcopy(doc)
+                run.run_detailed(doc, out_dir, write_plan=True)
+                check = load(os.path.join(out_dir, 'selfcheck.json'))
+                self.assertEqual(check['architect'][0]['text'], package.UNVERIFIED_SURVEY_NOTE)
+                self.assertEqual(check['passes'], [])
+                self.assertIn('Applicable energy-code', check['outOfScope'][-1]['text'])
+                self.assertNotIn('drawn or edited by hand', json.dumps(check))
+                for filename in ('drawings.pdf', 'drawings.dxf', 'selfcheck.json', 'model.ifc'):
+                    content = read(os.path.join(out_dir, filename))
+                    for unsupported in (b'city tax map', b"city's tax map", b'NYC ', b'Local Law 97', b'DOB filing'):
+                        self.assertFalse(unsupported in content, (filename, unsupported))
+                self.assertFalse(b'zd1.pdf' in read(os.path.join(out_dir, 'drawings.pdf')))
+                self.assertEqual(doc, original, 'Provenance notes must not change the saved plan or geometry.')
+
+    def test_recorded_rectangle_is_identified_consistently_in_the_handoff_files(self):
+        site = outlines('wide-100x100-C6-2')
+        site['lot']['source'] = 'rectangle'
+        site['lot']['recordedAreaSqft'] = 9000
+        doc = building(storeys=3, site=site)
+        note = package.survey_note(doc)
+        with tempfile.TemporaryDirectory() as out_dir:
+            run.run_detailed(doc, out_dir, write_plan=True)
+            check = load(os.path.join(out_dir, 'selfcheck.json'))
+            self.assertEqual(check['architect'][0]['text'], note)
+            self.assertIn('rectangle from recorded frontage and depth', note)
+            for filename in ('drawings.pdf', 'drawings.dxf', 'selfcheck.json', 'zd1.pdf'):
+                content = read(os.path.join(out_dir, filename))
+                if filename == 'zd1.pdf':
+                    self.assertTrue(b'outline is a rectangle from the frontage and depth on record.' in content, filename)
+                    self.assertTrue(b'10,000 sq ft' in content, filename)
+                    self.assertTrue(b'9,000 sq ft' in content, filename)
+                else:
+                    self.assertTrue(note.encode() in content, filename)
+                self.assertFalse(package.SURVEY_NOTE.encode() in content, filename)
+                self.assertFalse(b'Lot line from the city tax map' in content, filename)
+                self.assertFalse(b'Tax map polygon' in content, filename)
+                self.assertFalse(b'tax map polygon' in content, filename)
+            model = ifcopenshell.open(os.path.join(out_dir, 'model.ifc'))
+            props = ifcopenshell.util.element.get_psets(model.by_type('IfcBuilding')[0])['Arosa_Zoning']
+            self.assertEqual(props['LotLines'], note)
+            self.assertNotIn('TaxMapLotAreaSqft', props)
+            self.assertEqual(props['LotAreaSqft'], 9000)
+            self.assertAlmostEqual(props['OutlineLotAreaSqft'], 10000)
 
 
 class Layouts(unittest.TestCase):

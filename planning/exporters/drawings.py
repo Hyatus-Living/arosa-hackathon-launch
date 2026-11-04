@@ -124,8 +124,8 @@ def title_block(page, info, scale=None):
     page.line((M, y), (W - M, y), stroke=INK, width=0.75)
     page.text(M, y + 15, info['project'], 9, bold=True)
     page.text(M, y + 27, info['subtitle'], 7.5, color=MUTED)
-    page.text(M, y + 41, package.SURVEY_NOTE, 7.5, bold=True)
-    page.text(M, y + 51, package.SCOPE_NOTE, 6.5, color=MUTED)
+    page.text(M, y + 41, info['surveyNote'], 7.5, bold=True)
+    page.text(M, y + 51, info['scopeNote'], 6.5, color=MUTED)
     page.text(W - M - 150, y + 15, page.title, 9, bold=True, anchor='end')
     if scale:
         page.text(W - M - 150, y + 27, f'Scale {scale} at 17 by 11 in', 7.5, color=MUTED, anchor='end')
@@ -372,7 +372,7 @@ def cover(info, doc, account, sheets, sched, check):
         far, h, cov, du = account['far'], account['height'], account['lotCoverage'], account['dwellingUnits']
         rows += [
             ['Zoning district', site.get('district', ''), '', ''],
-            ['Lot area', sqft(account['lotAreaSqft']) + ' on record', sqft(account['taxMapAreaSqft']) + ' tax map', ''],
+            ['Lot area', sqft(account['lotAreaSqft']) + ' on record', sqft(account['taxMapAreaSqft']) + (' tax map' if site['lot']['source'] == 'tax-lot' else ' supplied outline'), ''],
             ['Floor area ratio', f"{far['allowed']:g}", f"{far['used']:g}", far['sections'][0]],
             ['Zoning floor area', sqft(far['allowedSqft']), sqft(account['totals']['zfaSqft']), far['sections'][0]],
             ['Building height', feet(h['limitFeet']) if h.get('limitFeet') else 'none', feet(h['buildingFeet']), h['sections'][0]],
@@ -383,7 +383,7 @@ def cover(info, doc, account, sheets, sched, check):
         parking = account['parking']
         rows.append(['Parking', 'by transit zone' if parking.get('required') is None else str(parking['required']), str(parking.get('provided', 0)), parking['sections'][0]])
     else:
-        rows.append(['No zoning envelope', 'drawn by hand', '', ''])
+        rows.append(['No zoning envelope', 'not checked', '', ''])
     y = table(page, rows, M, y + 16, [110, 120, 120, 90], numeric=())
     y += 14
     page.text(M, y, 'Building', 10, bold=True)
@@ -399,7 +399,7 @@ def cover(info, doc, account, sheets, sched, check):
     page.text(M, y, 'Assumptions', 10, bold=True)
     assumed = ['Floor-to-floor heights, slab thicknesses and wall thicknesses are planning values, not structural design.',
                'Walls are drawn to their centrelines at 12 in exterior, 8 in between units and 5 in inside units unless the plan sets them.',
-               'Stairs are drawn with 7 in risers and 11 in treads (NYC BC 2022 1011.5.2); doors swing into the room they serve.']
+               'Stairs use at most 7 in risers and 11 in treads' + (' (NYC BC 2022 1011.5.2).' if package.nyc_zoning(doc) else ' as planning assumptions; confirm applicable local requirements.')]
     assumed += [c['text'] for c in check['architect'] if 'assumption' in c['text']]
     assumed += [f"{e['kind'].capitalize()} floor area excluded at the deal model's share ({e['section']})" for s in (account['storeys'] if account else [])[:1] for e in s.get('exclusions', []) if e.get('basis') == 'assumed']
     bullets(page, assumed, M, y + 14, 90)
@@ -407,14 +407,14 @@ def cover(info, doc, account, sheets, sched, check):
     page.text(x2, M + 70, 'Drawings', 10, bold=True)
     table(page, [['Sheet', 'Title']] + [[p.number, p.title] for p in sheets], x2, M + 86, [60, 360])
     page.text(x2, H - TITLE_H - 60, 'Files with this package', 9, bold=True)
-    page.text(x2, H - TITLE_H - 46, 'model.ifc (IFC4 building model), drawings.dxf (CAD), schedules.xlsx, selfcheck.json, zd1.pdf (zoning analysis).', 7, color=MUTED)
+    page.text(x2, H - TITLE_H - 46, 'model.ifc (IFC4 building model), drawings.dxf (CAD), schedules.xlsx, selfcheck.json' + (', zd1.pdf (zoning analysis).' if account else '.'), 7, color=MUTED)
     return page
 
 
 def selfcheck_sheet(check):
     page = Page('G-002', 'Pre-filing self-check')
     page.text(M, M + 6, 'Pre-filing self-check', 16, bold=True)
-    page.text(M, M + 22, 'Each item is checked against the cited rule. A registered architect reviews every item before filing.', 8, color=MUTED)
+    page.text(M, M + 22, 'Checks cover only the documented inputs. An architect reviews applicable requirements before permitting.', 8, color=MUTED)
     columns = [('Passes', check['passes']), ('Needs the architect', check['architect']), ('Outside this package', check['outOfScope'])]
     width = (W - 2 * M - 40) / 3
     for i, (title, items) in enumerate(columns):
@@ -478,11 +478,12 @@ def site_plan(doc, info):
                 dimension(page, frame((mx, y0)), frame((mx, y1)), 0, feet(y1 - y0))
     x = W - M - 200
     page.text(x, M + 30, 'Site plan', 10, bold=True)
-    legend = [('Lot line from the city tax map', LOT), ('Building at grade', INK), ('Upper storeys', MUTED), ('Neighbouring buildings, height above curb', MUTED)]
+    tax_lot = site['lot']['source'] == 'tax-lot'
+    legend = [('Lot line from the city tax map' if tax_lot else 'Supplied lot outline, not surveyed', LOT), ('Building at grade', INK), ('Upper storeys', MUTED), ('Neighbouring buildings, height above curb', MUTED)]
     for i, (text, colour) in enumerate(legend):
         page.line((x, M + 50 + i * 14), (x + 18, M + 50 + i * 14), stroke=colour, width=1.2)
         page.text(x + 24, M + 53 + i * 14, text, 6.5)
-    facts = [f"Lot area {sqft(site['lot']['areaSqft'])} by the tax map", f"Zoning district {site['district']}"]
+    facts = [f"Lot area {sqft(site['lot']['areaSqft'])} on record", f"Zoning district {site['district']}"]
     if site['lot'].get('bbl'):
         facts.insert(0, f"BBL {site['lot']['bbl']}")
     if not context:
@@ -725,7 +726,7 @@ def schedule_sheets(sched):
     rows.append(['Total', '', sqft(t['grossSqft']), sqft(t['zfaSqft']) if t['zfaSqft'] else '', sqft(t['netSqft']), str(t['units'])])
     size = 6.5 if len(rows) <= 34 else 5.5
     end = table(page, rows, M, M + 40, [90, 60, 75, 95, 75, 35], size=size, row_height=min(10.5, 380 / len(rows)), numeric=(2, 3, 4, 5))
-    page.text(M, end + 6, 'Gross is measured to the outer wall faces; net is inside the unit walls; zoning floor area is from the zoning analysis (zd1.pdf).', 6, color=MUTED)
+    page.text(M, end + 6, 'Gross is measured to the outer wall faces; net is inside the unit walls; ' + ('zoning floor area is from the zoning analysis (zd1.pdf).' if sched['areaTotals']['zfaSqft'] is not None else 'zoning floor area is not checked.'), 6, color=MUTED)
     x = M + 470
     page.text(x, M + 24, 'Door types', 10, bold=True)
     kinds = {}
@@ -766,7 +767,8 @@ def info_for(doc):
     site = doc.get('zoning') or {}
     project = ', '.join(part for part in (site.get('address'), doc['name']) if part)
     sub = ' | '.join(part for part in (site.get('label'), f"BBL {site['lot']['bbl']}" if site.get('lot', {}).get('bbl') else None, site.get('district')) if part)
-    return {'project': project, 'subtitle': sub or 'Architecture plan', 'revision': doc['revision']}
+    return {'project': project, 'subtitle': sub or 'Architecture plan', 'revision': doc['revision'],
+            'surveyNote': package.survey_note(doc), 'scopeNote': package.scope_note(doc)}
 
 
 def sheets(doc, account=None, zoning_sheet=None):

@@ -259,7 +259,7 @@ def calculations(site, account):
     rows.append(['Zoning district', district, site['lot']['type'] + ' lot', 'Zoning Map' + (', ZR 77-02' if site.get('districtPortions') else '')])
     rows.append(['Lot area (on record)', sqft(account['lotAreaSqft']), sqft(account['lotAreaSqft']), 'ZR 12-10 (lot area)'])
     if abs(account['taxMapAreaSqft'] - account['lotAreaSqft']) >= 1:
-        rows.append(['  Tax map polygon', '', sqft(account['taxMapAreaSqft']), 'ZR 12-10 (lot area)'])
+        rows.append(['  Tax map polygon' if site['lot']['source'] == 'tax-lot' else '  Supplied lot outline', '', sqft(account['taxMapAreaSqft']), 'ZR 12-10 (lot area)'])
     rows.append(['Floor area ratio', f"{far['allowed']:g}", f"{far['used']:g}", ', '.join(dict.fromkeys(far['sections'] + (['ZR 77-22'] if account['portions'] else [])))])
     rows.append(['Zoning floor area', sqft(far['allowedSqft']), sqft(account['totals']['zfaSqft']), 'ZR 12-10 (floor area)'])
     for use, area in account['totals']['byUse'].items():
@@ -351,7 +351,8 @@ def draw(site, account, title):
         flags.append(f"The drawn storeys hold {sqft(account['totals']['zfaSqft'])} of zoning floor area, {sqft(short)} short of the {sqft(site['program']['zfa'])} this option is priced at.")
     gap = account['taxMapAreaSqft'] / account['lotAreaSqft'] - 1
     if abs(gap) > 0.05:
-        flags.append(f"The tax map polygon measures {sqft(account['taxMapAreaSqft'])}, {abs(gap) * 100:.0f}% {'more' if gap > 0 else 'less'} than the {sqft(account['lotAreaSqft'])} on record; floor area is figured on the recorded area. Confirm the lot area by survey.")
+        outline = 'tax map polygon' if site['lot']['source'] == 'tax-lot' else 'supplied lot outline'
+        flags.append(f"The {outline} measures {sqft(account['taxMapAreaSqft'])}, {abs(gap) * 100:.0f}% {'more' if gap > 0 else 'less'} than the {sqft(account['lotAreaSqft'])} on record; floor area is figured on the recorded area. Confirm the lot area by survey.")
     beyond = [s['label'] for s in account['storeys'] if s.get('beyondEnvelope')]
     if beyond:
         flags.append(f"Above the storeys the envelope outlines, checked against the top outlined storey's controls: {', '.join(beyond)}.")
