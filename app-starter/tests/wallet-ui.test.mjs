@@ -17,114 +17,92 @@ async function mount(file,fetchImpl,{search=''}={}) {
   return {document,window};
 }
 const json=(body,{ok=true,status=200}={})=>async()=>({ok,status,headers:{get:()=> 'application/json'},json:async()=>body});
-// The plan dialog reads /api/plan and /api/wallet; each path answers with its own body.
-const routes=bodies=>async url=>{const body=bodies[String(url).split('?')[0]];return {ok:true,status:200,headers:{get:()=> 'application/json'},json:async()=>body};};
-const FREE={plan:'free',used:0,limit:null,resetsAt:Date.UTC(2026,10,1),subscription:null,manageable:false,checkoutAvailable:false};
-const renderWallet=(wallet,plan=FREE)=>mount('wallet.js',routes({'/api/plan':plan,'/api/wallet':wallet}));
+const allowance=(label,limit,used=0)=>({label,limit,used,remaining:Math.max(0,limit-used)});
+const COMMUNITY={plan:'community',beta:false,used:3,limit:50,remaining:47,resetsAt:Date.UTC(2026,9,21,4),period:'day',timeZone:'America/New_York',subscription:null,manageable:false,checkoutAvailable:false,
+  limits:{research:allowance('Research requests',50,3),illustrations:allowance('AI illustrations',20,2),selections:allowance('Photo selections',100,5),renders:allowance('3D renders',50,1)}};
+const renderUsage=(plan=COMMUNITY)=>mount('wallet.js',json(plan));
+const tick=()=>new Promise(resolve=>setImmediate(resolve));
 
-test('wallet leads with the balance, offers one default top-up and lists activity in plain words',async()=>{
-  const now=Date.now();
-  const wallet={enabled:true,checkoutAvailable:true,availableMicros:998766,heldMicros:1_000_000,balanceMicros:1998766,policy:{rates:{codex:{mode:'estimated_call',amountMicros:1234,reserveMicros:10000,basis:'Subscription allocation',version:'v1'}}},entries:[
-    {kind:'usage',provider:'exa',operation:'EXA_SEARCH',estimated:false,basis:'<script>not executable</script>',deltaMicros:-1234,at:now,runId:'r1aaaaaaaa',conversationTitle:'120 Broadway'},
-    {kind:'usage',provider:'codex',operation:'codex',estimated:true,basis:'Subscription allocation',deltaMicros:-2000,at:now,runId:'r1aaaaaaaa'},
-    {kind:'usage',provider:'openai',operation:'research',estimated:true,basis:'token estimate',deltaMicros:-500,at:now,runId:'r2bbbbbbbb'},
-    {kind:'topup',deltaMicros:10_000_000,at:new Date(now).setSeconds(42)},
-  ]};
-  const {document}=await renderWallet(wallet);const content=document.querySelector('#wallet-content');
-  assert.match(content.querySelector('.wallet-balance:not(.plan-summary)').textContent,/\$0\.998766/);
-  assert.match(content.querySelector('.plan-summary').textContent,/Free plan/);
-  assert.equal(content.querySelectorAll('.wallet-primary').length,1,'one primary top-up action');
-  assert.equal(content.querySelector('.wallet-primary').textContent,'Add $25','the default amount is preselected');
-  assert.deepEqual([...content.querySelectorAll('.wallet-amount')].map(b=>b.getAttribute('aria-checked')),['false','true','false']);
-  content.querySelector('.wallet-amount[data-cents="5000"]').click();
-  assert.equal(content.querySelector('.wallet-primary').textContent,'Add $50');
-  const rows=[...content.querySelectorAll('.wallet-transactions li')].map(li=>li.textContent);
-  assert.equal(rows.length,3,'charges for one research request are combined');
-  assert.match(rows[0],/Research on 120 Broadway/);assert.match(rows[0],/\$0\.003234/);assert.match(rows[0],/Estimated cost/);
-  assert.match(rows[1],/Research request/);assert.match(rows[2],/Credits added/);
-  assert.doesNotMatch(content.textContent,/r1aaaaaa|exa|codex|openai|token estimate|EXA_SEARCH|not executable/);
-  assert.doesNotMatch(rows[2],/\d:\d\d:\d\d/,'times show no seconds');
-  assert.equal(content.querySelectorAll('script').length,0);
-});
-
-test('visual charges identify the action and preserve fractional-cent precision',async()=>{
-  const now=Date.now(),wallet={enabled:true,checkoutAvailable:false,availableMicros:10000,heldMicros:0,balanceMicros:10000,policy:{rates:{}},entries:[
-    {kind:'usage',operation:'meta_visual_segment',runId:'segment',deltaMicros:-2500,at:now},
-    {kind:'usage',operation:'meta_visual_illustrate',runId:'illustration',deltaMicros:-1,at:now},
-  ]};
-  const {document}=await renderWallet(wallet);
-  const rows=[...document.querySelectorAll('.wallet-transactions li')].map(li=>li.textContent);
-  assert.match(rows[0],/Photo selection/);assert.match(rows[0],/\$0\.0025/);
-  assert.match(rows[1],/Housing illustration/);assert.match(rows[1],/\$0\.000001/);
-});
-
-test('a free plan shows this month\'s usage and one upgrade, yearly first, with no credit top-ups',async()=>{
-  const plan={...FREE,used:3,limit:10,checkoutAvailable:true};
-  const {document,window}=await renderWallet({enabled:false,entries:[]},plan);
+test('daily usage shows free allowances and the New York reset without payment offers',async()=>{
+  const urls=[];
+  const {document}=await mount('wallet.js',async url=>{urls.push(url);return (json({...COMMUNITY,checkoutAvailable:true,prices:{month:10000,year:60000}}))();});
   const content=document.querySelector('#wallet-content');
-  assert.match(content.querySelector('.plan-summary').textContent,/3 of 10 free research runs used/);
-  assert.match(content.querySelector('.plan-summary').textContent,/Resets Nov 1/);
-  assert.equal(content.querySelector('.plan-meter').getAttribute('aria-valuenow'),'3');
-  assert.equal(content.querySelectorAll('.wallet-primary').length,1);
-  assert.equal(content.querySelector('.wallet-primary').textContent,'Upgrade to Pro');
-  assert.deepEqual([...content.querySelectorAll('.plan-interval')].map(b=>[b.dataset.interval,b.getAttribute('aria-checked')]),[['year','true'],['month','false']]);
-  assert.match(content.textContent,/\$600 \/ year/);assert.match(content.textContent,/\$100 \/ month/);
-  assert.doesNotMatch(content.textContent,/Add \$|not enabled|pilot/);
-  assert.equal(document.querySelector('#wallet-button .rail-label').textContent,'Plan');
-  assert.equal(document.querySelector('#wallet-balance').textContent,'3/10');
+  assert.deepEqual(urls,['/api/plan'],'daily access does not load a wallet or checkout');
+  assert.match(content.textContent,/Free access/);
+  assert.match(content.textContent,/47 of 50 research requests left today/);
+  assert.match(content.textContent,/Oct 21, 12:00 AM EDT \(New York\)/);
+  assert.match(content.textContent,/No card or payment needed/);
+  assert.match(content.textContent,/Sign-in saves your work/);
+  assert.match(content.textContent,/editing saved work and downloading artifacts are unrestricted/);
+  assert.deepEqual([...content.querySelectorAll('.daily-usage-row')].map(row=>row.textContent),[
+    'Research requests47 of 50 left','AI illustrations18 of 20 left','Photo selections95 of 100 left','3D renders49 of 50 left']);
+  const research=content.querySelector('[data-kind="research"] [role="progressbar"]');
+  assert.equal(research.getAttribute('aria-valuenow'),'3');assert.equal(research.getAttribute('aria-valuemax'),'50');
+  assert.equal(content.querySelector('.daily-usage-source').getAttribute('href'),'https://github.com/Hyatus-Living/arosa-hackathon-launch');
+  assert.equal(content.querySelectorAll('.wallet-primary,.plan-upgrade,.wallet-topup,.plan-manage').length,0);
+  assert.doesNotMatch(content.textContent,/Upgrade|Arosa Pro|\$|Billed|top.up|unlimited/i);
+  assert.equal(document.querySelector('#wallet-button .rail-label').textContent,'Daily usage');
+  assert.equal(document.querySelector('#wallet-title').textContent,'Daily usage');
+  assert.equal(document.querySelector('#wallet-balance').textContent,'47 left');
+});
+
+test('an existing subscriber can manage their old subscription without receiving different access',async()=>{
+  const {document,window}=await renderUsage({...COMMUNITY,manageable:true,subscription:{status:'active',interval:'year'}});
+  const content=document.querySelector('#wallet-content');
+  assert.match(content.textContent,/47 of 50 research requests left today/);
+  assert.equal(content.querySelectorAll('.plan-manage').length,1);
+  assert.doesNotMatch(content.textContent,/Upgrade|Arosa Pro|\$|Unlimited|Billed/);
   let posted,assigned;
-  globalThis.fetch=async(url,options)=>{posted={url,body:JSON.parse(options.body)};return {ok:true,status:200,headers:{get:()=> 'application/json'},json:async()=>({url:'https://checkout.stripe.com/c/pay/cs_test'})};};
+  globalThis.fetch=async(url,options)=>{posted={url,body:options.body};return (json({url:'https://billing.stripe.com/p/session/test'}))();};
   window.location.assign=href=>{assigned=href;};
-  content.querySelector('.plan-interval[data-interval="month"]').click();
-  content.querySelector('.wallet-primary').click();
-  await new Promise(resolve=>setImmediate(resolve));
-  assert.equal(posted.url,'/api/plan/checkout');assert.equal(posted.body.interval,'month');
-  assert.equal(assigned,'https://checkout.stripe.com/c/pay/cs_test');
+  content.querySelector('.plan-manage').click();await tick();
+  assert.deepEqual(posted,{url:'/api/plan/portal',body:'{}'});
+  assert.equal(assigned,'https://billing.stripe.com/p/session/test');
 });
 
-test('upgrades stay visible but closed until checkout is configured',async()=>{
-  const {document}=await renderWallet({enabled:false,entries:[]},{...FREE,used:1,limit:10});
-  assert.equal(document.querySelector('.wallet-primary').disabled,true);
-  assert.match(document.querySelector('#wallet-content').textContent,/Upgrades open soon/);
-});
-
-test('Pro shows renewal and Manage billing; the team plan shows unlimited with no actions',async()=>{
-  {
-    const pro={...FREE,plan:'pro',used:42,subscription:{status:'active',interval:'year',currentPeriodEnd:Date.UTC(2027,9,20,15),cancelAtPeriodEnd:false},manageable:true};
-    const {document}=await renderWallet({enabled:false,entries:[]},pro);
-    const text=document.querySelector('#wallet-content').textContent;
-    assert.match(text,/Arosa Pro/);assert.match(text,/Unlimited research/);assert.match(text,/Billed yearly/);assert.match(text,/Renews Oct 20, 2027/);assert.match(text,/42 research runs this month/);
-    assert.equal(document.querySelectorAll('.plan-manage').length,1);assert.equal(document.querySelectorAll('.wallet-primary').length,0);
-    assert.equal(document.querySelector('#wallet-balance').textContent,'Pro');
-  }
-  {
-    const {document}=await renderWallet({enabled:false,entries:[]},{...FREE,plan:'team',used:109});
-    const text=document.querySelector('#wallet-content').textContent;
-    assert.match(text,/Team access/);assert.match(text,/109 research runs this month/);
-    assert.equal(document.querySelectorAll('.plan-manage, .wallet-primary').length,0);
-    assert.equal(document.querySelector('#wallet-balance').hidden,true);
-  }
-});
-
-test('reaching the free allowance opens the plan with the reason',async()=>{
-  const {document,window}=await renderWallet({enabled:false,entries:[]},{...FREE,used:10,limit:10,checkoutAvailable:true});
+test('an exhausted daily allowance opens usage with its reset explanation and leaves drafts intact',async()=>{
+  const plan={...COMMUNITY,used:50,remaining:0,limits:{...COMMUNITY.limits,research:allowance('Research requests',50,50)}};
+  const {document,window}=await renderUsage(plan);
+  const draft=document.querySelector('#prompt');draft.value='Keep this housing question';
   const dialog=document.querySelector('#wallet-dialog');assert.equal(Boolean(dialog.open),false);
-  window.dispatchEvent(new window.CustomEvent('acres:plan-limit',{detail:{message:'You have used your 10 free research runs this month.'}}));
+  window.dispatchEvent(new window.CustomEvent('acres:plan-limit',{detail:{kind:'research',message:'You have used your 50 research requests today. Your allowance resets at midnight in New York.',resetsAt:plan.resetsAt}}));
+  await tick();
   assert.equal(dialog.open,true);
-  assert.match(document.querySelector('#wallet-notice').textContent,/10 free research runs/);
+  assert.match(document.querySelector('#wallet-notice').textContent,/resets at midnight/);
+  assert.match(document.querySelector('#wallet-content').textContent,/0 of 50 research requests left today/);
+  assert.equal(document.querySelectorAll('.plan-meter.is-full').length,1);
+  assert.equal(draft.value,'Keep this housing question');
+  assert.equal(document.querySelectorAll('.wallet-primary,.plan-upgrade').length,0);
 });
 
-test('wallet shows a skeleton while loading, refreshes when opened and offers Retry when it fails',async()=>{
+test('usage refreshes automatically at midnight and on return, clearing the expired limit notice',async t=>{
+  const now=Date.UTC(2026,10,4,4,59,59),reset=now+1000;
+  t.mock.timers.enable({apis:['setTimeout','Date'],now});
+  let calls=0;
+  const {document,window}=await mount('wallet.js',async()=>{
+    calls++;const used=Date.now()<reset?50:0;
+    return (json({...COMMUNITY,used,remaining:50-used,resetsAt:Date.now()<reset?reset:reset+86400000,limits:{...COMMUNITY.limits,research:allowance('Research requests',50,used)}}))();
+  });
+  window.dispatchEvent(new window.CustomEvent('acres:plan-limit',{detail:{kind:'research',message:'Daily allowance reached.'}}));await tick();
+  const before=calls;t.mock.timers.tick(1101);await tick();
+  assert.equal(calls,before+1);
+  assert.equal(document.querySelector('#wallet-balance').textContent,'50 left');
+  assert.equal(document.querySelector('#wallet-notice').textContent,'');
+  Object.defineProperty(document,'visibilityState',{value:'visible',configurable:true});
+  document.dispatchEvent(new window.Event('visibilitychange'));await tick();
+  assert.equal(calls,before+2);
+});
+
+test('daily usage shows a skeleton, refreshes when opened and offers Retry when it fails',async()=>{
   let calls=0,fail=true;
-  const {document}=await mount('wallet.js',async url=>{calls++;if(fail)throw new Error('Your plan could not load.');return {ok:true,status:200,headers:{get:()=> 'application/json'},json:async()=>(String(url)==='/api/plan'?FREE:{enabled:false,entries:[]})};});
+  const {document}=await mount('wallet.js',async()=>{calls++;if(fail)throw new Error('Daily usage could not load.');return (json(COMMUNITY))();});
   const content=document.querySelector('#wallet-content');
-  assert.match(content.textContent,/could not connect/);assert.doesNotMatch(content.textContent,/Loading…/);
+  assert.match(content.textContent,/could not connect/);
   fail=false;content.querySelector('.wallet-retry').click();
-  assert.ok(content.querySelector('.skel'),'the retry shows a skeleton in place');
-  await new Promise(resolve=>setImmediate(resolve));
-  assert.match(content.textContent,/Free plan/);
+  assert.ok(content.querySelector('.skel'),'the retry shows a skeleton in place');await tick();
+  assert.match(content.textContent,/Free access/);
   const before=calls;document.querySelector('#wallet-button').click();
-  assert.equal(calls,before+2,'opening the plan refreshes it');
+  assert.equal(calls,before+1,'opening daily usage refreshes it');await tick();
 });
 
 test('admin button stays hidden for non-admin sessions and renders grouped market data settings for admins',async()=>{
@@ -381,6 +359,6 @@ test('the deal map pins only listings located in the five boroughs and the list 
   assert.doesNotMatch(document.querySelector('.deals-map-hint').textContent,/Click a parcel pin/,'no pin hint over an empty map');
 });
 
-test('plan dialog turns 404 and 500 responses into recovery instructions',async()=>{
+test('daily usage turns 404 and 500 responses into recovery instructions',async()=>{
  for(const status of [404,500]){const {document}=await mount('wallet.js',json({error:status===404?'Not found.':'Internal Server Error'},{ok:false,status}));const text=document.querySelector('#wallet-content').textContent;assert.doesNotMatch(text,/Not found\.|Internal Server Error/);assert.match(text,/Return|Try again/);assert.ok(document.querySelector('.wallet-retry'));}
 });

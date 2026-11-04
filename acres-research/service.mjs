@@ -5,7 +5,6 @@ import {dirname,join} from 'node:path';
 import {readFileSync,existsSync,createReadStream} from 'node:fs';
 import {randomUUID,timingSafeEqual} from 'node:crypto';
 import {research} from './research.mjs';
-import {createTrace} from './trace.mjs';
 import {ChatStore} from './store.mjs';
 import {RunManager} from './manager.mjs';
 import {streamEvents} from './event-stream.mjs';
@@ -13,7 +12,6 @@ import {closeCodexPool} from './codex.mjs';
 import {ResearchAdmission,researchSlots} from './admission.mjs';
 import {ListingInvestigations,INVESTIGATION_TERMINAL} from './listing-investigations.mjs';
 import {throwIfCancelled,withExecutionSignal,combinedSignal,abortable,executionSignal} from './execution-context.mjs';
-import {createUsageMeter,validateRate} from './wallet.mjs';
 import {Plans} from './plans.mjs';
 import {processModelInput,MODEL_INPUT_MAX_BYTES} from './model-intake.mjs';
 import {Crm} from './crm.mjs';
@@ -73,7 +71,9 @@ export function researchEngine(secrets,runner=research) {
     return runner(input,runSecrets,progress,emit,onControl,engines[workflow]==='meta'?runMeta:runCodex);
   };
 }
-export function createResearchServer({secrets,store,execute=researchEngine(secrets),wallet=null,mcp=null,sessions=null,maps=createGoogleMaps(secrets),marketStoreFactory=openMarketStore,architecture:architectureOptions=null,filterDecider,traceRoot,investigationProvider,investigationRecords,release=null,feedbackAgent=runMeta,crmEnrichment,visualFetch=fetch}) {
+export function createResearchServer({secrets,store,execute=researchEngine(secrets),mcp=null,sessions=null,maps=createGoogleMaps(secrets),marketStoreFactory=openMarketStore,architecture:architectureOptions=null,filterDecider,investigationProvider,investigationRecords,release=null,feedbackAgent=runMeta,crmEnrichment,visualFetch=fetch}) {
+// Hosted access is free; legacy billing configuration cannot re-enable wallet charges.
+secrets={...secrets,BILLING_ENABLED:false};
 if(secrets.MCP_SERVICE_TOKEN&&(typeof secrets.MCP_SERVICE_TOKEN!=='string'||secrets.MCP_SERVICE_TOKEN.length<32))throw new Error('The MCP private API requires a strong separate service credential.');
 if(secrets.MCP_SERVICE_TOKEN&&secrets.MCP_SERVICE_TOKEN===secrets.RESEARCH_TOKEN)throw new Error('The MCP private API must use a separate service credential.');
 // Architecture plans, their drawings and processing jobs; absent when the service is not configured for them.
@@ -141,11 +141,14 @@ const alertAccess=(account)=>{
     test:()=>alertStore.enqueue({account,dedupe:`test:${account}:${randomUUID()}`,subject:'Your Arosa alerts test email',body:'This is a test of your Arosa email alerts. If you received it, alerts are reaching this address.',cadence:'instant'})};
 };
 const admission=new ResearchAdmission(researchSlots(secrets));
-const manager=new RunManager(store,secrets,execute,wallet,sessions,planAccess,filterDecider,alertAccess,admission);setImmediate(()=>manager.pump());
-const investigations=new ListingInvestigations({store,secrets,wallet,...(investigationProvider?{provider:investigationProvider}:{}),...(investigationRecords?{records:investigationRecords}:{})});
+const manager=new RunManager(store,secrets,execute,null,sessions,planAccess,filterDecider,alertAccess,admission);setImmediate(()=>manager.pump());
+const investigations=new ListingInvestigations({store,secrets,...(investigationProvider?{provider:investigationProvider}:{}),...(investigationRecords?{records:investigationRecords}:{})});
 setImmediate(()=>investigations.recover());
 const betaTesters=new BetaTesters(store);
-const plans=new Plans(store,{freeRunsPerMonth:secrets.FREE_RUNS_PER_MONTH,betaRunsPerMonth:secrets.BETA_RUNS_PER_MONTH,betaTesters,unmeteredEmails:secrets.PLAN_UNMETERED_EMAILS||[]});
+const plans=new Plans(store,{dailyLimits:secrets.DAILY_LIMITS,betaTesters});
+manager.admit=(account,id,now)=>plans.admitResearch(account,`run:${id}`,now);
+investigations.beforeCreate=(account,id,now)=>plans.admitResearch(account,`listing:${id}`,now);
+if(architectureJobs)architectureJobs.beforeCreate=(account,id)=>plans.consume(account,'renders',id);
 const crm=new Crm(store);
 const enrichment=new CrmEnrichment({store,crm,secrets,...(crmEnrichment||{})});
 setImmediate(()=>enrichment.recover());
@@ -199,28 +202,20 @@ async function architectureRoute(req,res,account,id,rest) {
         if(!concept)fail(409,'The selected building model has changed. Reload and try again.');
       }
       const operation=rest[0]==='visual-segment'?'meta_visual_segment':'meta_visual_illustrate';
-      let rate=null,authorization=null,attempted=false;
-      if(secrets.BILLING_ENABLED===true) {
-        rate=validateRate(secrets.BILLING_RATES?.[operation]);
-        if(rate.mode!=='estimated_call')fail(503,'Image pricing is not configured.');
-        const quote=input.pricing;
-        if(!quote||quote.version!==rate.version||quote.amountMicros!==rate.amountMicros||quote.reserveMicros!==rate.reserveMicros)fail(409,'Image pricing changed. Reload and review it before continuing.');
-      }
-      const idempotency=randomUUID();
+      let attempted=false;
+      const idempotency=randomUUID(),kind=rest[0]==='visual-segment'?'selections':'illustrations';
       const fetcher=async(...args)=>{
-        if(rate)authorization=await createUsageMeter({wallet:manager.wallet,owner:account,runId:idempotency,rates:{[operation]:rate}}).authorize('meta',operation,rate);
-        const invoke=()=>{attempted=true;console.log(JSON.stringify({event:'visual_usage',phase:'dispatched',operation,account,requestId:idempotency}));return visualFetch(...args);};
-        return authorization?authorization.invoke(invoke,{signal:controller.signal}):invoke();
+        plans.consume(account,kind,idempotency);
+        attempted=true;console.log(JSON.stringify({event:'visual_usage',phase:'dispatched',operation,account,requestId:idempotency}));
+        return visualFetch(...args);
       };
       try {
         const options={key:secrets.MODEL_API_KEY,signal:controller.signal,fetcher};
         const result=rest[0]==='visual-segment'?await segmentHousingPhoto(input,options):await illustrateHousing(input,options);
         if(rest[0]==='visual-illustrate')result.provenance={...result.provenance,conceptId:input.conceptId,conceptVersion:input.conceptVersion??null};
-        if(authorization)await authorization.settle({});
         if(attempted)console.log(JSON.stringify({event:'visual_usage',phase:'completed',operation,account,requestId:idempotency}));
         return respond(res,200,result);
       } catch(error) {
-        if(authorization)await authorization.pending('Image provider outcome needs reconciliation.');
         if(attempted)console.log(JSON.stringify({event:'visual_usage',phase:'unknown',operation,account,requestId:idempotency}));
         throw error;
       }
@@ -431,20 +426,9 @@ async function handle(req,res,enteredAt){
     try {return respond(res,200,crm.apply(await body(req)));}
     catch(error) {if(error.status)return respond(res,error.status,{error:error.message});throw error;}
   }
-  let trace;
   try {
-    // Keep the old release usable while its client migrates to durable runs.
-    if(req.method==='POST'&&url.pathname==='/research') {
-      if(secrets.BILLING_ENABLED===true)return respond(res,410,{error:'Use account-scoped research runs.'});
-      const release=admission.acquire();
-      if(!release)return respond(res,429,{error:'Research is busy. Please try again shortly.'});
-      try {
-      const input=await body(req);input.message=message(input.message);delete input.dealStore;delete input.workflow; // The run manager supplies trusted project workflow and deal access.
-      if(!Array.isArray(input.history??[])||(input.history??[]).some(x=>!['user','assistant'].includes(x.role)||typeof x.text!=='string'||x.text.length>10000))return respond(res,400,{error:'Invalid conversation.'});
-      trace=createTrace(input,traceRoot);
-      const result=await execute(input,secrets,status=>trace.emit('status',{status}),trace.emit);trace.emit('run.completed',{result});return respond(res,200,{...result,traceId:trace.id});
-      } finally {release();}
-    }
+    // Retired unscoped endpoint cannot bypass account-based daily admission.
+    if(req.method==='POST'&&url.pathname==='/research')return respond(res,410,{error:'Use account-scoped research runs.'});
     // The signed stop link in an alert email; the web app forwards it without a sign-in.
     if(url.pathname==='/alerts/unsubscribe'&&req.method==='POST')return respond(res,200,alertStore.unsubscribe((await body(req)).token));
     const account=req.headers['x-acres-account'];
@@ -457,20 +441,11 @@ async function handle(req,res,enteredAt){
     }
     if(email&&typeof store.touchPerson==='function')store.touchPerson(account,email);
     if(url.pathname==='/run-titles'&&req.method==='GET')return respond(res,200,{titles:store.runTitles(account,String(url.searchParams.get('ids')||'').split(',').filter(Boolean))});
-    // The account's plan and this month's usage; the web app reads it and records Stripe subscription changes.
+    // Daily free usage; subscription events remain available for historical billing records.
     const planEmail=()=>email||store.personRow(account)?.email;
     if(url.pathname==='/plan'&&req.method==='GET')return respond(res,200,plans.status(account,planEmail()));
     if(url.pathname==='/plan/subscription'&&req.method==='PUT'){plans.record(account,await body(req));return respond(res,200,plans.status(account,planEmail()));}
-    if(url.pathname==='/billing-policy'&&req.method==='GET') {
-      const rates={};
-      for(const [name,value] of Object.entries(secrets.BILLING_RATES || {})) {
-        try {
-          const rate=validateRate(value);
-          rates[name]={mode:rate.mode,version:rate.version,basis:rate.basis,reserveMicros:rate.reserveMicros,...(rate.mode==='estimated_call'?{amountMicros:rate.amountMicros}:{}),...(rate.mode==='estimated_tokens'?{inputMicrosPerMillion:rate.inputMicrosPerMillion,cachedInputMicrosPerMillion:rate.cachedInputMicrosPerMillion,outputMicrosPerMillion:rate.outputMicrosPerMillion}:{})};
-        } catch { /* Unconfigured providers cannot spend. */ }
-      }
-      return respond(res,200,{enabled:secrets.BILLING_ENABLED===true,ready:Boolean(rates.codex),rates});
-    }
+    if(url.pathname==='/billing-policy'&&req.method==='GET')return respond(res,200,{enabled:false,ready:true,rates:{}});
     if(url.pathname==='/street-view'&&req.method==='GET') {
       if(!maps)return respond(res,404,{error:'Street photos are not configured.'});
       try {
@@ -507,7 +482,6 @@ async function handle(req,res,enteredAt){
         try {
           const page=mStore.searchDealsPage({listingId:input.listingId,includeSimilarComps:false});
           if(!page.deals.length)return respond(res,404,{error:'Listing not found.'});
-          plans.assertCanRun(account,planEmail());
           return respond(res,202,investigations.create(account,input,page.deals[0]));
         }finally{mStore.close?.();}
       }
@@ -889,8 +863,6 @@ async function handle(req,res,enteredAt){
       if(parts[2]==='runs'&&parts.length===3&&req.method==='POST') {
         if(typeof store.access==='function'&&!store.access(account,id))return respond(res,404,{error:'Conversation not found.'});
         const input=await body(req);if(input.id&&!uuid.test(input.id))throw new Error('Invalid request ID.');
-        // A retried request that already exists is not a new run.
-        if(!(input.id&&store.one('SELECT 1 FROM runs WHERE id=?',input.id)))plans.assertCanRun(account,planEmail());
         return respond(res,202,manager.enqueue(account,id,message(input.message),input.id,input.listingFilters));
       }
       if(parts[2]==='members') {
@@ -964,9 +936,8 @@ async function handle(req,res,enteredAt){
     }
     return respond(res,404,{error:'Not found.'});
   } catch(e) {
-    trace?.emit('run.failed',{message:e.message});
-    console.error(JSON.stringify({event:'request_failed',traceId:trace?.id,path:url.pathname,message:e.message.slice(0,250)}));
-    if(!res.headersSent)respond(res,e.status || (trace?502:400),{error:e.message,...(e.code?{code:e.code}:{}),traceId:trace?.id});else res.end();
+    console.error(JSON.stringify({event:'request_failed',path:url.pathname,message:e.message.slice(0,250)}));
+    if(!res.headersSent)respond(res,e.status || 400,{error:e.message,...(e.code?{code:e.code}:{}),...(e.code==='daily_limit_reached'?{kind:e.kind,limit:e.limit,resetsAt:e.resetsAt}:{})});else res.end();
   }
 }
 server.architectureJobs=architectureJobs;server.schemeDrafts=schemeDrafts;
@@ -1025,7 +996,7 @@ if(process.argv[1]===fileURLToPath(import.meta.url)) {
     readState:(account,projectId)=>store.projectView(account,projectId),listProjects:(account,args)=>store.projectPage(account,args),
     writeState:(account,projectId,{version,assumptions})=>store.updateProjectState(account,projectId,{version,fields:{assumptions}})}):null;
   const releaseFile=new URL('./.deployed-commit',import.meta.url);
-  const server=createResearchServer({secrets,store,mcp,sessions,architecture:architectureOptions(secrets),traceRoot:join(runtime.stateDir,'traces'),
+  const server=createResearchServer({secrets,store,mcp,sessions,architecture:architectureOptions(secrets),
     release:existsSync(releaseFile)?readFileSync(releaseFile,'utf8').trim():null});
   const alertSweeper=startAlertSweeper({store,alerts:server.alertStore,mailer:mailerFromSecrets(secrets),
     openMarket:async()=>openMarketStore({readOnly:true}),appUrl:process.env.ALERTS_APP_URL||'https://build.witharosa.ai'});

@@ -28,9 +28,11 @@ test("without a session the what's new address lays out as home, never the page"
   assert.deepEqual(resolveRoute({pathname:'/whats-new',search:'',hash:''},history,{namespace:'a'}),{view:'whats-new'});
 });
 
-test('entries are merged pull requests #277-#290 only, newest first',()=>{
-  assert.equal(WHATS_NEW.length,14);
-  assert.deepEqual(WHATS_NEW.map((e)=>e.pr),[290,289,288,287,286,285,284,283,282,281,280,279,278,277]);
+test('the daily-access release leads the preserved historical entries, newest first',()=>{
+  assert.match(WHATS_NEW[0].title,/Free daily access for everyone/);
+  assert.match(WHATS_NEW[0].title,/No subscription or payment needed/);
+  assert.equal(WHATS_NEW[0].date,'2026-11-04');
+  assert.deepEqual(WHATS_NEW.slice(1).map((e)=>e.pr),[290,289,288,287,286,285,284,283,282,281,280,279,278,277]);
   for(const entry of WHATS_NEW){
     assert.match(entry.date,/^\d{4}-\d{2}-\d{2}$/);
     assert.ok(entry.title.length>0);

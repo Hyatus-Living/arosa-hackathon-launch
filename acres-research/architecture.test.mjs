@@ -131,36 +131,42 @@ test('visual tools are restricted to authorized Modeling projects',async t=>{
   assert.equal((await api(`/projects/${model.id}/architecture/visual-illustrate`,'POST',{conceptId:'missing',conceptVersion:1})).status,409);
 });
 
-test('visual tools do not bypass enabled billing',async t=>{
-  const f=setup(t),{store,api}=await f.open(buildPlan,async()=>({}),{secrets:{BILLING_ENABLED:true},wallet:{}});
-  const model=store.createModel(alice,'123 Main Street','Housing');
-  const response=await api(`/projects/${model.id}/architecture/visual-segment`,'POST',{});
-  assert.equal(response.status,503);
-});
-
-test('billed image requests require the quoted rate and settle only after the provider succeeds',async t=>{
-  const f=setup(t),calls=[];
-  const wallet={reserve:async(...args)=>calls.push(['reserve',...args]),dispatch:async()=>calls.push(['dispatch']),settle:async(_owner,_key,amount)=>calls.push(['settle',amount]),pending:async()=>calls.push(['pending']),releaseBeforeAttempt:async()=>calls.push(['release'])};
-  const rate={mode:'estimated_call',version:'test-1',basis:'test rate',reserveMicros:5000,amountMicros:2500};
-  const visualFetch=async()=>new Response('data: {"type":"response.output_text.done","item_id":"m1","output_index":0,"content_index":0,"text":""}\n\ndata: {"type":"response.completed","response":{"id":"r1","status":"completed"}}\n\n');
-  const {store,api}=await f.open(buildPlan,async()=>({}),{secrets:{BILLING_ENABLED:true,MODEL_API_KEY:'test',BILLING_RATES:{meta_visual_segment:rate}},wallet,visualFetch});
+test('image calls are free and daily admission precedes provider dispatch',async t=>{
+  const f=setup(t),charges=[];let calls=0;
+  const wallet={reserve:async()=>charges.push('reserve')};
+  const visualFetch=async()=>{calls++;return new Response('data: {"type":"response.output_text.done","item_id":"m1","output_index":0,"content_index":0,"text":""}\n\ndata: {"type":"response.completed","response":{"id":"r1","status":"completed"}}\n\n');};
+  const {store,api}=await f.open(buildPlan,async()=>({}),{secrets:{BILLING_ENABLED:true,MODEL_API_KEY:'test',DAILY_LIMITS:{selections:1}},wallet,visualFetch});
   const model=store.createModel(alice,'123 Main Street','Housing');
   const photo='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=';
   const url=`/projects/${model.id}/architecture/visual-segment`,input={photo,subject:'building'};
-  assert.equal((await api(url,'POST',input)).status,409);assert.equal(calls.length,0);
-  assert.equal((await api(url,'POST',{...input,pricing:{version:rate.version,amountMicros:rate.amountMicros,reserveMicros:rate.reserveMicros}})).status,200);
-  assert.deepEqual(calls.map(call=>call[0]),['reserve','dispatch','settle']);assert.equal(calls[0][1],alice);assert.equal(calls[2][1],2500);
+  assert.equal((await api(url,'POST',{})).status,400);assert.equal(calls,0);
+  assert.equal((await api(url,'POST',input)).status,200);assert.equal(calls,1);assert.deepEqual(charges,[]);
+  const limited=await api(url,'POST',input);assert.equal(limited.status,429);const error=await limited.json();
+  assert.equal(error.code,'daily_limit_reached');assert.equal(error.kind,'selections');assert.ok(error.resetsAt>Date.now());assert.equal(calls,1);
+  assert.equal((await (await api('/plan')).json()).limits.selections.used,1);
 });
 
-test('a billed image provider failure leaves the reservation pending',async t=>{
+test('a dispatched image failure consumes its daily allowance but never charges a wallet',async t=>{
   const f=setup(t),calls=[];
-  const wallet={reserve:async()=>calls.push('reserve'),dispatch:async()=>calls.push('dispatch'),pending:async()=>calls.push('pending'),releaseBeforeAttempt:async()=>calls.push('release')};
-  const rate={mode:'estimated_call',version:'test-1',basis:'test rate',reserveMicros:5000,amountMicros:2500};
-  const {store,api}=await f.open(buildPlan,async()=>({}),{secrets:{BILLING_ENABLED:true,MODEL_API_KEY:'test',BILLING_RATES:{meta_visual_segment:rate}},wallet,visualFetch:async()=>new Response('',{status:503})});
+  const wallet={reserve:async()=>calls.push('reserve'),pending:async()=>calls.push('pending')};
+  const {store,api}=await f.open(buildPlan,async()=>({}),{secrets:{BILLING_ENABLED:true,MODEL_API_KEY:'test'},wallet,visualFetch:async()=>new Response('',{status:503})});
   const model=store.createModel(alice,'123 Main Street','Housing');
   const photo='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=';
-  const response=await api(`/projects/${model.id}/architecture/visual-segment`,'POST',{photo,subject:'building',pricing:{version:rate.version,amountMicros:rate.amountMicros,reserveMicros:rate.reserveMicros}});
-  assert.equal(response.status,502);assert.deepEqual(calls,['reserve','dispatch','pending']);
+  const response=await api(`/projects/${model.id}/architecture/visual-segment`,'POST',{photo,subject:'building'});
+  assert.equal(response.status,502);assert.deepEqual(calls,[]);
+  assert.equal((await (await api('/plan')).json()).limits.selections.used,1);
+});
+
+test('render allowance leaves saved plans editable and cached jobs available',async t=>{
+  const f=setup(t),{store,api}=await f.open(buildPlan,async()=>({}),{secrets:{DAILY_LIMITS:{renders:1}}});
+  const model=store.createModel(alice,'123 Main Street','Housing'),base=`/projects/${model.id}/architecture`;
+  const first=await json(await api(base+'/plan','PUT',{parentRevision:null,plan:plan()}));assert.equal(first.status,201);
+  assert.equal((await (await api('/plan')).json()).limits.renders.used,1);
+  const reused=await api(base+'/jobs','POST',{revision:1});assert.equal(reused.status,200);
+  const second=await json(await api(base+'/plan','PUT',{parentRevision:1,plan:plan(11)}));assert.equal(second.status,201,'save succeeds even when a new render cannot start');
+  const limited=await api(base+'/jobs','POST',{revision:2});assert.equal(limited.status,429);assert.equal((await limited.json()).kind,'renders');
+  assert.equal((await api(base+'/revisions/2')).status,200);
+  assert.equal((await (await api('/plan')).json()).limits.renders.used,1);
 });
 
 test('an authorized Modeling photo request does not modify the project',async t=>{

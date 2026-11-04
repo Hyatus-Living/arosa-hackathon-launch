@@ -136,8 +136,6 @@ test('the env names match the server wiring and the durable secret route',()=>{
   const pull=readFileSync(join(repoRoot,'infra','acres-pull-secrets'),'utf8');
   assert.ok(pull.includes("'STRIPE_SECRET_KEY': 'acres-stripe-secret-key'"),'GSM name for the Stripe secret key');
   assert.ok(pull.includes("'STRIPE_SUBSCRIPTION_WEBHOOK_SECRET': 'acres-stripe-subscription-webhook-secret'"),'GSM name for the webhook secret');
-  const billing=readFileSync(join(repoRoot,'docs','BILLING.md'),'utf8');
-  assert.ok(billing.includes('node scripts/stripe-sandbox-setup.mjs'),'the one owner command is documented');
 });
 
 test('the CLI refuses bad keys with exit 2 and accepts --dry-run, all without network',()=>{

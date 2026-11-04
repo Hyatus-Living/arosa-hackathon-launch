@@ -226,25 +226,16 @@ test('a cancelled preflight never dispatches research or writes late events',asy
   gate.resolve();await tick();assert.equal(executions,0);assert.equal(store.runEvents(run.id).length,count);assert.equal(manager.active.size,0);
 });
 
-test('slow legacy bodies reserve the shared slots and release them to durable work',{timeout:5000},async t=>{
+test('unscoped requests cannot reserve shared slots or bypass durable admission',{timeout:5000},async t=>{
   const store=new ChatStore(join(temp(t),'chat.sqlite')),owner='a'.repeat(24),conversation=store.createConversation(owner),other=store.createConversation(owner),started=deferred(),gate=deferred();let starts=0;
   const server=createResearchServer({secrets:{RESEARCH_TOKEN:'test',RESEARCH_CONCURRENCY:2},store,execute:async()=>{if(++starts===2)started.resolve();await gate.promise;return {answer:'Done',sources:[]};}});
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const base=`http://127.0.0.1:${server.address().port}`;
   t.after(async()=>{gate.resolve();await tick();server.closeAllConnections();await new Promise(resolve=>server.close(resolve));store.close();});
-  const pending=[];
-  for(let n=0;n<2;n++){
-    const arrived=once(server,'request');
-    const request=http.request(base+'/research',{method:'POST',headers:{authorization:'Bearer test','content-type':'application/json'}},response=>response.resume());
-    request.on('error',()=>{});request.write('{');await arrived;pending.push(request);
-  }
-  const busy=await fetch(base+'/research',{method:'POST',headers:{authorization:'Bearer test'},body:'{}'});assert.equal(busy.status,429);
-  const queued=await fetch(base+`/conversations/${conversation.id}/runs`,{method:'POST',headers:{authorization:'Bearer test','x-acres-account':owner,'content-type':'application/json'},body:JSON.stringify({message:'Research'})});
-  assert.equal(queued.status,202);const run=await queued.json();assert.equal(store.runRow(run.id).status,'queued');
-  const queuedOther=await fetch(base+`/conversations/${other.id}/runs`,{method:'POST',headers:{authorization:'Bearer test','x-acres-account':owner,'content-type':'application/json'},body:JSON.stringify({message:'Second research'})});assert.equal(queuedOther.status,202);
-  // Invalid input finishes before trace creation, so this test touches no host trace directory.
-  for(const request of pending)request.end('}');await started.promise;
-  assert.equal(store.runRow(run.id).status,'running');
-  const full=await fetch(base+'/research',{method:'POST',headers:{authorization:'Bearer test'},body:'{}'});assert.equal(full.status,429);
+  const headers={authorization:'Bearer test','x-acres-account':owner,'content-type':'application/json'};
+  const retired=await fetch(base+'/research',{method:'POST',headers,body:'{}'});assert.equal(retired.status,410);
+  for(const c of [conversation,other])assert.equal((await fetch(base+`/conversations/${c.id}/runs`,{method:'POST',headers,body:JSON.stringify({message:'Research'})})).status,202);
+  await started.promise;assert.equal(starts,2);assert.equal(server.activeRuns(),2);
+  assert.equal((await fetch(base+'/research',{method:'POST',headers,body:'{}'})).status,410);
   gate.resolve();await tick();
 });
 

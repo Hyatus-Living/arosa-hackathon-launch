@@ -416,7 +416,7 @@ export class ChatStore {
   }
 
   // -- Runs ---------------------------------------------------------------
-  createRun(sender,conversation,input,id=randomUUID(),listingFilters=null) {
+  createRun(sender,conversation,input,id=randomUUID(),listingFilters=null,admit=null) {
     if(listingFilters){
       if(typeof listingFilters.prompt!=='string'||!listingFilters.prompt.trim()||listingFilters.prompt.length>3000)throw fail(400,'Invalid filter prompt.');
       listingFilters={prompt:listingFilters.prompt,snapshot:validateFilterSnapshot(listingFilters.snapshot),...(listingFilters.page !== undefined ? {page:validateListingPage(listingFilters.page)} : {})};
@@ -435,7 +435,7 @@ export class ChatStore {
     if(existingRaw)throw fail(409,'This request ID already belongs to another request.');
     if(this.query("SELECT id FROM runs WHERE owner=? AND created>?",sender,Date.now()-3600000).length>=30)throw new Error('You have reached 30 research requests this hour.');
     if(this.query("SELECT id FROM runs WHERE conversation=? AND status='queued'",conversation).length>=10)throw new Error('This conversation already has 10 queued messages.');
-    const now=Date.now();this.write('INSERT INTO runs VALUES(?,?,?,?,?,?,?,?,?)',id,sender,conversation,'queued',input,null,null,now,now);
+    const now=Date.now();admit?.(sender,id,now);this.write('INSERT INTO runs VALUES(?,?,?,?,?,?,?,?,?)',id,sender,conversation,'queued',input,null,null,now,now);
     // A bracketed page note the client put in front of the question (plan or deals page) never becomes the title.
     const title=conversationTitle(input);
     this.write('UPDATE conversations SET title=CASE WHEN title=? THEN ? ELSE title END,updated=? WHERE id=?','New conversation',title,now,conversation);

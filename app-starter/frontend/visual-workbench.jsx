@@ -6,7 +6,11 @@ const readImage=file=>new Promise((resolve,reject)=>{
 async function post(projectId,operation,body) {
   const response=await fetch(`/api/projects/${encodeURIComponent(projectId)}/architecture/${operation}`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
   const result=await response.json();
-  if(!response.ok)throw new Error(result.error||'The image request failed.');
+  if(!response.ok) {
+    if(result.code==='daily_limit_reached')window.dispatchEvent(new CustomEvent('acres:plan-limit',{detail:{...result,message:result.error}}));
+    throw Object.assign(new Error(result.error||'The image request failed.'),{status:response.status,code:result.code,resetsAt:result.resetsAt});
+  }
+  window.dispatchEvent(new Event('acres:wallet-refresh'));
   return result;
 }
 function capture(canvasRef) {
@@ -51,13 +55,6 @@ export function VisualWorkbench({projectId,concept,canvasRef,canCapture,photoTil
   const [photo,setPhoto]=useState(null),[subject,setSubject]=useState('building'),[goal,setGoal]=useState('adu'),[note,setNote]=useState('');
   const [masks,setMasks]=useState([]),[selected,setSelected]=useState([]),[image,setImage]=useState(null),[provenance,setProvenance]=useState(null),[busy,setBusy]=useState(''),[error,setError]=useState(''),[searched,setSearched]=useState(false);
   const [points,setPoints]=useState([]),[pointMode,setPointMode]=useState('positive');
-  const [billing,setBilling]=useState(null);
-  useEffect(()=>{let active=true;fetch('/api/wallet').then(async response=>{if(!response.ok)throw new Error('Pricing is unavailable.');return response.json();}).then(value=>{if(active)setBilling(value);}).catch(()=>{if(active)setBilling({error:true});});return()=>{active=false;};},[]);
-  const rate=operation=>billing?.enabled?billing.policy?.rates?.[operation]:null;
-  const available=operation=>billing&&!billing.error&&(!billing.enabled||rate(operation)?.mode==='estimated_call');
-  const quote=operation=>{const value=rate(operation);return value?{version:value.version,amountMicros:value.amountMicros,reserveMicros:value.reserveMicros}:null;};
-  const usd=micros=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:6}).format(micros/1e6);
-  const price=operation=>{const value=rate(operation);return value?`${usd(value.amountMicros)} per request; ${usd(value.reserveMicros)} held first.`:'Pricing is unavailable.';};
   async function choose(event) {
     const file=event.target.files?.[0];event.target.value='';if(!file)return;
     setError('');setPhoto(null);setMasks([]);setSelected([]);setImage(null);setProvenance(null);setSearched(false);setPoints([]);
@@ -70,7 +67,7 @@ export function VisualWorkbench({projectId,concept,canvasRef,canCapture,photoTil
   }
   async function segment(usePoints=false) {
     setBusy('segment');setError('');setSearched(false);
-    try{const result=await post(projectId,'visual-segment',{photo:photo.url,subject,pricing:quote('meta_visual_segment'),...(usePoints?{points,size:{width:photo.width,height:photo.height}}:{})});setMasks(result.masks);setSelected(result.masks.map(m=>m.id));setSearched(true);}
+    try{const result=await post(projectId,'visual-segment',{photo:photo.url,subject,...(usePoints?{points,size:{width:photo.width,height:photo.height}}:{})});setMasks(result.masks);setSelected(result.masks.map(m=>m.id));setSearched(true);}
     catch(e){setError(e.message);}finally{setBusy('');}
   }
   async function illustrate() {
@@ -78,23 +75,21 @@ export function VisualWorkbench({projectId,concept,canvasRef,canCapture,photoTil
     try{
       const modelImage=await capture(canvasRef);
       const selectionImage=await selectionReference(photo,masks,selected);
-      const result=await post(projectId,'visual-illustrate',{photo:photo.url,modelImage,selectionImage,goal,note,conceptId:concept.id,conceptVersion:concept.version??null,pricing:quote('meta_visual_illustrate')});
+      const result=await post(projectId,'visual-illustrate',{photo:photo.url,modelImage,selectionImage,goal,note,conceptId:concept.id,conceptVersion:concept.version??null});
       setImage(result.image);setProvenance(result.provenance??null);
     } catch(e){setError(e.message);}finally{setBusy('');}
   }
   return <details className="visual-workbench"><summary>Explore a housing idea with your photo</summary><div className="visual-body">
     <p>Use a site photo with this building model to explore a backyard home, addition or small housing project. Your photo and model view are sent to Meta when you choose an action.</p>
-    {billing?.enabled && <p>SAM: {price('meta_visual_segment')} Illustration: {price('meta_visual_illustrate')}</p>}
-    {billing?.error && <p role="alert">Pricing is unavailable. Reload to try again.</p>}
     <label>Site photo <input type="file" accept="image/png,image/jpeg,image/webp" disabled={!!busy} onChange={choose} /></label>
     {photo && <><MaskPreview photo={photo} masks={masks} selected={selected} points={points} busy={!!busy} onMark={(x,y)=>setPoints(p=>p.length<30?[...p,{x,y,label:pointMode}]:p)}/><div className="visual-controls">
       <label>Find in photo <input value={subject} maxLength={80} disabled={!!busy} onChange={e=>setSubject(e.target.value)} /></label>
-      <button type="button" onClick={()=>segment(false)} disabled={!!busy||!subject.trim()||!available('meta_visual_segment')}>{busy==='segment'?'Finding…':'Find with SAM'}</button>
+      <button type="button" onClick={()=>segment(false)} disabled={!!busy||!subject.trim()}>{busy==='segment'?'Finding…':'Find with SAM'}</button>
     </div>{searched && (masks.length ? <><fieldset><legend>Selected areas for the illustration</legend>{masks.map((mask,i)=><label key={mask.id}><input type="checkbox" checked={selected.includes(mask.id)} onChange={e=>setSelected(e.target.checked?[...selected,mask.id]:selected.filter(id=>id!==mask.id))} /> Object {i+1}{mask.confidence!=null?` (${Math.round(mask.confidence*100)}% match)`:''}</label>)}</fieldset><p>The highlighted areas guide the illustration, but exact placement may vary.</p></> : <p>No matching objects found. Try another description.</p>)}
-    <div className="visual-controls"><label>Mark points on the photo <select value={pointMode} disabled={!!busy} onChange={e=>setPointMode(e.target.value)}><option value="positive">Include this area</option><option value="negative">Exclude this area</option></select></label><button type="button" disabled={!!busy||!points.length||!available('meta_visual_segment')} onClick={()=>segment(true)}>Refine selection</button><button type="button" disabled={!!busy||!points.length} onClick={()=>setPoints([])}>Clear points</button></div>
+    <div className="visual-controls"><label>Mark points on the photo <select value={pointMode} disabled={!!busy} onChange={e=>setPointMode(e.target.value)}><option value="positive">Include this area</option><option value="negative">Exclude this area</option></select></label><button type="button" disabled={!!busy||!points.length} onClick={()=>segment(true)}>Refine selection</button><button type="button" disabled={!!busy||!points.length} onClick={()=>setPoints([])}>Clear points</button></div>
     <div className="visual-controls"><label>Housing idea <select value={goal} disabled={!!busy} onChange={e=>setGoal(e.target.value)}><option value="adu">Backyard home or ADU</option><option value="addition">Home addition</option><option value="infill">Small infill housing</option></select></label>
     <label>Design notes <input value={note} maxLength={500} disabled={!!busy} onChange={e=>setNote(e.target.value)} placeholder="Optional" /></label></div>
-    <button type="button" onClick={illustrate} disabled={!!busy||!canCapture||!available('meta_visual_illustrate')}>{busy==='illustrate'?'Creating illustration…':'Create illustration with Muse Image'}</button>
+    <button type="button" onClick={illustrate} disabled={!!busy||!canCapture}>{busy==='illustrate'?'Creating illustration…':'Create illustration with Muse Image'}</button>
     {!canCapture && <p>{photoTilesVisible?'Turn off Photo tiles to use the building model as a reference.':'Open the 3D view and wait for the building model to load.'}</p>}
     {image && <figure><img src={image} alt="AI-generated conceptual housing illustration" /><figcaption>Conceptual illustration. It may differ from the editable building model and does not establish zoning compliance. Download it to keep it.{provenance && <> Made with {provenance.model} from photo {provenance.photoSha256.slice(0,8)}, model view {provenance.modelImageSha256.slice(0,8)}{provenance.selectionImageSha256?`, selection ${provenance.selectionImageSha256.slice(0,8)}`:''}{provenance.conceptVersion!=null?`, concept version ${provenance.conceptVersion}`:''}; illustration {provenance.imageSha256.slice(0,8)}.</>}</figcaption><a href={image} download="housing-concept.png">Download illustration</a>{provenance && <> <a href={`data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(provenance,null,2))}`} download="housing-concept-provenance.json">Download provenance</a></>}</figure>}
     </>}

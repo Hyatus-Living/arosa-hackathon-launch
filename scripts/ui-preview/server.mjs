@@ -2,13 +2,20 @@
 // state can be opened and screenshotted without the research service or a sign-in. Never deploy it.
 // Usage: node scripts/ui-preview/server.mjs [publicDir] [port]   (defaults: app-starter/public, 8090)
 import http from 'node:http';
+import {DAILY_LIMITS,dayWindow} from '../../acres-research/plans.mjs';
+const dailyPlan = (used = 1) => {
+  const labels={research:'Research requests',illustrations:'AI illustrations',selections:'Photo selections',renders:'3D renders'};
+  const limits=Object.fromEntries(Object.entries(DAILY_LIMITS).map(([kind,limit])=>[kind,{label:labels[kind],limit,used:kind==='research'?used:0,remaining:kind==='research'?Math.max(0,limit-used):limit}]));
+  return {plan:'community',beta:false,used,limit:limits.research.limit,remaining:limits.research.remaining,period:'day',timeZone:'America/New_York',resetsAt:dayWindow().end,limits,subscription:null,manageable:false,checkoutAvailable:false};
+};
+
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { fullState } from '../../app-starter/tests/fixtures/project-state.mjs';
 import { projects } from '../../app-starter/tests/fixtures/projects.mjs';
 import { budgetSplitOptions } from '../../acres-research/budget-lines.mjs';
-// Synthetic underwriting example; no saved customer project is included.
+// A fully underwritten site (39 Winthrop Street, anonymized) for the underwriting report.
 const winthrop = JSON.parse(fs.readFileSync(new URL('../../app-starter/tests/fixtures/report-winthrop.json', import.meta.url), 'utf8'));
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -76,7 +83,7 @@ function api(req, url) {
   if (conv) return conv[1] === 'c_winthrop' ? winthrop.conversation : conversation(conv[1]);
   if (/^\/conversations\/[^/]+\/members$/.test(p)) return { members: [{ principalType: 'account', principal: 'acct2', name: 'Alex Kim', email: 'alex@witharosa.ai', role: 'participant' }, { principalType: 'team', principal: 't1', name: 'Acquisitions', role: 'viewer' }] };
   if (/^\/conversations\/[^/]+\/links$/.test(p)) return { links: [{ id: 'l1', token: 'abc123', role: 'viewer', created: T }] };
-  if (p === '/projects') return { projects: [...projects, { id: 'p_winthrop', siteKey: winthrop.project.siteKey, bbl: winthrop.project.bbl, title: 'Synthetic housing feasibility example', owner: winthrop.project.owner, access: 'owner', version: 1, conversationCount: 1, updated: T - 6 * 86400e3 }], nextCursor: null };
+  if (p === '/projects') return { projects: [...projects, { id: 'p_winthrop', siteKey: winthrop.project.siteKey, bbl: winthrop.project.bbl, title: '39 Winthrop Street, Brooklyn', owner: winthrop.project.owner, access: 'owner', version: 1, conversationCount: 1, updated: T - 6 * 86400e3 }], nextCursor: null };
   if (p === '/projects/p_winthrop/state') return winthrop.project;
   if (/^\/projects\/[^/]+\/state$/.test(p)) return fullState;
   if (/^\/projects\/[^/]+\/architecture$/.test(p)) return { revision: 0, plan: null, jobs: [] };
@@ -97,23 +104,9 @@ function api(req, url) {
   if (p === '/runs') return { runs: [] };
   if (p === '/teams') return { teams: [{ id: 't1', name: 'Acquisitions', memberCount: 4, role: 'owner' }] };
   if (p.startsWith('/teams/')) return { team: { id: 't1', name: 'Acquisitions', members: [] }, members: [] };
-  // PREVIEW_PLAN picks the plan (free, limit, pro or team); PREVIEW_WALLET=off matches a deployment without credit billing.
-  if (p === '/plan') {
-    const base = { plan: 'free', used: 7, limit: 10, resetsAt: Date.UTC(2026, 10, 1), subscription: null, manageable: false, checkoutAvailable: true, prices: { month: { amount: 100 }, year: { amount: 600 } } };
-    return {
-      free: base,
-      limit: { ...base, used: 10 },
-      pro: { ...base, plan: 'pro', used: 37, limit: null, manageable: true, subscription: { status: 'active', interval: 'year', currentPeriodEnd: Date.UTC(2027, 9, 20, 15), cancelAtPeriodEnd: false } },
-      team: { ...base, plan: 'team', used: 109, limit: null },
-    }[process.env.PREVIEW_PLAN || 'free'];
-  }
-  if (p === '/wallet' && process.env.PREVIEW_WALLET === 'off') return { enabled: false, checkoutAvailable: false, currency: 'USD', entries: [] };
-  if (p === '/wallet') return { enabled: true, availableMicros: 42500000, heldMicros: 1200000, balanceMicros: 43700000, checkoutAvailable: true,
-    policy: { rates: { openai: { mode: 'estimated_tokens', inputMicrosPerMillion: 1250000, cachedInputMicrosPerMillion: 125000, outputMicrosPerMillion: 10000000, reserveMicros: 500000, basis: 'List price', version: '2026-10' } } },
-    entries: [
-      { kind: 'usage', provider: 'openai', operation: 'research', deltaMicros: -820000, at: T, estimated: true, basis: 'token estimate', runId: 'r1aaaaaaaa' },
-      { kind: 'reserve', reservedMicros: 1200000, at: T - 60e3, runId: 'r2bbbbbbbb' },
-      { kind: 'topup', deltaMicros: 50000000, at: T - 86400e3 } ] };
+  // PREVIEW_PLAN=limit shows the daily research allowance exhausted.
+  if (p === '/plan') return dailyPlan(process.env.PREVIEW_PLAN==='limit'?DAILY_LIMITS.research:7);
+  if (p === '/wallet') return {enabled:false,checkoutAvailable:false,currency:'USD',entries:[]};
   if (p === '/admin/market-store') return { totalListings: 18234, activeForSale: 9120, closedSold: 7800, activeRentals: 1314, plutoMatchedParcels: 15022, highPotentialDeals: 612, submarketRollups: 180, lastIngestedAt: T - 3600e3,
     adminConfig: { syncConfig: { locations: ['Brooklyn, NY', 'Queens, NY'], maxPages: 5 }, dealSettings: { hardCostPerGrossSqft: 450 } },
     recentSyncs: [{ status: 'completed', locations: ['Brooklyn, NY'], startedAt: T - 3600e3, finishedAt: T - 3000e3, listings: 812 }] };
@@ -157,4 +150,4 @@ http.createServer((req, res) => {
   if (!file.startsWith(root) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) file = path.join(root, 'index.html');
   res.writeHead(200, { 'content-type': types[path.extname(file)] || 'application/octet-stream', 'cache-control': 'no-store' });
   fs.createReadStream(file).pipe(res);
-}).listen(port, '127.0.0.1', () => console.log('preview on', port, root));
+}).listen(port, () => console.log('preview on', port, root));

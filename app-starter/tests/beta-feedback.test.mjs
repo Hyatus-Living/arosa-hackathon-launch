@@ -79,12 +79,18 @@ test('a failed send keeps the typed text and says to try again',async()=>{
   assert.equal(document.querySelector('#feedback-send').disabled,false);
 });
 
-test('the plan view names the beta plan in plain words',async()=>{
-  const {module}=await mount('wallet.js',async url=>json(String(url).includes('/plan')?{plan:'free',used:0,limit:null,resetsAt:Date.UTC(2026,10,1)}:{enabled:false}));
-  for(const limit of [null,1000]) {
-    const summary=module.planSummary({plan:'beta',beta:true,used:12,limit,betaAllowance:1000,resetsAt:Date.UTC(2026,10,1)});
-    assert.deepEqual(summary,{name:'Beta tester',line:'Unlimited during the beta',detail:'12 research runs this month',badge:null},'the safety cap is not shown');
-  }
+test('beta feedback eligibility survives the free daily access view',async()=>{
+  const plan={plan:'community',beta:true,used:12,limit:50,remaining:38,resetsAt:Date.UTC(2026,9,21,4),timeZone:'America/New_York',limits:{research:{label:'Research requests',used:12,limit:50,remaining:38}},manageable:false};
+  const {document,window}=await mount('beta-feedback.js',async()=>json({}));
+  let seen;
+  window.addEventListener('acres:plan',event=>{seen=event.detail;});
+  globalThis.fetch=async()=>json(plan);
+  const module=await import(`../public/wallet.js?beta-copy=${++copies}`);await tick();
+  assert.equal(seen.beta,true);
+  assert.equal(document.querySelector('#beta-bar').hidden,false);
+  const summary=module.planSummary(plan);
+  assert.equal(summary.name,'Free access');assert.equal(summary.line,'38 of 50 research requests left today');
+  assert.doesNotMatch(document.querySelector('#wallet-content').textContent,/Unlimited|Upgrade|Arosa Pro/);
 });
 
 test('the admin feedback tab lists sessions with person, page, category and summary, and opens the transcript',async()=>{
@@ -132,15 +138,15 @@ test('the outreach tab lists beta testers and offers one beta action on each con
   assert.match(content.querySelector('.crm-beta').textContent,/sam@example\.com/,'the list reloads after a grant');
 });
 
-test('the plan dialog shows a beta tester as unlimited and offers an upgrade only at the safety cap',async()=>{
-  for(const [used,upgrade] of [[3,false],[1000,true]]) {
-    const plan={plan:'beta',beta:true,used,limit:1000,betaAllowance:1000,resetsAt:Date.UTC(2026,10,1),checkoutAvailable:true};
-    const {document}=await mount('wallet.js',async url=>json(String(url).includes('/plan')?plan:{enabled:false}));
-    await tick();
+test('beta testers see the same free allowance and no upgrade at the daily limit',async()=>{
+  for(const used of [3,50]) {
+    const plan={plan:'community',beta:true,used,limit:50,remaining:50-used,resetsAt:Date.UTC(2026,9,21,4),timeZone:'America/New_York',checkoutAvailable:false,limits:{research:{label:'Research requests',used,limit:50,remaining:50-used}}};
+    const {document}=await mount('wallet.js',async()=>json(plan));
     const content=document.querySelector('#wallet-content');
-    assert.match(content.textContent,/Beta testerUnlimited during the beta/);
-    assert.doesNotMatch(content.textContent,/cap|of 1,?000|1,?000 beta/i,"the cap is not shown");
-    assert.equal(Boolean(content.querySelector('.plan-upgrade')),upgrade);
-    assert.equal(document.querySelector('#wallet-balance').hidden,true);
+    assert.match(content.textContent,/Free access/);
+    assert.match(content.textContent,new RegExp(`${50-used} of 50 research requests left today`));
+    assert.doesNotMatch(content.textContent,/Unlimited|Upgrade|Arosa Pro/);
+    assert.equal(content.querySelector('.plan-upgrade'),null);
+    assert.equal(document.querySelector('#wallet-balance').textContent,`${50-used} left`);
   }
 });

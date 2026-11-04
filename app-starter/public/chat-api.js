@@ -30,8 +30,8 @@ export async function chatRequest(path,options={}) {
   throw new Error('Your sign-in could not be verified. Reload Arosa and sign in again.');
  }
  result.requestId ||= result.traceId || response.headers.get('x-request-id');
- // A coded refusal, such as reaching the free research allowance, is a plain answer with nothing to trace.
- if(!response.ok){const error=new Error(publicErrorMessage({status:response.status,message:result.error,userFacing:result.userFacing||(response.status>=400&&response.status<500),code:result.code})+(result.requestId&&!result.code?` Reference: ${result.requestId}`:''));error.status=response.status;error.code=result.code;throw error;}
+ // A coded refusal, such as reaching a daily allowance, is a plain answer with nothing to trace.
+ if(!response.ok){const error=new Error(publicErrorMessage({status:response.status,message:result.error,userFacing:result.userFacing||(response.status>=400&&response.status<500),code:result.code})+(result.requestId&&!result.code?` Reference: ${result.requestId}`:''));error.status=response.status;error.code=result.code;error.resetsAt=result.resetsAt;error.kind=result.kind;error.limit=result.limit;throw error;}
  return result;
 }
 export const postChat=(path,body)=>chatRequest(path,{method:'POST',body:JSON.stringify(body)});

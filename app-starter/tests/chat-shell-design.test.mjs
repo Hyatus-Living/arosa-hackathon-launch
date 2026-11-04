@@ -138,7 +138,7 @@ test('the welcome example is an action in place, and the plan usage is a badge b
   const {document} = parseHTML(html);
   assert.doesNotMatch(document.querySelector('.example-link').textContent, /↗/);
   const wallet = document.querySelector('#wallet-button');
-  assert.equal(wallet.querySelector('.rail-label').textContent, 'Plan');
+  assert.equal(wallet.querySelector('.rail-label').textContent, 'Daily usage');
   assert.ok(wallet.querySelector('.rail-badge#wallet-balance'));
   const css = readFileSync(new URL('../public/styles.css', import.meta.url), 'utf8');
   assert.match(css.slice(css.indexOf(':root {'), css.indexOf('html.dark {')), /accent-color: var\(--ink\)/);

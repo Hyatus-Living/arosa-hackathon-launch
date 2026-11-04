@@ -18,6 +18,7 @@
 // /__drop-streams/:id ends the open event streams so browsers reconnect, GET /__notes lists the
 // messages sent to the conversation and GET /__stream-connects the cursor of every stream connect.
 import express from 'express';
+import {DAILY_LIMITS,dayWindow} from '../../../acres-research/plans.mjs';
 import {readFileSync} from 'node:fs';
 import {randomUUID} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
@@ -220,7 +221,11 @@ function seed() {
   TEAMS.set('team_fx', {id: 'team_fx', name: 'Acquisitions', owner: ME, created: Date.UTC(2026, 8, 1),
     members: [{...ME, email: 'fixture@witharosa.ai', role: 'owner', addedAt: Date.UTC(2026, 8, 1)}, {...TEAMMATE, email: 'dana@example.com', role: 'member', addedAt: Date.UTC(2026, 8, 2)}]});
 }
-const nextMonth = () => { const d = new Date(); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1); };
+const dailyPlan = (used = 1) => {
+  const labels={research:'Research requests',illustrations:'AI illustrations',selections:'Photo selections',renders:'3D renders'};
+  const limits=Object.fromEntries(Object.entries(DAILY_LIMITS).map(([kind,limit])=>[kind,{label:labels[kind],limit,used:kind==='research'?used:0,remaining:kind==='research'?Math.max(0,limit-used):limit}]));
+  return {plan:'community',beta:false,used,limit:limits.research.limit,remaining:limits.research.remaining,period:'day',timeZone:'America/New_York',resetsAt:dayWindow().end,limits,subscription:null,manageable:false,checkoutAvailable:false};
+};
 
 app.get('/api/session', (_req, res) => res.json({namespace: 'fixture', email: 'fixture@witharosa.ai', isAdmin: process.env.ADMIN === '1', architectureEnabled: process.env.ARCHITECTURE !== 'off'}));
 // Everyone the fixture knows: the teams' members and the people conversations are shared with.
@@ -287,7 +292,7 @@ function ownConversation(req, res) {
   return conversation;
 }
 const ROLES = ['viewer', 'participant'];
-app.get('/api/plan', (_req, res) => res.json({plan: 'free', used: 1, limit: 3, resetsAt: nextMonth(), manageable: false, checkoutAvailable: false, prices: {}}));
+app.get('/api/plan', (_req, res) => res.json(dailyPlan()));
 app.get('/api/wallet', (_req, res) => res.json({enabled: false, checkoutAvailable: false, currency: 'USD', entries: []}));
 app.get('/api/conversations', (_req, res) => res.json({conversations: [...conversations.values()].sort((a, b) => b.updated - a.updated).map(({messages, runs, ...c}) => ({...c, site: projects.has(c.projectId) ? {id: c.projectId, title: projects.get(c.projectId).state.title, ...(projects.get(c.projectId).state.workflow==='modeling'?{workflow:'modeling'}:{})} : null}))}));
 app.get('/api/conversations/:id/members', (req, res) => { const c = ownConversation(req, res); if (c) res.json({members: c.members}); });
