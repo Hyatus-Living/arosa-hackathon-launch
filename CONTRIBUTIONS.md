@@ -8,6 +8,20 @@ Michael Ort identifies October 29, 2026 as the start of the current startup buil
 
 The application includes property research, independent Modeling and Underwriting, editable plans, IFC and scan tools, Pascal integration, a Blender worker, interactive walkthroughs, SAM selections, Muse Image illustrations, an MCP service and the public website.
 
+## Demonstrated hackathon additions
+
+The earlier Acres prototype supplied the address and property-data experience, zoning tools, financial Underwriting, plan editing and the rendering foundation. Those are context for the demonstration, not a claim that all source was first written during this event.
+
+| Demonstrated work | Added during the event |
+|---|---|
+| Site research and housing concepts | Independent Meta-powered Modeling research, selection-guided SAM/Muse Image housing illustrations and illustration provenance were added October 27. |
+| Independent workflows | November 4 work separated and verified Meta routing across general research, Modeling and Underwriting, and completed durable listing/CRM review, reconnect behavior and usage attribution. |
+| Editable plan and handoff | November 4 work preserved draft dimensions and source identity, corrected plan provenance, and matched finished browser, IFC, Pascal and Blender artifacts to a saved revision. |
+| Walkthrough presentation | November 4 work improved room surfaces, roofs, facades, lighting and controls while preserving the saved floor plan. |
+| Muse Wonder Full edit | A November 4 test used Muse-authored material and lighting code on a separate imported room. The host ran the script after direct model execution failed; original meshes and placements were verified unchanged. This is a bounded demonstration, not autonomous desktop control. |
+
+The Astoria study uses an explicitly assumed second-floor plan. Its supporting source review and measurements do not establish a surveyed design or development entitlement. The import fixture and reference photograph are separate examples, identified as such in the film.
+
 ## Source publication record
 
 The initial commit in this repository publishes the complete tracked source from [Hyatus-Living/arosa at adaa00b935222aa7686d6e7b78a1715cfc5b855d](https://github.com/Hyatus-Living/arosa/tree/adaa00b935222aa7686d6e7b78a1715cfc5b855d), with launch naming, contributor setup and submission documentation updated here. The upstream repository and its history remain available.
