@@ -1,6 +1,8 @@
 # Arosa Hackathon Launch
 
-Help more people explore how to create homes. Arosa connects source-backed property research with editable architectural plans, building models and interactive walkthroughs. Homeowners, small builders, architects and housing advocates can investigate an addition, an infill project or an accessory dwelling before committing to the next professional study.
+Help New York build more housing. Arosa helps homeowners, small builders and developers understand what a New York lot could become, connecting property and zoning research with building options, independent Underwriting, editable plans and interactive walkthroughs. The goal is to make housing opportunities clearer in a city facing a housing affordability crisis, before professional design and approvals.
+
+Explore the product at [witharosa.ai](https://witharosa.ai/) or [open Modeling](https://app.witharosa.ai/modeling). [Watch the 2-minute demo](https://videos.gptguest.com/s/28ndsvg8c3wf1rm). The demonstration follows an Astoria question: could one more home fit while keeping the existing building? Sources and assumptions remain visible, and conceptual illustrations stay separate from measured geometry.
 
 This repository contains the full Arosa application source: the website, web application and API, research service, independent Modeling and Underwriting workflows, planning tools, Pascal integration, Blender worker, MCP service, tests and deployment recipes. This is the public launch repository for the Meta Global AI Developer Hackathon. Its Git history begins with the complete application snapshot published here; source provenance and project attribution are recorded in [CONTRIBUTIONS.md](CONTRIBUTIONS.md).
 
