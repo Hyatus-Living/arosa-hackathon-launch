@@ -170,9 +170,11 @@ function groupLevels(storeys) {
 import {unitThreshold485x} from './tax-485x.mjs';
 
 // Maximum dwelling units from the residential floor area permitted on the lot: no factor in the special density areas
-// (Manhattan Core, Special Downtown Brooklyn District), 680 elsewhere, three-quarters rounds up.
-export function dwellingUnits({residentialFloorAreaSqft, specialDensityArea, rules}) {
+// (Manhattan Core, Special Downtown Brooklyn District) or for qualifying senior housing;
+// 680 otherwise, three-quarters rounds up. Senior status applies to all modeled residential floor area.
+export function dwellingUnits({residentialFloorAreaSqft, specialDensityArea, qualifyingSeniorHousing = false, rules}) {
   const density = rules.bulk.density;
+  if (qualifyingSeniorHousing) return {maxUnits: null, dwellingUnitFactor: null, sections: density.citations, note: 'No dwelling unit factor applies to qualifying senior housing (ZR 23-52). This assumes all modeled residential floor area qualifies; mixed residential uses require separate floor-area allocation. Other use and building-code requirements still apply.'};
   if (specialDensityArea) return {maxUnits: null, dwellingUnitFactor: null, sections: density.citations, note: 'No dwelling unit factor applies in the special density areas (Manhattan Core and the Special Downtown Brooklyn District); unit count is set by floor area, the building code and the market.'};
   const quotient = residentialFloorAreaSqft / density.dwellingUnitFactor;
   const units = Math.floor(quotient) + (quotient - Math.floor(quotient) >= density.roundUpFraction ? 1 : 0);
@@ -368,7 +370,7 @@ function splitEnvelope({districtPortions, ...args}) {
   const base = tables[0];
   const unitsOf = t => t.density.maxUnits;
   const units = tables.every(t => Number.isFinite(unitsOf(t))) ? tables.reduce((sum, t, i) => sum + dwellingUnits({residentialFloorAreaSqft: t.floorArea.maxFar * lotArea * shares[i], specialDensityArea: false, rules}).maxUnits, 0) : null;
-  const density = {...base.density, maxUnits: units, sections: [...base.density.sections, 'ZR 77-25'], note: `The sum of each portion's dwelling units (ZR 77-25): ${districtPortions.map((p, i) => `${p.district.code} ${round(shares[i] * 100)}%`).join(', ')}.`};
+  const density = {...base.density, maxUnits: units, sections: [...base.density.sections, 'ZR 77-25'], note: units === null ? base.density.note : `The sum of each portion's dwelling units (ZR 77-25): ${districtPortions.map((p, i) => `${p.district.code} ${round(shares[i] * 100)}%`).join(', ')}.`};
   const parkingResult = parking({communityDistrict: args.communityDistrict, dwellingUnits: units, districtCode: primary.residentialEquivalent ?? primary.code, lotAreaSqft: lotArea, transitZone: args.transitZone, transitZoneSource: args.transitZoneSource, rules});
   const checks = [...new Set([
     `Split zoning lot: ${districtPortions.map((p, i) => `${p.district.code} on ${round(shares[i] * 100)}% (FAR ${tables[i].floorArea.maxFar})`).join(', ')} by the city's zoning map. The floor area ratio is the area-weighted ${adjustedFar} and may be placed anywhere on the lot (ZR 77-22); each portion keeps its own district's yards, heights and setbacks (ZR 77-27, 77-28); dwelling units are summed by portion (ZR 77-25) and residential parking weighted by area (ZR 77-321). The planning engine draws the mapped boundary; a lot that existed on December 15, 1961 may extend one district up to 25 ft across it (ZR 77-211).`,
@@ -960,7 +962,7 @@ export function computeEnvelope({rules, district, specialDistricts = [], lot, fr
   const specialDensityArea = bulk.parking.manhattanCore.communityDistricts.includes(communityDistrict === null ? '' : String(communityDistrict).padStart(3, '0')) || special.includes('DB');
   const perLot = regime === 'residential' && !affordable ? equivalent?.lowDensity?.dwellingUnitsPerLot : null;
   const density = perLot ? {maxUnits: perLot, sections: ['ZR 22-122', 'ZR 23-51'], note: `${perLot === 1 ? 'Single-family' : 'One- or two-family'} residences only outside qualifying residential sites (ZR 22-122); the dwelling unit factor does not apply to them (ZR 23-51).`}
-    : resolvedUse === 'residential' ? dwellingUnits({residentialFloorAreaSqft: maxFloorArea, specialDensityArea, rules}) : {maxUnits: null, sections: bulk.density.citations, note: 'Not a residential envelope; request use "residential" for dwelling units.'};
+    : resolvedUse === 'residential' ? dwellingUnits({residentialFloorAreaSqft: maxFloorArea, specialDensityArea, qualifyingSeniorHousing, rules}) : {maxUnits: null, sections: bulk.density.citations, note: 'Not a residential envelope; request use "residential" for dwelling units.'};
   const retailFloorArea = storeys.filter(s => s.use === 'retail').reduce((sum, s) => sum + s.areaSqft, 0);
   const parkingResult = parking({communityDistrict, dwellingUnits: density.maxUnits, nonResidentialFloorAreaSqft: nonResidentialFloorArea, retailFloorAreaSqft: retailFloorArea, districtCode: district.residentialEquivalent ?? district.code, lotAreaSqft: lotArea, transitZone, transitZoneSource, rules});
   cite(density.sections); cite(parkingResult.sections);

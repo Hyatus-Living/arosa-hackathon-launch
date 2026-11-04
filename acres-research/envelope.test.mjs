@@ -340,6 +340,42 @@ test('residential towers in an R10 equivalent and the density and parking helper
   assert.equal(parking({communityDistrict: null, rules}).required, null);
 });
 
+test('qualifying senior housing has no dwelling unit factor, preserving ordinary rounding and use restrictions', () => {
+  assert.equal(dwellingUnits({residentialFloorAreaSqft: 68509, rules}).maxUnits, 100);
+  assert.equal(dwellingUnits({residentialFloorAreaSqft: 68510, rules}).maxUnits, 101);
+  const seniorUnits = dwellingUnits({residentialFloorAreaSqft: 68510, qualifyingSeniorHousing: true, rules});
+  assert.equal(seniorUnits.maxUnits, null);
+  assert.equal(seniorUnits.dwellingUnitFactor, null);
+  assert.match(seniorUnits.note, /all modeled residential floor area qualifies/);
+  assert.match(seniorUnits.note, /mixed residential uses require separate floor-area allocation/);
+  const base = {rules, district: describeDistrict('R6A'), lot: rect(100, 100), frontages: [{side: 'front', widthFeet: 60}], use: 'residential'};
+  const ordinary = computeEnvelope(base), senior = computeEnvelope({...base, qualifyingSeniorHousing: true});
+  assert.equal(ordinary.density.maxUnits, 44);
+  assert.equal(ordinary.density.dwellingUnitFactor, 680);
+  assert.equal(senior.density.maxUnits, null);
+  assert.equal(senior.density.dwellingUnitFactor, null);
+  assert.match(senior.density.note, /qualifying senior housing \(ZR 23-52\)/);
+  assert.deepEqual(senior.storeys, ordinary.storeys);
+  assert.equal(computeEnvelope({...base, communityDistrict: '101'}).density.maxUnits, null);
+  assert.equal(computeEnvelope({...base, district: describeDistrict('R3A'), qualifyingSeniorHousing: true}).density.maxUnits, 2);
+});
+
+test('split lots preserve senior and special-area exemptions while rounding ordinary units per district', () => {
+  const base = {rules, lot: rect(100, 100), frontages: [{side: 'front', widthFeet: 60}], use: 'residential', districtPortions: [
+    {district: describeDistrict('R6A'), sharePercent: 60, parts: [{exterior: rect(60, 100), holes: []}]},
+    {district: describeDistrict('R7A'), sharePercent: 40, parts: [{exterior: [[60, 0], [100, 0], [100, 100], [60, 100]], holes: []}]},
+  ]};
+  const ordinary = computeEnvelope(base);
+  assert.equal(ordinary.density.maxUnits, 49, '18,000/680 rounds to 26 and 16,000/680 rounds to 23 independently');
+  for (const exemption of [{qualifyingSeniorHousing: true}, {communityDistrict: '101'}]) {
+    const exempt = computeEnvelope({...base, ...exemption});
+    assert.equal(exempt.density.maxUnits, null);
+    assert.equal(exempt.density.dwellingUnitFactor, null);
+    assert.match(exempt.density.note, /No dwelling unit factor applies/);
+    assert.deepEqual(exempt.storeys, ordinary.storeys);
+  }
+});
+
 test('qualifying affordable FARs and the R8 wide-street row (ZR 23-22)', () => {
   const narrow = computeEnvelope({rules, district: describeDistrict('R8'), lot: rect(25, 100), frontages: [{side: 'front', widthFeet: 50}]});
   assert.equal(narrow.floorArea.maxFloorAreaSqft, 15050);

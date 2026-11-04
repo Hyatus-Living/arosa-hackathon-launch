@@ -156,6 +156,8 @@ test('envelopeSummary, ZFA vs GFA sensitivity band, and auto-recorded sourceId r
   assert.equal(result.sourceId, 1);
   assert.equal(recorded.length, 1);
   assert.match(recorded[0].text, /ZR 91-21/);
+  assert.equal(JSON.parse(recorded[0].text).rulesVersion, rules.version);
+  assert.equal(JSON.parse(recorded[0].text).caveat, rules.caveat);
   assert.equal(recorded[0].url, 'https://zr.planning.nyc.gov/article-ix/chapter-1');
   assert.ok(result.envelopeSummary);
   assert.equal(result.envelopeSummary.modeledStoreys, result.envelope.metrics.storeys);
@@ -166,6 +168,17 @@ test('envelopeSummary, ZFA vs GFA sensitivity band, and auto-recorded sourceId r
   assert.equal(result.capacity.zfaVsGfaGuidance.sensitivityBand.assumedZfaAt95PercentGfaSqft, 1330000);
   assert.equal(result.capacity.zfaVsGfaGuidance.sensitivityBand.assumedZfaAt85PercentGfaSqft, 1190000);
   assert.equal(result.capacity.byUse.commercial.apparentOverageSqft, 410000);
+});
+
+test('district-only evidence retains the curated rules version and caveat', async () => {
+  const recorded = [];
+  const tools = createZoningTools({getProperty: () => null, record: source => {recorded.push(source); return {...source, id: 1};}});
+  const result = await tools.handlers.acres_zoning_envelope({district: 'R6A'});
+  const evidence = JSON.parse(recorded[0].text);
+  assert.equal(evidence.rulesVersion, rules.version);
+  assert.equal(evidence.caveat, rules.caveat);
+  assert.equal(evidence.district, result.district);
+  assert.equal(result.sourceId, 1);
 });
 
 const filedNow = () => new Date('2026-10-16T12:00:00Z');
