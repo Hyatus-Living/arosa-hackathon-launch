@@ -618,7 +618,7 @@ test('agent-first: an agent save queues the job through the service and its fini
   await until(async()=>(await (await api(`/runs/${run.id}`)).json()).status,s=>['completed','failed'].includes(s));
   assert.ok(seen,'the run carries plan access');
   const tools=createArchitectureTools({plans:seen});
-  const saved=await tools.handlers.acres_save_plan({parentRevision:0,name:'Unit 4B',draft:{units:'ft',rooms:[{name:'Living',x:0,y:0,width:15,depth:12},{name:'Bedroom',x:15,y:0,width:10,depth:12}]}});
+  const saved=await tools.handlers.acres_save_plan({parentRevision:0,name:'Unit 4B',draft:{units:'ft',height:10,sources:[{kind:'user-assumption',ref:'Synthetic two-room plan with a 10 foot floor height.'}],rooms:[{name:'Living',x:0,y:0,width:15,depth:12},{name:'Bedroom',x:15,y:0,width:10,depth:12}]}});
   assert.equal(saved.saved,true);
   assert.equal(saved.walkthrough.status,'queued','the save itself queued the finished products, no button press');
   const job=await finished((p,m,b)=>api(p,m,b),conversation.projectId,saved.walkthrough.jobId);

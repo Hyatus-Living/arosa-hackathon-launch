@@ -58,7 +58,7 @@ export function planCandidates(html, pageUrl) {
 // Rectangular rooms to a plan document: every room edge becomes wall, collinear edges merge so a
 // shared wall is drawn once, rooms are the closed faces of the walls, named by the rectangle
 // whose centre lies inside them, and openings sit on the wall nearest their point.
-export function draftPlan({name, units = 'ft', height, wallThickness, rooms, openings = []}) {
+export function draftPlan({name, units = 'ft', height, wallThickness, rooms, openings = [], sources = []}) {
   if (!['ft', 'm'].includes(units)) throw new Error('units must be ft or m.');
   if (!Array.isArray(rooms) || !rooms.length || rooms.length > 200) throw new Error('Give 1 to 200 rooms.');
   const f = units === 'm' ? 1 : 0.3048, r6 = v => Math.round(v * 1e6) / 1e6 + 0;
@@ -98,7 +98,7 @@ export function draftPlan({name, units = 'ft', height, wallThickness, rooms, ope
     emit();
   }
   const plan = {schema: PLAN_SCHEMA, id: null, revision: null, parentRevision: null, name: String(name || 'Floor plan').slice(0, 200), units: 'm',
-    levels: [{id: 'level-1', name: 'Level 1', elevation: 0, height: h}], walls, openings: [], rooms: [], objects: [], sources: []};
+    levels: [{id: 'level-1', name: 'Level 1', elevation: 0, height: h}], walls, openings: [], rooms: [], objects: [], sources: sources.map(source => ({...source}))};
   plan.rooms = detectRooms(plan, {labels: rects.map(r => ({text: r.name, at: [(r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2]}))});
   if (!Array.isArray(openings) || openings.length > 500) throw new Error('Give at most 500 openings.');
   plan.openings = openings.map((o, i) => {
@@ -263,7 +263,8 @@ export const architectureDefinitions = [
   definition('acres_read_plan', 'Read one scheme\'s current floor plan revision (rooms with areas, walls, openings, validation issues, the latest walkthrough job), which schemes have plans, and the project\'s attached drawings. Read before editing; the user may have saved changes in the editor.', {...schemeArg}, []),
   definition('acres_save_plan', 'Save a new floor plan revision to the project; the plan editor on screen updates at once. Give parentRevision (the revision you read, or 0 for the first plan) and exactly one of: draft (rectangular rooms laid out from dimensions you read, x east and y north from the south-west corner; shared edges become one wall; doors and windows sit on the nearest room edge), plan (a full acres.architecture.plan/1 document, for edits to what acres_read_plan returned), fromDrawing (trace an attached SVG drawing, scaled so its walls span the published overall width), or typicalFloor (the typical residential floor of a priced program, laid out as code: a double-loaded corridor, a stair at each end, an elevator core and units sized to the unit mix). With scheme and an empty typicalFloor, the planning engine lays the scheme\'s floors out many ways on the lot\'s storey outlines (the tax lot with its yards and setbacks; double-loaded corridor, central core, L-plan, courtyard), checks each against cited light and air, room size and egress rules, and saves the best: a cellar, a ground floor with the lobby, refuse room and any retail, and a level for each distinct floor plate, with units, rooms, doors and windows holding the scheme\'s floor area and units at its unit mix; the result reports units drawn, the levels, net-to-gross, whether the mix fits and why this plan was chosen. The revision is saved to the scheme\'s plan. Invalid geometry or a newer revision is reported back without saving.',
     {parentRevision: {type: 'integer', minimum: 0, description: 'The revision you read with acres_read_plan, or 0 when there is no plan yet.'}, name: {type: 'string'}, ...schemeArg,
-      draft: {type: 'object', additionalProperties: false, required: ['rooms'], properties: {units: {type: 'string', enum: ['ft', 'm']}, height: point, wallThickness: point,
+      draft: {type: 'object', additionalProperties: false, required: ['units', 'height', 'rooms', 'sources'], properties: {units: {type: 'string', enum: ['ft', 'm']}, height: {type: 'number', exclusiveMinimum: 0, description: 'Floor height in the declared units. Preserve a requested or sourced height; otherwise identify the chosen height as an assumption in sources.'}, wallThickness: point,
+        sources: {type: 'array', minItems: 1, description: 'Evidence or explicit assumptions for the dimensions and layout. Keep hypothetical dimensions separate from surveyed or published geometry.', items: {type: 'object', additionalProperties: false, required: ['kind', 'ref'], properties: {kind: {type: 'string', minLength: 1, description: 'For example drawing, published-source, or user-assumption.'}, ref: {type: 'string', minLength: 1, description: 'Source reference and supported dimensions, or the explicit assumption and its limits.'}}}},
         rooms: {type: 'array', items: {type: 'object', additionalProperties: false, required: ['name', 'x', 'y', 'width', 'depth'], properties: {name: {type: 'string'}, x: point, y: point, width: point, depth: point}}},
         openings: {type: 'array', items: {type: 'object', additionalProperties: false, required: ['kind', 'x', 'y'], properties: {kind: {type: 'string', enum: ['door', 'window']}, x: point, y: point, width: point}}}}},
       plan: {type: 'object', additionalProperties: true},
@@ -398,6 +399,11 @@ export function createArchitectureTools({plans, secrets = {}, meter = null, emit
   async function savePlan({parentRevision, name, draft, plan, fromDrawing, typicalFloor: typical, scheme} = {}) {
     if (!Number.isSafeInteger(parentRevision) || parentRevision < 0) throw new Error('parentRevision is required: the revision you read, or 0 for the first plan.');
     if ([draft, plan, fromDrawing, typical].filter(Boolean).length !== 1) throw new Error('Give exactly one of draft, plan, fromDrawing or typicalFloor.');
+    if (draft) {
+      if (!['ft', 'm'].includes(draft.units)) throw new Error('draft.units is required: ft or m.');
+      if (!Number.isFinite(draft.height) || draft.height <= 0) throw new Error('draft.height is required in the declared units; preserve the requested height or label an assumed height in sources.');
+      if (!Array.isArray(draft.sources) || !draft.sources.length || draft.sources.some(source => !source || typeof source.kind !== 'string' || !source.kind.trim() || typeof source.ref !== 'string' || !source.ref.trim())) throw new Error('draft.sources must identify the evidence or explicit assumptions for the dimensions and layout.');
+    }
     let doc, scale = null, unitsPerFloor = null, layout = null, zoning = null;
     if (typical && typical.width === undefined && typical.depth === undefined && typical.mix === undefined) {
       if (!scheme) throw new Error('Give scheme to lay out a scheme\'s typical floor, or the plate width, depth and mix.');

@@ -24,7 +24,7 @@ const JPEG=Buffer.concat([Buffer.from([0xff,0xd8,0xff,0xe0]),Buffer.alloc(32,2)]
 const jobView=row=>({jobId:row.job_id,status:row.status});
 
 // Two rooms side by side in feet: a 15 x 12 living room and a 10 x 12 bedroom, a door between them.
-const twoRooms={units:'ft',rooms:[{name:'Living',x:0,y:0,width:15,depth:12},{name:'Bedroom',x:15,y:0,width:10,depth:12}],
+const twoRooms={units:'ft',height:10,sources:[{kind:'user-assumption',ref:'Illustrative 15 by 12 and 10 by 12 foot rooms, with a 10 foot floor height; not measured existing conditions.'}],rooms:[{name:'Living',x:0,y:0,width:15,depth:12},{name:'Bedroom',x:15,y:0,width:10,depth:12}],
   openings:[{kind:'door',x:15,y:6},{kind:'window',x:7.5,y:0,width:4}]};
 
 function setup(t,{fetchDrawing}={}){
@@ -40,6 +40,25 @@ function setup(t,{fetchDrawing}={}){
   t.after(()=>{store.close();rmSync(dir,{recursive:true,force:true});});
   return {store,drawings,projectId,plans};
 }
+
+test('agent drafts require explicit height, units and provenance before saving',async t=>{
+  const {plans}=setup(t),tools=createArchitectureTools({plans});
+  for(const field of ['height','units','sources']) {
+    const draft={...twoRooms};delete draft[field];
+    await assert.rejects(tools.handlers.acres_save_plan({parentRevision:0,draft}),new RegExp(`draft\\.${field}`));
+    assert.equal(plans.summary().current,null);
+  }
+  const definition=tools.definitions.find(tool=>tool.name==='acres_save_plan');
+  assert.deepEqual(definition.inputSchema.properties.draft.required,['units','height','rooms','sources']);
+  const saved=await tools.handlers.acres_save_plan({parentRevision:0,draft:twoRooms});
+  assert.equal(saved.saved,true);
+  const plan=plans.summary().current.plan;
+  assert.equal(plan.levels[0].height,3.048);
+  assert.ok(plan.walls.every(wall=>wall.height===3.048));
+  assert.deepEqual(plan.sources,twoRooms.sources);
+  const reopened=tools.handlers.acres_read_plan({});
+  assert.deepEqual(reopened.document.sources.map(({kind,ref})=>({kind,ref})),twoRooms.sources);
+});
 
 test('excludedSource refuses short-term and furnished rental platforms only',()=>{
   for(const url of ['https://www.airbnb.com/rooms/1','https://airbnb.co.uk/x','https://www.vrbo.com/1','https://www.booking.com/h','https://www.furnishedfinder.com/p','https://www.airdna.co/x','https://blueground.com/a','https://nyc.furnishedapartments.com/a','not a url'])

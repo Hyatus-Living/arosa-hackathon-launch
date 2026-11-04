@@ -27,7 +27,7 @@ from shapely.ops import linemerge, unary_union
 import architecture
 import outlines as outline_source
 import zoning
-from exporters import zd1
+from exporters import package, zd1
 
 FOOT = architecture.FOOT
 GRID = 0.01  # ft: room vertices snap to this grid so shared edges coincide exactly
@@ -2458,7 +2458,7 @@ def report(levels, checks, considered, site, program, request):
     names = {'double-loaded corridor': 'Double-loaded corridor', 'single-loaded corridor': 'Single-loaded corridor', 'central core': 'Central core',
              'L-plan': 'L-plan', 'courtyard': 'Courtyard'}
     architect = [
-        'Lot lines come from the city tax map, not a survey.',
+        package.survey_note({'zoning': request.get('outlines')}),
         'Structure, shafts and mechanical, plumbing and fire protection risers are not sized.',
         'Fire ratings of walls, doors and shafts, and stair and elevator details.',
         'Type A units (NYC BC 1107.6.2.2.1) and the Type B details inside each unit.',
