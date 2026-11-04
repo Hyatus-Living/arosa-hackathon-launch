@@ -60,7 +60,7 @@ The service prints its bound address. In another terminal, `curl http://127.0.0.
 | `ACRES_MCP_EVIDENCE_DB` | Optional explicit MCP evidence database override |
 | `ACRES_PLANNING_DIR` | Planning sidecar directory; defaults to this checkout's `planning/` |
 
-Use one research process per state directory. The service drains on SIGTERM and stops promptly on SIGINT. Keep the research listener private: it trusts the gateway's account headers only after verifying the shared service token. Never expose that token or the research listener to browsers. A systemd socket retains control of the listener when socket activation is used.
+Use one research process per state directory. Keep that directory at its configured path after plans are saved: artifact records contain absolute paths. When changing the service account, back up the full directory and update its ownership without relocating it. The service drains on SIGTERM and stops promptly on SIGINT. Keep the research listener private: it trusts the gateway's account headers only after verifying the shared service token. Never expose that token or the research listener to browsers. A systemd socket retains control of the listener when socket activation is used.
 
 ## Configure sign-in and start the web app
 

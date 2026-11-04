@@ -147,7 +147,8 @@ export function identityPrompt(contact) {
 }
 
 export function interactionText(response) {
-  return response.output_text || (response.output || []).filter((s) => s.type === 'message').flatMap((s) => s.content || [])
+  if(typeof response.output_text==='string')return response.output_text;
+  return (response.output || []).filter((s) => s.type === 'message' && (s.phase == null || s.phase === 'final_answer')).flatMap((s) => s.content || [])
     .filter((p) => p.type === 'output_text').map((p) => p.text).join('\n') || (response.steps || []).filter((s) => s.type === 'model_output')
     .flatMap((s) => s.content || []).filter((p) => p.type === 'text').map((p) => p.text).join('\n');
 }
@@ -163,7 +164,9 @@ export function parseVerdict(answer) {
 
 // Cited pages: the answer's url citations, else the https links written in its text.
 export function interactionSources(response, answer) {
-  const urls = [...(response?.steps || []), ...(response?.output || [])].flatMap((s) => s.content || []).flatMap((p) => p.annotations || [])
+  const annotations = response?.citations ?? [...(response?.steps || []), ...(response?.output || []).filter(s => s.type === 'message' && (s.phase == null || s.phase === 'final_answer'))]
+    .flatMap((s) => s.content || []).flatMap((p) => p.annotations || []);
+  const urls = annotations
     .filter((a) => a.type === 'url_citation').map((a) => ({url: a.url, title: a.title || null}));
   const found = urls.length ? urls : [...String(answer || '').matchAll(/https:\/\/[^\s)\]"'<>]+/g)].map((m) => ({url: m[0].replace(/[.,;:]+$/, ''), title: null}));
   const seen = new Set();
