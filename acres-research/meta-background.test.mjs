@@ -147,6 +147,19 @@ test('normalization retains native character citations, search evidence and cumu
   assert.equal(metaUsageRecord(response()),null);
 });
 
+test('normalization excludes commentary text and citations while retaining native output positions',()=>{
+  for(const phase of [undefined,null,'final_answer']) {
+    const commentary={type:'message',phase:'commentary',content:[{type:'output_text',text:'I will verify the record.',annotations:[{type:'url_citation',url:'https://city.example/progress',start_index:0,end_index:6}]}]};
+    const answer={type:'message',phase,content:[{type:'output_text',text:'Café 🏠 finding.',annotations:[{type:'url_citation',url:'https://city.example/record',start_index:0,end_index:6}]}]};
+    const native=response('completed',{output:[commentary,answer]});
+    const result=normalizeMetaResponse(native);
+    assert.equal(result.output_text,'Café 🏠 finding.');
+    assert.deepEqual(result.citations,[{...answer.content[0].annotations[0],outputIndex:1,contentIndex:0}]);
+    assert.deepEqual(result.output,native.output,'the native commentary remains available for recovery');
+    assert.equal(normalizeMetaResponse(response('in_progress',{output:[commentary]})).output_text,'');
+  }
+});
+
 test('SSE resumes by stored sequence, ignores heartbeat counters and skips replayed events',async()=>{
   let streamUrl;let gets=0;
   const provider=new MetaBackgroundProvider(secrets,{fetch:async()=>{gets++;return json(response('completed'));},streamRequest:async url=>{streamUrl=url;return stream([

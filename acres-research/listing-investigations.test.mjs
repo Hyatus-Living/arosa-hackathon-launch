@@ -737,6 +737,19 @@ test('Meta citations use character offsets without corrupting Unicode or supplie
   assert.equal(report.provider,'meta');assert.equal(report.responseId,'resp_unicode');
 });
 
+test('Meta listing reports exclude progress sources and preserve final Unicode citation offsets',()=>{
+  for(const phase of [undefined,'final_answer']) {
+    const text='Café 🏠 finding.';
+    const response=metaResponse('resp_final',text,{annotations:[{type:'url_citation',url:'https://example.com/record',title:'Final record',start_index:0,end_index:Array.from(text).length}]});
+    response.output[0].phase=phase;
+    response.output.unshift({type:'message',phase:'commentary',content:[{type:'output_text',text:'Checking [a preliminary source](https://example.com/progress).',annotations:[]}]});
+    const report=reportFromMetaResponse(response);
+    assert.equal(report.answer,'Café 🏠 finding.[1]');
+    assert.deepEqual(report.sources.map(source=>source.url),['https://example.com/record']);
+    assert.equal(response.output[0].phase,'commentary','report conversion preserves native recovery evidence');
+  }
+});
+
 test('Meta explicit Markdown links become evidence without treating every search result as cited',()=>{
   const text='Café 🏠: [Official record](https://example.com/a_(record)).';
   const response=metaResponse('resp_links',text);response.output.unshift({type:'web_search_call',results:[{url:'https://example.com/uncited',title:'Search-only result'}]});

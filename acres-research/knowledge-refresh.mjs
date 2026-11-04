@@ -30,6 +30,7 @@ export async function fetchSource(source,previous,fetcher=fetch) {
 }
 // Bumped whenever HTML extraction output changes, so unchanged bytes are extracted again.
 export const HTML_EXTRACTOR='text-v4';
+export const JSON_EXTRACTOR='json-v1';
 const UNIT_BEFORE=/\b(ft|feet|foot|sq|sf|yd|m|cm|mm|km)\.?\s*$/i;
 const CELL_BLOCKS='p,div,li,br,h1,h2,h3,h4,h5,h6,ul,ol,section';
 const cellsOf=row=>[...row.children].filter(cell=>/^t[dh]$/i.test(cell.tagName));
@@ -43,7 +44,15 @@ export function extractText(raw,contentType) {
   if(contentType.includes('pdf')||raw.subarray(0,4).toString()==='%PDF') {
     return extractPdfPages(raw);
   }
-  if(!contentType.includes('html'))throw new Error('Source must be HTML or PDF.');
+  if(/^application\/(?:[\w.+-]+\+)?json(?:\s*;|\s*$)/i.test(contentType)) {
+    const text=raw.toString('utf8').trim();
+    let data;
+    try{data=JSON.parse(text);}catch{throw new Error('Source returned malformed JSON.');}
+    if(data===null||typeof data!=='object')throw new Error('JSON source must contain an object or array.');
+    // Keep the validated source text: reserializing could round large record IDs.
+    return {text,title:null,publishedAt:null,extractor:JSON_EXTRACTOR};
+  }
+  if(!contentType.includes('html'))throw new Error('Source must be HTML, PDF or JSON.');
   const {document}=parseHTML(raw.toString('utf8'));
   const pageTitle=document.querySelector('title')?.textContent.replace(/\s+/g,' ').trim()||'';
   if(/access denied|just a moment|robot challenge/i.test(pageTitle))throw new Error('Source returned a blocking page.');
@@ -95,7 +104,7 @@ export async function refreshKnowledge({store,sources,embedder,classifier,fetche
       try {
         const current=previous.current_version?store.one('SELECT raw_hash,text,metadata,substr(raw,1,4) AS signature FROM versions WHERE id=?',previous.current_version):null;
         const registryHashFor=extractor=>hash(JSON.stringify({source,embeddingSpace:embedder.space,classifier:classifier.name||'test',classificationSample:CLASSIFICATION_SAMPLE_VERSION,extractor}));
-        let extractor=current&&Buffer.from(current.signature).toString()==='%PDF'?PDF_EXTRACTOR:HTML_EXTRACTOR,registryHash=registryHashFor(extractor);
+        let extractor=current&&JSON.parse(current.metadata).extractor===JSON_EXTRACTOR?JSON_EXTRACTOR:current&&Buffer.from(current.signature).toString()==='%PDF'?PDF_EXTRACTOR:HTML_EXTRACTOR,registryHash=registryHashFor(extractor);
         const fetched=await fetchSource(source,current&&JSON.parse(current.metadata).registryHash===registryHash?previous:null,fetcher);
         throwIfCancelled();
         if(fetched.unchanged||(current?.raw_hash===hash(fetched.raw)&&JSON.parse(current.metadata).registryHash===registryHash)) {
@@ -103,7 +112,7 @@ export async function refreshKnowledge({store,sources,embedder,classifier,fetche
           result.unchanged++;result.sources.push({id:source.id,status:'unchanged'});continue;
         }
         const extracted=extractText(fetched.raw,fetched.contentType);
-        extractor=extracted.pdfPages?PDF_EXTRACTOR:HTML_EXTRACTOR;registryHash=registryHashFor(extractor);
+        extractor=extracted.extractor||(extracted.pdfPages?PDF_EXTRACTOR:HTML_EXTRACTOR);registryHash=registryHashFor(extractor);
         if(extracted.text.trim().length<200)throw new Error('Source returned too little usable text.');
         if(current?.text===extracted.text&&JSON.parse(current.metadata).registryHash===registryHash) {
           store.checked(source.id,now,fetched);store.write('UPDATE refresh_requests SET completed=? WHERE source=?',now,source.id);

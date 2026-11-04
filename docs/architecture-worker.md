@@ -58,6 +58,13 @@ The release ID is `blender-<version>+<bonsai tag>+worker-<hash of the worker scr
 changing the worker code produces a new release. The last stdout output is a JSON health
 report; progress goes to stderr.
 
+After updating the worker on every enabled render host, set
+`ACRES_ARCHITECTURE_PIPELINE_VERSION` in the research environment to the new worker
+release ID and restart research through its draining release workflow. Render jobs
+are cached by this value, input and settings; leaving it unchanged reuses earlier
+artifacts even after new worker code is installed. Verify a newly created job names
+the new pipeline version and preserves the saved plan revision.
+
 Disk use: about 1.9 GB per Linux release (Blender 1.1 GB, Bonsai and its wheels 0.8 GB)
 plus 0.54 GB of cached downloads shared by all releases.
 
@@ -237,7 +244,7 @@ The publish phase dresses the imported building before the preview and the GLB (
 It moves or adds no building geometry; the manifest, collision and counts stay those of the IFC.
 
 - Materials by IFC class: exterior wall faces (`Pset_WallCommon.IsExternal`, faces looking out of
-  every room) in facade brick and the rest in plaster, slabs in dark concrete, doors in oak, windows in
+  every room) in facade brick and the rest in plaster, slabs in concrete with light plaster soffits, doors in oak, windows in
   tinted glass, stairs in concrete.
 - Each room (`IfcSpace`) becomes clear, so the dollhouse shows inside it, and gets a floor finish: its
   own floor faces lifted a centimetre, oak in living rooms, bedrooms and halls, tile in baths, concrete
@@ -249,6 +256,7 @@ It moves or adds no building geometry; the manifest, collision and counts stay t
 Finishes and furniture are separate meshes parented to their room, so the browser hides them with
 their storey and highlights them with their room. The preview renders with a physical sky, a sun and
 a ground plane (not exported), 64 samples on the GPU host and 16 on a CPU, denoised.
+The downloadable Blender file retains the finished materials and presentation meshes.
 
 The presentation stills (`render_job.py`) use the same sky, brick with stone floor bands on residential
 storeys, framed reflective glass, and an asphalt roadway between sidewalks along the street front.
