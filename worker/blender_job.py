@@ -282,7 +282,7 @@ def publish_phase():
         # Bonsai hides spatial empties and spaces in the viewport; the exporter skips hidden objects.
         obj.hide_viewport = False
         obj.select_set(True)
-    # Floor finishes and furniture follow, each parented to its room.
+    # Decorative finishes and furniture follow, each parented to its source element.
     for obj in dressed:
         for collection in obj.users_collection:
             collection.objects.unlink(obj)

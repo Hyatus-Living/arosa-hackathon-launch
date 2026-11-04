@@ -138,6 +138,9 @@ test('the agent saves, reads and revises the plan through the same revision guar
   assert.deepEqual(first.rooms.map(r=>[r.name,r.areaSqft]).sort(),[['Bedroom',120],['Living',180]]);
   const read=tools.handlers.acres_read_plan({});
   assert.equal(read.revision,1);assert.equal(read.walls.length,5);assert.equal(read.openings.length,2);
+  const firstIfc=read.artifacts.find(a=>a.kind==='ifc');
+  assert.equal(firstIfc.revision,1);assert.equal(firstIfc.sha256,sha('ISO-10303-21;\n/* r1 */\nEND-ISO-10303-21;\n'));
+  assert.deepEqual(read.artifacts,plans.summary().current.artifacts);
   assert.equal(read.issues.filter(i=>i.severity==='error').length,0);
   const stale=await tools.handlers.acres_save_plan({parentRevision:0,draft:twoRooms});
   assert.deepEqual({saved:stale.saved,conflict:stale.conflict,currentRevision:stale.currentRevision},{saved:false,conflict:true,currentRevision:1});
@@ -147,6 +150,9 @@ test('the agent saves, reads and revises the plan through the same revision guar
   const edited=await tools.handlers.acres_save_plan({parentRevision:2,plan:{...current,rooms:current.rooms.map(r=>r.name==='Bedroom'?{...r,name:'Primary bedroom'}:r)}});
   assert.equal(edited.revision,3);
   assert.ok(edited.rooms.some(r=>r.name==='Primary bedroom'));
+  const currentArtifacts=tools.handlers.acres_read_plan({}).artifacts;
+  assert.ok(currentArtifacts.every(a=>a.revision===3));
+  assert.ok(currentArtifacts.every(a=>a.id!==firstIfc.id),'previous revisions must not appear as current deliverables');
   const broken=await tools.handlers.acres_save_plan({parentRevision:3,plan:{...current,walls:current.walls.slice(1)}});
   assert.equal(broken.saved,false);
   assert.ok(broken.issues.some(i=>i.code==='room-open-boundary'));

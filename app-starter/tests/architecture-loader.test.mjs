@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {BoxGeometry, Group, Mesh, MeshStandardMaterial} from 'three';
+import {BoxGeometry, Group, Mesh, MeshStandardMaterial, PlaneGeometry, Raycaster, Vector3} from 'three';
 import {dollhouseMeshVisible,loadArchitectureModel,setSpaceShellVisible} from '../frontend/architecture-loader.mjs';
 import {selectionIndex} from '../frontend/architecture-model.mjs';
 
@@ -51,5 +51,50 @@ test('unstyled IFC surfaces are readable without changing authored materials or 
   assert.equal(chair.material.visible,true,'walk mode keeps room contents visible');
   setSpaceShellVisible(shell,false);
   assert.equal(shell.material.visible,true,'the room volume is restored for dollhouse selection');
+  model.dispose();
+});
+
+
+test('presentation surfaces inherit source visibility without entering collision geometry',async()=>{
+  const scene=new Group(),wall=new Mesh(new BoxGeometry(.2,3,5),new MeshStandardMaterial());
+  wall.name='wall';wall.position.set(0,1.5,0);
+  const finish=new Mesh(new BoxGeometry(3,3,3),new MeshStandardMaterial());
+  finish.name='arosa-finish-facade-0';finish.position.x=4;wall.add(finish);scene.add(wall);
+  const roof=new Mesh(new BoxGeometry(5,.2,5),new MeshStandardMaterial());roof.name='roof';roof.position.y=3;
+  const roofFinish=new Mesh(new BoxGeometry(5,.01,5),new MeshStandardMaterial());roofFinish.name='arosa-finish-roof-1';roofFinish.position.y=.11;roof.add(roofFinish);scene.add(roof);
+  const index=selectionIndex({objects:[{glbNodeName:'wall',kind:'wall',levelId:'ground'},{glbNodeName:'roof',kind:'slab',levelId:'ground'}],collision:{walls:[{glbNodeName:'wall'}],floors:[{glbNodeName:'roof'}]}});
+  const model=await loadArchitectureModel('https://example.test/model.glb',index,[{id:'ground',elevation:0}],{fetcher:async()=>new Response(new Uint8Array([1])),loader:{parseAsync:async()=>({scene})}});
+  assert.equal(finish.userData.presentationOnly,true);
+  assert.equal(finish.userData.node,'wall');
+  assert.equal(finish.userData.levelId,'ground');
+  assert.equal(wall.userData.presentationOnly,false);
+  assert.equal(dollhouseMeshVisible(roofFinish,index,new Map([['ground',0]]),0),false);
+  assert.equal(dollhouseMeshVisible(finish,index,new Map([['ground',0]]),0),true);
+  const world=model.worlds.get('ground');
+  assert.ok(world.segments.length>0);
+  assert.ok(world.segments.every(([x1,,x2])=>Math.abs(x1)<.11&&Math.abs(x2)<.11),'only the original wall enters movement collision');
+  assert.equal(world.floors.length,roof.geometry.index.count*3,'the decorative roof is excluded from floor triangles');
+  model.dispose();
+});
+
+
+test('rays over adjacent wall finishes retain separate source selection and highlight scope',async()=>{
+  const scene=new Group(),objects=[];
+  for(const [name,x] of [['wall-a',1],['wall-b',3]]){
+    const owner=new Group();owner.name=name;owner.position.set(x,1.5,0);
+    const wall=new Mesh(new BoxGeometry(2,3,.2),new MeshStandardMaterial());
+    const finish=new Mesh(new PlaneGeometry(2,3),new MeshStandardMaterial());
+    finish.name=`arosa-finish-facade-${name}`;finish.position.z=.103;
+    owner.add(wall,finish);scene.add(owner);objects.push({glbNodeName:name,kind:'wall',levelId:'ground'});
+  }
+  const index=selectionIndex({objects,collision:{walls:objects.map(row=>({glbNodeName:row.glbNodeName})),floors:[]}});
+  const model=await loadArchitectureModel('https://example.test/adjacent.glb',index,[{id:'ground',elevation:0}],{fetcher:async()=>new Response(new Uint8Array([1])),loader:{parseAsync:async()=>({scene})}});
+  for(const [owner,x] of [['wall-a',1],['wall-b',3]]){
+    const hit=new Raycaster(new Vector3(x,1.5,2),new Vector3(0,0,-1)).intersectObjects(model.meshes,false)[0];
+    assert.equal(hit.object.userData.presentationOnly,true,'the visible decorative surface receives the ray');
+    assert.equal(hit.object.userData.node,owner,'the ray selects the source wall beneath it');
+    const highlightedFinishes=model.meshes.filter(mesh=>mesh.userData.presentationOnly&&mesh.userData.node===hit.object.userData.node);
+    assert.deepEqual(highlightedFinishes.map(mesh=>mesh.name),[`arosa-finish-facade-${owner}`],'selection does not highlight the adjacent wall');
+  }
   model.dispose();
 });
