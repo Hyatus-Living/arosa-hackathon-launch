@@ -5,6 +5,8 @@ import {randomUUID} from 'node:crypto';
 import {ListingInvestigations,INVESTIGATION_OBJECTIVES,investigationPrompt,recordPlan} from './listing-investigations.mjs';
 import {ListingResearchProvider,ResearchProviderError,RESEARCH_AGENTS,reviewedReport,fetchReviewSources,memoProblems,reviewEvidence} from './listing-investigation-provider.mjs';
 import {DEPTH_POLICY,OBJECTIVE_POLICY,QUESTION_SECTION,REVIEW_PROMPT,CONTRACT_AUDIT_PROMPT,memoContract} from './listing-investigation-prompt.mjs';
+import {MetaListingResearchProvider,reportFromMetaResponse} from './meta-listing-provider.mjs';
+import {normalizeMetaResponse,MetaBackgroundError} from './meta-background.mjs';
 
 // Minimal store over an in-memory database: the same one/query/write surface ChatStore exposes.
 function fakeStore() {
@@ -18,7 +20,7 @@ function fakeStore() {
   };
 }
 
-const secrets = {LISTING_RESEARCH_ENABLED: true, GEMINI_RESEARCH_API_KEY: 'test-key', BILLING_ENABLED: false};
+const secrets = {LISTING_RESEARCH_ENABLED: true, LISTING_RESEARCH_PROVIDER:'gemini', GEMINI_RESEARCH_API_KEY: 'test-key', BILLING_ENABLED: false};
 const providerDown = {create: async () => { throw new Error('provider down'); }};
 
 function investigations(store) {
@@ -708,4 +710,170 @@ test('a provider-less parked job still expires at its deadline after a cancellat
   const after = await statusOf(jobs, 'owner-1', stuck.id, ['failed']);
   assert.match(after.error, /expired without a provider interaction/);
   assert.equal(after.billing, 'pending');
+});
+
+const metaSecrets={LISTING_RESEARCH_ENABLED:true,MODEL_API_KEY:'meta-test-key',META_MODEL:'muse-spark-1.3',BILLING_ENABLED:false};
+const metaContext={listing:{address:'1 Example St'},depth:'standard',objective:'acquisition screening',question:'',publicRecords:{status:'not supplied'}};
+const metaMemo=()=>memo(memoContract(metaContext).sections);
+const metaSource=async({url})=>({url,finalUrl:url,title:'Verified source',text:'A cited finding about the subject lot.'});
+function metaResponse(id,text,{status='completed',input=10,output=2,annotations=[]}={}){
+  return normalizeMetaResponse({id,model:'muse-spark-1.3',status,output:text===null?[]:[{type:'message',content:[{type:'output_text',text,annotations}]}],usage:{input_tokens:input,output_tokens:output,input_tokens_details:{cached_tokens:0},output_tokens_details:{reasoning_tokens:1}}});
+}
+const metaDraft=()=>metaResponse('resp_research','Draft finding.',{input:12,output:4,annotations:[{type:'url_citation',url:'https://example.com/a',title:'Source A',start_index:0,end_index:14}]});
+const metaReview=()=>metaResponse('resp_review',JSON.stringify({answer:metaMemo(),corrections:[]}),{input:8,output:2});
+const metaAudit=()=>metaResponse('resp_audit',JSON.stringify({approved:true,edits:[]}),{input:9,output:3});
+function basicMetaTransport(){
+  const calls={create:[],get:[],cancel:[],events:[]};
+  const responses=[metaDraft(),metaReview(),metaAudit()];
+  return {calls,async create(text,options){calls.create.push({text,options});return responses[calls.create.length-1];},async get(id){calls.get.push(id);return responses.find(response=>response.id===id);},async cancel(id){calls.cancel.push(id);return metaResponse(id,null,{status:'cancelled'});},async *events(id,cursor){calls.events.push({id,cursor});}};
+}
+
+test('Meta citations use character offsets without corrupting Unicode or supplied record references',()=>{
+  const text='Café 🏠 finding. Record [R7].',end=Array.from('Café 🏠 finding.').length;
+  const response=metaResponse('resp_unicode',text,{annotations:[{type:'url_citation',url:'https://example.com/a',title:'Evidence',start_index:0,end_index:end}]});
+  const report=reportFromMetaResponse(response,{recordSources:[{id:7,url:'https://example.com/record',title:'Record'}]});
+  assert.equal(report.answer,'Café 🏠 finding.[1] Record [2].');
+  assert.deepEqual(report.sources.map(source=>source.url),['https://example.com/a','https://example.com/record']);
+  assert.equal(report.provider,'meta');assert.equal(report.responseId,'resp_unicode');
+});
+
+test('Meta explicit Markdown links become evidence without treating every search result as cited',()=>{
+  const text='Café 🏠: [Official record](https://example.com/a_(record)).';
+  const response=metaResponse('resp_links',text);response.output.unshift({type:'web_search_call',results:[{url:'https://example.com/uncited',title:'Search-only result'}]});
+  const report=reportFromMetaResponse(response);
+  assert.equal(report.answer,text.replace(').',')[1].'));assert.deepEqual(report.sources.map(source=>source.url),['https://example.com/a_(record)']);
+  const annotated=metaResponse('resp_link_annotation',text,{annotations:[{type:'url_citation',url:'https://example.com/a_(record)',title:'Official record',start_index:9,end_index:24}]});
+  assert.equal(reportFromMetaResponse(annotated).sources.length,1);
+  assert.equal((reportFromMetaResponse(annotated).answer.match(/\[1\]/g)||[]).length,1,'native annotation and Markdown link do not create overlapping insertions');
+});
+
+test('new listing investigations default to Meta and do not silently use a Gemini key',async t=>{
+  const store=fakeStore(),jobs=new ListingInvestigations({store,secrets:{...secrets,LISTING_RESEARCH_PROVIDER:undefined}});
+  t.after(()=>jobs.close());
+  assert.equal(jobs.policy().enabled,false);assert.equal(jobs.policy().modes.standard.provider,'meta');
+  assert.throws(()=>jobs.create('owner-1',input(),deal),/not configured/);
+  const enabled=new ListingInvestigations({store:fakeStore(),secrets:metaSecrets});t.after(()=>enabled.close());
+  assert.equal(enabled.policy().enabled,true);assert.equal(enabled.policy().modes.max.agent,'muse-spark-1.3');
+});
+
+test('historical jobs without a provider keep Gemini after the new-job default moves to Meta',async t=>{
+  const store=fakeStore(),jobs=new ListingInvestigations({store,secrets:metaSecrets,records:async()=>({status:'not supplied'})});
+  t.after(()=>jobs.close());
+  const gemini=fakeProvider(),meta=fakeProvider();jobs.providers.gemini=gemini;jobs.providers.meta=meta;
+  const old=stuckJob({providerId:'legacy-interaction',status:'in_progress',deadline:Date.now()+60000,billing:'not_started'});insertJob(store,old);
+  jobs.recover();await statusOf(jobs,'owner-1',old.id,['completed']);
+  assert.equal(gemini.calls.get,1);assert.equal(meta.calls.get,0);assert.equal(jobs.get('owner-1',old.id).provider,'gemini');
+});
+
+test('Meta research, review and audit retain provider identity and deduplicate replayed cumulative usage',async t=>{
+  const transport=basicMetaTransport();let researchGets=0;
+  transport.get=async id=>{transport.calls.get.push(id);if(id==='resp_research'&&++researchGets===1)return metaResponse(id,null,{status:'in_progress',input:10,output:0});return [metaDraft(),metaReview(),metaAudit()].find(response=>response.id===id);};
+  transport.create=async(text,options)=>{transport.calls.create.push({text,options});return transport.calls.create.length===1?metaResponse('resp_research',null,{status:'queued',input:0,output:0}):transport.calls.create.length===2?metaReview():metaAudit();};
+  transport.events=async function*(id,cursor){transport.calls.events.push({id,cursor});yield {cursor:'1',event:{type:'response.in_progress',response:metaResponse(id,null,{status:'in_progress',input:10,output:2})}};yield {cursor:'2',event:{type:'response.completed',response:metaDraft()}};};
+  const provider=new MetaListingResearchProvider(metaSecrets,{transport,sourceFetcher:metaSource});
+  const wallet=fakeWallet(),billingMetadata=[];wallet.reserve=async(_owner,key,amount,metadata)=>{wallet.calls.push(['reserve',key,amount]);billingMetadata.push(metadata);};
+  const {jobs}=setup(t,{provider,wallet,secretsOverride:{...metaSecrets,BILLING_RATES:billedSecrets.BILLING_RATES}});
+  const job=jobs.create('owner-1',input(),deal);await statusOf(jobs,'owner-1',job.id,['completed']);
+  const stored=jobs.row(job.id);
+  assert.equal(stored.provider,'meta');assert.equal(stored.model,'muse-spark-1.3');
+  assert.deepEqual(Object.keys(stored.usageRecords).sort(),['meta:resp_audit','meta:resp_research','meta:resp_review']);
+  assert.equal(stored.usage.inputTokens,29);assert.equal(stored.usage.outputTokens,9);assert.equal(stored.usage.hostedSearchCost,'not_reported');
+  assert.deepEqual(transport.calls.create[0].options.tools,[{type:'web_search',search_context_size:'medium'}]);
+  assert.deepEqual(transport.calls.create[1].options.tools,[]);assert.deepEqual(transport.calls.create[2].options.tools,[]);
+  assert.equal(stored.result.review.provider,'meta');assert.equal(stored.result.review.audits[0].interactionId,'resp_audit');
+  assert.deepEqual(Object.keys(stored.providerResponses).sort(),['resp_audit','resp_research','resp_review']);
+  assert.equal(stored.reviewEvidence.webEvidence[0].text,'A cited finding about the subject lot.');
+  assert.deepEqual(wallet.calls.map(call=>call[0]),['reserve','dispatch','settle']);assert.equal(wallet.calls[2][2],rate.amountMicros);
+  assert.equal(billingMetadata[0].provider,'meta');assert.equal(billingMetadata[0].model,'muse-spark-1.3');
+});
+
+test('an ambiguous Meta research POST remains pending and is never automatically resubmitted',async t=>{
+  const transport=basicMetaTransport();transport.create=async()=>{transport.calls.create.push({});throw new MetaBackgroundError(null,{ambiguous:true});};
+  const provider=new MetaListingResearchProvider(metaSecrets,{transport}),wallet=fakeWallet();
+  const {jobs}=setup(t,{provider,wallet,secretsOverride:{...metaSecrets,BILLING_RATES:billedSecrets.BILLING_RATES}});
+  const requested=input(),job=jobs.create('owner-1',requested,deal);await statusOf(jobs,'owner-1',job.id,['needs_attention']);
+  assert.equal(jobs.row(job.id).billing,'pending');assert.equal(jobs.row(job.id).providerId,null);
+  assert.equal(jobs.create('owner-1',requested,deal).id,job.id);assert.throws(()=>jobs.resume('owner-1',job.id),/cannot be reconnected/);
+  jobs.recover();assert.equal(transport.calls.create.length,1);assert.deepEqual(wallet.calls.map(call=>call[0]),['reserve','dispatch','pending']);
+});
+
+test('restart during Meta review retrieves the saved review response without a second dispatch',async t=>{
+  const store=fakeStore(),transport=basicMetaTransport();let resumed=false;
+  transport.create=async(text,options)=>{transport.calls.create.push({text,options});return transport.calls.create.length===1?metaDraft():transport.calls.create.length===2?metaResponse('resp_review',null,{status:'queued',input:0,output:0}):metaAudit();};
+  transport.get=async id=>{transport.calls.get.push(id);return id==='resp_research'?metaDraft():resumed?metaReview():metaResponse('resp_review',null,{status:'in_progress',input:1,output:0});};
+  transport.events=async function*(id,cursor,signal){transport.calls.events.push({id,cursor});await new Promise((_resolve,reject)=>signal.addEventListener('abort',()=>reject(signal.reason),{once:true}));};
+  const provider=new MetaListingResearchProvider(metaSecrets,{transport,sourceFetcher:metaSource});
+  const first=new ListingInvestigations({store,secrets:metaSecrets,provider,records:async()=>({status:'not supplied'})});t.after(()=>first.close());
+  const job=first.create('owner-1',input(),deal);
+  await until(()=>first.row(job.id)?.reviewState?.pending?.id==='resp_review'&&transport.calls.events.length,'persisted review response');
+  await first.close();assert.equal(first.row(job.id).status,'reviewing');resumed=true;
+  const second=new ListingInvestigations({store,secrets:metaSecrets,provider,records:async()=>({status:'not supplied'})});t.after(()=>second.close());second.recover();
+  await statusOf(second,'owner-1',job.id,['completed']);
+  assert.equal(transport.calls.create.length,3,'research, one review, one audit');assert.equal(second.row(job.id).usage.responses,3);
+});
+
+test('Meta saves the last audit corrections and resumes from them after the round limit',async()=>{
+  const transport=basicMetaTransport();let auditCount=0,allowApproval=false;
+  // Use unique replacement text; the other sections keep their independent citations.
+  const answer=metaMemo().replace('A cited finding about the subject lot [W1].','First finding [W1].');
+  transport.create=async(text,options)=>{
+    transport.calls.create.push({text,options});if(transport.calls.create.length===1)return metaResponse('resp_review',JSON.stringify({answer,corrections:[]}));
+    auditCount++;return metaResponse('resp_audit_'+auditCount,JSON.stringify(allowApproval?{approved:true,edits:[]}:{approved:false,edits:[{before:auditCount===1?'First finding [W1].':`Correction ${auditCount-1} [W1].`,after:`Correction ${auditCount} [W1].`,reason:'Retain the corrected wording.'}]}));
+  };
+  const provider=new MetaListingResearchProvider(metaSecrets,{transport,sourceFetcher:metaSource});let saved;
+  const callbacks={checkpoint:state=>{saved=structuredClone(state);}};
+  await assert.rejects(()=>provider.review(reportFromMetaResponse(metaDraft()),metaContext,undefined,callbacks),/unresolved claims/);
+  assert.match(saved.reviewed.answer,new RegExp(`Correction ${DEPTH_POLICY.standard.auditRounds}`));assert.equal(saved.pending,null);
+  allowApproval=true;const result=await provider.finishReview(saved,undefined,callbacks);
+  assert.match(result.answer,new RegExp(`Correction ${DEPTH_POLICY.standard.auditRounds}`));assert.equal(saved.stage,'done');
+  const calls=transport.calls.create.length;assert.deepEqual(await provider.finishReview(saved),result);assert.equal(transport.calls.create.length,calls,'a completed checkpoint publishes without another model call');
+});
+
+test('ambiguous Meta review dispatch is checkpointed and cannot be replayed as a fresh POST',async()=>{
+  const transport=basicMetaTransport();transport.create=async()=>{transport.calls.create.push({});throw new MetaBackgroundError(null,{ambiguous:true});};
+  const provider=new MetaListingResearchProvider(metaSecrets,{transport,sourceFetcher:metaSource});let saved;
+  const callbacks={checkpoint:state=>{saved=structuredClone(state);}};
+  await assert.rejects(()=>provider.review(reportFromMetaResponse(metaDraft()),metaContext,undefined,callbacks),error=>error.ambiguous);
+  assert.equal(saved.pending.dispatching,true);assert.equal(saved.pending.id,null);
+  await assert.rejects(()=>provider.finishReview(saved,undefined,callbacks),/needs reconciliation/);assert.equal(transport.calls.create.length,1);
+});
+
+test('cancelling a Meta review cancels its saved response and retains usage before closing the job',async t=>{
+  const transport=basicMetaTransport();
+  transport.create=async(text,options)=>{transport.calls.create.push({text,options});return transport.calls.create.length===1?metaDraft():metaResponse('resp_review',null,{status:'queued',input:0,output:0});};
+  transport.get=async id=>id==='resp_research'?metaDraft():metaResponse(id,null,{status:'in_progress',input:5,output:1});
+  transport.events=async function*(id,cursor,signal){transport.calls.events.push({id,cursor});await new Promise((_resolve,reject)=>signal.addEventListener('abort',()=>reject(signal.reason),{once:true}));};
+  transport.cancel=async id=>{transport.calls.cancel.push(id);return metaResponse(id,null,{status:'cancelled',input:6,output:1});};
+  const provider=new MetaListingResearchProvider(metaSecrets,{transport,sourceFetcher:metaSource});const {jobs}=setup(t,{provider,secretsOverride:metaSecrets});
+  const job=jobs.create('owner-1',input(),deal);await until(()=>transport.calls.events.length,'review stream');await jobs.cancel('owner-1',job.id);
+  await statusOf(jobs,'owner-1',job.id,['cancelled']);assert.deepEqual(transport.calls.cancel,['resp_review']);
+  assert.equal(jobs.row(job.id).usageRecords['meta:resp_review'].usage.inputTokens,6);
+});
+
+test('Meta incomplete research is retained without a memo or an invented zero settlement',async t=>{
+  const transport=basicMetaTransport();transport.get=async()=>metaResponse('resp_research',null,{status:'incomplete',input:12,output:3});
+  const provider=new MetaListingResearchProvider(metaSecrets,{transport}),wallet=fakeWallet();const {jobs}=setup(t,{provider,wallet,secretsOverride:{...metaSecrets,BILLING_RATES:billedSecrets.BILLING_RATES}});
+  const job=jobs.create('owner-1',input(),deal);await statusOf(jobs,'owner-1',job.id,['failed']);
+  assert.equal(jobs.row(job.id).result,null);assert.equal(jobs.row(job.id).billing,'pending');assert.equal(jobs.row(job.id).raw.status,'incomplete');
+  assert.deepEqual(wallet.calls.map(call=>call[0]),['reserve','dispatch','pending']);
+});
+
+test('max-depth Meta review fits its request limit and retains the full fetched source evidence',async()=>{
+  const sources=Array.from({length:48},(_,i)=>({id:i+1,title:'Source '+i,url:`https://example.com/source-${i}`}));
+  const sourceText='漢'.repeat(24000),transport=basicMetaTransport();let request,saved;
+  transport.create=async(text,options)=>{request={text,options};throw new Error('Captured request before dispatch.');};
+  const provider=new MetaListingResearchProvider(metaSecrets,{transport,sourceFetcher:async({url})=>({url,finalUrl:url,title:'Source',text:sourceText})});
+  await assert.rejects(()=>provider.review({answer:'Draft [1]',sources},{...metaContext,depth:'max'},undefined,{checkpoint:state=>{saved=structuredClone(state);}}),/Captured request/);
+  assert.ok(Buffer.byteLength(JSON.stringify(request))<1024*1024);
+  assert.equal(saved.sourceEvidence.length,48);assert.equal(saved.sourceEvidence[47].text,sourceText);
+  assert.ok(saved.evidence.webEvidence.every(source=>source.modelExcerpted&&source.text.length<sourceText.length));
+  assert.ok(saved.metadata.sourceChecks.every(source=>source.modelExcerpted));
+});
+
+test('missing final Meta usage stays unknown instead of reusing a partial snapshot or reporting zero',async t=>{
+  const transport=basicMetaTransport();transport.get=async()=>({...metaDraft(),usage:null,usageRecord:null});
+  const provider=new MetaListingResearchProvider(metaSecrets,{transport,sourceFetcher:metaSource});const {jobs}=setup(t,{provider,secretsOverride:metaSecrets});
+  const job=jobs.create('owner-1',input(),deal);await statusOf(jobs,'owner-1',job.id,['completed']);
+  const saved=jobs.row(job.id);assert.equal(saved.usageRecords['meta:resp_research'].usage,null);
+  assert.equal(saved.usage.inputTokens,null);assert.equal(saved.usage.outputTokens,null);assert.equal(saved.usage.complete,false);
 });

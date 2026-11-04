@@ -2,6 +2,7 @@ import {EventEmitter} from 'node:events';
 import {createHash,randomUUID} from 'node:crypto';
 import {MASTER_PROMPT,PROMPT_VERSION,DEPTH_POLICY,OBJECTIVE_POLICY,memoContract,modelContract} from './listing-investigation-prompt.mjs';
 import {ListingResearchProvider,RESEARCH_AGENTS,reportFromInteraction,providerTerminal} from './listing-investigation-provider.mjs';
+import {MetaListingResearchProvider} from './meta-listing-provider.mjs';
 import {fetchNycPublicRecords} from './nycdb.mjs';
 import {Wallet,FirestoreWalletRepository,validateRate} from './wallet.mjs';
 
@@ -50,24 +51,37 @@ export async function collectListingRecords(snapshot,{rowLimit},{fetcher=fetch}=
 }
 
 export class ListingInvestigations extends EventEmitter {
-  constructor({store,secrets,provider=new ListingResearchProvider(secrets.GEMINI_RESEARCH_API_KEY),wallet=null,records=collectListingRecords}){
+  constructor({store,secrets,provider,wallet=null,records=collectListingRecords}){
     super();this.store=store;this.secrets=secrets;this.provider=provider;this.wallet=wallet||(secrets.BILLING_ENABLED===true?new Wallet(new FirestoreWalletRepository()):null);this.records=records;this.active=new Map();this.deadlineTimers=new Map();this.closed=false;
+    this.newProvider=secrets.LISTING_RESEARCH_PROVIDER??'meta';
+    if(!['meta','gemini'].includes(this.newProvider))throw new Error('LISTING_RESEARCH_PROVIDER must be meta or gemini.');
+    this.providers={meta:new MetaListingResearchProvider(secrets),gemini:new ListingResearchProvider(secrets.GEMINI_RESEARCH_API_KEY)};
     store.db.exec(`CREATE TABLE IF NOT EXISTS listing_investigations(id TEXT PRIMARY KEY,owner TEXT NOT NULL,listing TEXT NOT NULL,status TEXT NOT NULL,created INTEGER NOT NULL,updated INTEGER NOT NULL,data TEXT NOT NULL);
       CREATE INDEX IF NOT EXISTS listing_investigations_owner ON listing_investigations(owner,listing,created);
       CREATE TABLE IF NOT EXISTS listing_investigation_events(job TEXT NOT NULL REFERENCES listing_investigations(id),seq INTEGER NOT NULL,data TEXT NOT NULL,PRIMARY KEY(job,seq));`);
   }
+  providerFor(job){return this.provider||this.providers[job.provider??'gemini'];}
+  billingProvider(job){return {provider:job.provider==='meta'?'meta':'gemini_deep_research',model:job.model||RESEARCH_AGENTS[job.depth]};}
+  usagePatch(job,response){
+    const retained=response?.provider==='meta'&&providerTerminal(response.status)?{providerResponses:{...job.providerResponses,[response.id]:response}}:{};
+    const record=response?.usageRecord||(response?.provider==='meta'&&providerTerminal(response.status)?{id:`meta:${response.id}`,provider:'meta',responseId:response.id,model:response.model,semantics:'cumulative_per_response',usage:null}:null);
+    if(!record)return retained;
+    const usageRecords={...job.usageRecords,[record.id]:{...record,final:providerTerminal(response.status)}},records=Object.values(usageRecords);
+    const total=key=>records.every(record=>Number.isFinite(record.usage?.[key]))?records.reduce((sum,record)=>sum+record.usage[key],0):null;
+    return {...retained,usageRecords,usage:{provider:'meta',semantics:'sum_of_unique_responses',responses:records.length,complete:records.every(record=>record.final&&record.usage),inputTokens:total('inputTokens'),cachedInputTokens:total('cachedInputTokens'),outputTokens:total('outputTokens'),reasoningOutputTokens:total('reasoningOutputTokens'),hostedSearchCost:'not_reported'}};
+  }
   policy(){
-    const enabled=this.secrets.LISTING_RESEARCH_ENABLED===true&&Boolean(this.secrets.GEMINI_RESEARCH_API_KEY),modes={};
+    const enabled=this.secrets.LISTING_RESEARCH_ENABLED===true&&Boolean(this.newProvider==='meta'?this.secrets.MODEL_API_KEY:this.secrets.GEMINI_RESEARCH_API_KEY),modes={};
     for(const depth of Object.keys(RESEARCH_AGENTS)){
       const rate=this.secrets.BILLING_RATES?.[`listing_research_${depth}`];let configured=!this.wallet;
       if(this.wallet&&rate){try{validateRate(rate);configured=rate.mode==='estimated_call';}catch{configured=false;}}
       const budget=DEPTH_POLICY[depth];
-      modes[depth]={enabled:enabled&&configured,agent:RESEARCH_AGENTS[depth],deadlineMinutes:budget.deadlineMs/60000,reviewSourceCap:budget.reviewSourceCap,maxWords:budget.maxWords,chargeMicros:this.wallet&&configured?rate.amountMicros:null,reserveMicros:this.wallet&&configured?rate.reserveMicros:null};
+      modes[depth]={enabled:enabled&&configured,provider:this.newProvider,agent:this.newProvider==='meta'?this.providers.meta.model:RESEARCH_AGENTS[depth],deadlineMinutes:budget.deadlineMs/60000,reviewSourceCap:budget.reviewSourceCap,maxWords:budget.maxWords,chargeMicros:this.wallet&&configured?rate.amountMicros:null,reserveMicros:this.wallet&&configured?rate.reserveMicros:null};
     }
     return {enabled,defaultDepth:'standard',modes,objectives:INVESTIGATION_OBJECTIVES,billed:Boolean(this.wallet)};
   }
   row(id){const row=this.store.one('SELECT data FROM listing_investigations WHERE id=?',id);return row?JSON.parse(row.data):null;}
-  public(job){if(!job)return null;const {id,listingId,projectId,snapshot,depth,objective,question,status,created,updated,deadline,result,error,usage,promptVersion,billing}=job;return {id,listingId,projectId,address:snapshot.address||`BBL ${snapshot.bbl}`,bbl:snapshot.bbl||null,depth,objective,question,status,created,updated,deadline,result,error,usage,promptVersion,billing,eventSeq:this.latestEventSeq(id),canCancel:status==='needs_attention'&&Boolean(job.providerId)};}
+  public(job){if(!job)return null;const {id,listingId,projectId,snapshot,depth,objective,question,status,created,updated,deadline,result,error,usage,promptVersion,billing}=job;return {id,listingId,projectId,address:snapshot.address||`BBL ${snapshot.bbl}`,bbl:snapshot.bbl||null,depth,objective,question,status,created,updated,deadline,result,error,usage,promptVersion,billing,provider:job.provider??'gemini',model:job.model||RESEARCH_AGENTS[depth],eventSeq:this.latestEventSeq(id),canCancel:status==='needs_attention'&&Boolean(job.providerId)};}
   latestEventSeq(id){return this.store.one('SELECT COALESCE(MAX(seq),0) AS seq FROM listing_investigation_events WHERE job=?',id).seq;}
   get(owner,id){const row=this.row(id);return row?.owner===owner?this.public(row):null;}
   list(owner,listingId){return this.store.query('SELECT data FROM listing_investigations WHERE owner=? AND listing=? ORDER BY created DESC LIMIT 20',owner,listingId).map(r=>this.public(JSON.parse(r.data)));}
@@ -96,7 +110,7 @@ export class ListingInvestigations extends EventEmitter {
     const active=this.store.query("SELECT data FROM listing_investigations WHERE owner=? AND status NOT IN ('completed','failed','cancelled')",owner).map(r=>JSON.parse(r.data));
     if(active.length)throw fail('An investigation is already active or needs attention. Open it before starting another.',409);
     if(this.store.one('SELECT COUNT(*) AS count FROM listing_investigations WHERE owner=? AND created>?',owner,Date.now()-86400000).count>=10)throw fail('Daily listing research limit reached.',429);
-    const now=Date.now(),job={id:input.id,owner,listingId,projectId:input.projectId||null,requestHash,snapshot:listingInvestigationSnapshot(deal),depth,objective,question,status:'queued',created:now,updated:now,deadline:now+DEPTH_POLICY[depth].deadlineMs,promptVersion:PROMPT_VERSION,providerId:null,cursor:null,billing:'not_started',rate:this.wallet?this.secrets.BILLING_RATES[`listing_research_${depth}`]:null,dispatchGuard:randomUUID(),cancelRequested:false,result:null,error:null,usage:null};
+    const now=Date.now(),job={id:input.id,owner,listingId,projectId:input.projectId||null,requestHash,snapshot:listingInvestigationSnapshot(deal),depth,objective,question,status:'queued',created:now,updated:now,deadline:now+DEPTH_POLICY[depth].deadlineMs,promptVersion:PROMPT_VERSION,provider:this.newProvider,model:this.newProvider==='meta'?this.providers.meta.model:RESEARCH_AGENTS[depth],providerId:null,cursor:null,billing:'not_started',rate:this.wallet?this.secrets.BILLING_RATES[`listing_research_${depth}`]:null,dispatchGuard:randomUUID(),cancelRequested:false,result:null,error:null,usage:null,usageRecords:{}};
     this.store.write('INSERT INTO listing_investigations VALUES(?,?,?,?,?,?,?)',job.id,owner,listingId,job.status,now,now,JSON.stringify(job));this.save(job);queueMicrotask(()=>this.pump());return this.public(job);
   }
   // A provider-less needs_attention job can never be cancelled or reconnected (no provider interaction
@@ -117,7 +131,8 @@ export class ListingInvestigations extends EventEmitter {
     // Jobs parked here first, so their deadlines are armed with every other needs_attention job.
     for(const row of this.store.query("SELECT data FROM listing_investigations WHERE status NOT IN ('completed','failed','cancelled','needs_attention')")){
       const job=JSON.parse(row.data);
-      if(job.status==='reviewing'||(!job.providerId&&(job.status==='creating'||job.billing!=='not_started')))this.save(job,{status:'needs_attention',attentionExpiresAt:job.attentionExpiresAt??Date.now()+ATTENTION_TTL_MS,error:'The server restarted during dispatch. Provider or billing reconciliation is required before another run.'});
+      const durableReview=job.reviewState?.provider==='meta'&&(!job.reviewState.pending?.dispatching||Boolean(job.reviewState.pending.id));
+      if((job.status==='reviewing'&&!durableReview)||(!job.providerId&&(job.status==='creating'||job.billing!=='not_started')))this.save(job,{status:'needs_attention',attentionExpiresAt:job.attentionExpiresAt??Date.now()+ATTENTION_TTL_MS,error:'The server restarted during dispatch. Provider or billing reconciliation is required before another run.'});
     }
     for(const row of this.store.query("SELECT data FROM listing_investigations WHERE status='needs_attention'")){const job=JSON.parse(row.data);if(!this.expireProviderlessAttention(job)&&!this.expireAttention(job))this.armAttentionDeadline(job);}
     this.pump();
@@ -163,11 +178,12 @@ export class ListingInvestigations extends EventEmitter {
   }
   async settle(job,amount=job.rate?.amountMicros,details={}){
     if(this.wallet&&['dispatched','pending'].includes(job.billing)){
-      await this.wallet.settle(job.owner,job.id,amount,{provider:'gemini_deep_research',depth:job.depth,usage:job.usage,estimated:true,...details});this.save(job,{billing:'settled'});
+      await this.wallet.settle(job.owner,job.id,amount,{...this.billingProvider(job),depth:job.depth,usage:job.usage,estimated:true,...details});this.save(job,{billing:'settled'});
     }
   }
   async work(initial,state){
-    let job=initial;
+    let job=initial;const provider=this.providerFor(job);
+    const reviewCallbacks={checkpoint:(reviewState,response)=>{const live=this.row(job.id);this.save(live,{reviewState,...this.usagePatch(live,response)});}};
     const timer=job.raw?.status==='completed'?null:setTimeout(()=>{const live=this.row(job.id);if(INVESTIGATION_TERMINAL.includes(live.status))return;this.save(live,{cancelRequested:true,deadlineCancellationAttempted:true});state.controller.abort(new Error('Research deadline reached.'));},Math.max(1,job.deadline-Date.now()));timer?.unref?.();
     try{
       if(!job.providerId){
@@ -177,34 +193,39 @@ export class ListingInvestigations extends EventEmitter {
         job.prompt=investigationPrompt(job);job.promptHash=hash(job.prompt);this.save(job);
         if(this.wallet){
           this.save(job,{billing:'reserving'});
-          try{await this.wallet.reserve(job.owner,job.id,job.rate.reserveMicros,{provider:'gemini_deep_research',runId:job.id,operation:`listing_research_${job.depth}`,dispatchGuardHash:createHash('sha256').update(job.dispatchGuard).digest('hex'),rateVersion:job.rate.version,basis:job.rate.basis,estimated:true});}
+          try{await this.wallet.reserve(job.owner,job.id,job.rate.reserveMicros,{...this.billingProvider(job),runId:job.id,operation:`listing_research_${job.depth}`,dispatchGuardHash:createHash('sha256').update(job.dispatchGuard).digest('hex'),rateVersion:job.rate.version,basis:job.rate.basis,estimated:true});}
           catch(error){if(error.status===402)this.save(job,{billing:'not_started'});throw error;}
           job={...job,...this.row(job.id),billing:'reserved'};this.save(job);
           if(job.cancelRequested||this.closed){await this.wallet.releaseBeforeAttempt(job.owner,job.id,job.dispatchGuard);this.save(job,{status:'cancelled',billing:'released'});return;}
           await this.wallet.dispatch(job.owner,job.id);job={...job,...this.row(job.id),billing:'dispatched'};this.save(job);
         }
         this.save(job,{status:'creating'});
-        const response=await this.provider.create(job.depth,job.prompt);
+        const response=await provider.create(job.depth,job.prompt);
         if(!response.id)throw Object.assign(new Error('Research provider did not return an interaction ID.'),{ambiguous:true});
-        job={...job,...this.row(job.id)};this.save(job,{providerId:response.id,status:'in_progress'});
+        job={...job,...this.row(job.id)};this.save(job,{providerId:response.id,model:response.model||job.model,status:'in_progress',...this.usagePatch(job,response)});
       }
       let reconnects=0;
       while(!this.closed){
         job=this.row(job.id);
-        if(job.cancelRequested&&job.raw?.status==='completed'){this.save(job,{status:'cancelled'});return;}
+        if(job.cancelRequested&&job.raw?.status==='completed'){await provider.cancelReview?.(job.reviewState,reviewCallbacks);this.save(this.row(job.id),{status:'cancelled'});return;}
         if(job.cancelRequested&&!job.cancelSent){
-          this.save(job,{status:'cancelling'});await this.provider.cancel(job.providerId);this.save(job,{cancelSent:true});
+          this.save(job,{status:'cancelling'});await provider.cancel(job.providerId);this.save(job,{cancelSent:true});
         }
-        const response=job.raw?.status==='completed'?job.raw:await this.provider.get(job.providerId);
+        const response=job.raw?.status==='completed'?job.raw:await provider.get(job.providerId);
         job={...job,...this.row(job.id)};
         if(providerTerminal(response.status)){
           clearTimeout(timer);
-          this.save(job,{raw:response,usage:response.usage||null});await this.settle(job,response.status==='failed'?0:job.rate?.amountMicros,response.status==='failed'?{outcome:'provider_failed'}:{});
+          this.save(job,{raw:response,...(job.provider==='meta'?this.usagePatch(job,response):{usage:response.usage||null})});
+          if(response.status==='incomplete'){
+            if(this.wallet&&job.billing==='dispatched'){await this.wallet.pending(job.owner,job.id,'The provider returned an incomplete response.');job.billing='pending';}
+            this.save(job,{status:'failed',error:'The research provider returned an incomplete response. Any billing hold remains pending for reconciliation.'});return;
+          }
+          await this.settle(job,response.status==='failed'?0:job.rate?.amountMicros,response.status==='failed'?{outcome:'provider_failed'}:{});
           if(response.status==='completed'){
             if(job.cancelRequested){this.save(job,{status:'cancelled'});return;}
-            const draft=reportFromInteraction(response,{recordSources:job.records?.sources||[]});this.save(job,{status:'reviewing'});state.controller=new AbortController();
-            const result=job.reviewState?await this.provider.finishReview(job.reviewState,state.controller.signal):await this.provider.review(draft,{listing:job.snapshot,depth:job.depth,objective:job.objective,question:job.question,researchDate:new Date(job.created).toISOString(),publicRecords:investigationEvidencePacket(job.records)},state.controller.signal);
-            if(this.closed)return;job=this.row(job.id);this.save(job,job.cancelRequested?{status:'cancelled'}:{status:'completed',result,error:null,reviewState:null});
+            const draft=provider.report?provider.report(response,{recordSources:job.records?.sources||[]}):reportFromInteraction(response,{recordSources:job.records?.sources||[]});this.save(job,{status:'reviewing'});state.controller=new AbortController();
+            const result=job.reviewState?await provider.finishReview(job.reviewState,state.controller.signal,reviewCallbacks):await provider.review(draft,{listing:job.snapshot,depth:job.depth,objective:job.objective,question:job.question,researchDate:new Date(job.created).toISOString(),publicRecords:investigationEvidencePacket(job.records)},state.controller.signal,reviewCallbacks);
+            if(this.closed)return;job=this.row(job.id);this.save(job,job.cancelRequested?{status:'cancelled'}:{status:'completed',result,error:null,reviewEvidence:job.reviewState?.provider==='meta'?{...job.reviewState.evidence,sourceEvidence:job.reviewState.sourceEvidence}:job.reviewEvidence,reviewState:null});
           }
           else this.save(job,{status:response.status==='failed'?'failed':'cancelled',error:response.status==='failed'?'The research provider could not finish this investigation.':null});
           return;
@@ -213,12 +234,13 @@ export class ListingInvestigations extends EventEmitter {
         if(job.cancelRequested&&!job.cancelSent)continue;
         state.controller=new AbortController();
         try{
-          for await(const {cursor,event} of this.provider.events(job.providerId,job.cursor,state.controller.signal)){
-            job=this.row(job.id);if(cursor)job.cursor=cursor;
+          for await(const {cursor,event} of provider.events(job.providerId,job.cursor,state.controller.signal)){
+            job=this.row(job.id);if(cursor!==null&&cursor!==undefined)job.cursor=cursor;
+            Object.assign(job,this.usagePatch(job,event.response));
             const kind=event.event_type||event.type||'';
-            if(kind==='interaction.status_update'||kind==='interaction.completed'||kind==='interaction.failed'||kind==='interaction.cancelled')this.save(job);
+            if(kind.startsWith('response.')||kind==='interaction.status_update'||kind==='interaction.completed'||kind==='interaction.failed'||kind==='interaction.cancelled')this.save(job);
             else if(cursor)this.store.write('UPDATE listing_investigations SET data=? WHERE id=?',JSON.stringify(job),job.id);
-            if(providerTerminal(event.status||event.interaction?.status))break;
+            if(providerTerminal(event.status||event.interaction?.status||event.response?.status))break;
           }
         }catch(error){
           if(this.closed)return;
@@ -232,7 +254,11 @@ export class ListingInvestigations extends EventEmitter {
       if(error.reviewState)this.save(this.row(job.id),{reviewState:error.reviewState});
       if(this.closed)return;
       job=this.row(job.id);
-      if(job.cancelRequested&&job.raw?.status==='completed'){this.save(job,{status:'cancelled'});return;}
+      if(error.responseId&&!job.providerId){this.save(job,{providerId:error.responseId});}
+      if(job.cancelRequested&&job.raw?.status==='completed'){
+        try{await provider.cancelReview?.(job.reviewState,reviewCallbacks);this.save(this.row(job.id),{status:'cancelled'});return;}
+        catch(cancelError){error=cancelError;job=this.row(job.id);}
+      }
       if(this.wallet&&job.billing==='dispatched'){
         await this.wallet.pending(job.owner,job.id,'Provider result requires reconciliation.').catch(()=>{});job.billing='pending';
       }

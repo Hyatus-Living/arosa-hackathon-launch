@@ -22,7 +22,7 @@ export const zoningDefinition = {
     streets: {type: 'array', maxItems: 4, items: {type: 'object', additionalProperties: false, properties: {side: {type: 'string', enum: ['front', 'rear', 'left', 'right']}, name: {type: 'string'}, widthFeet: {type: 'number', minimum: 10, maximum: 300, description: 'Mapped street width; 75 ft or more is a wide street (ZR 12-10).'}, streetWallType: {type: 'string', enum: ['1', '2A', '2B', '3', '4', '5'], description: 'Special Lower Manhattan District street wall type from Appendix A Maps 2 and 3 (ZR 91-31), when known.'}}, required: ['side']}, description: 'The streets the lot fronts. Defaults to the mapped streets from the Digital City Map, or one street of unknown width at the front.'},
     use: {type: 'string', enum: ['commercial', 'residential', 'community_facility'], description: 'Envelope use: commercial (default in C and M districts), residential (default in R districts; uses the residential equivalent in C districts), or community_facility (floor area capped at the district community-facility FAR; massing drawn with the district-kind bulk regime and flagged, since community-facility bulk is not curated yet).'},
     affordable: {type: 'boolean', description: 'Use the qualifying affordable housing (Universal Affordability Preference) floor area and heights for a residential envelope.'},
-    qualifyingSeniorHousing: {type: 'boolean', description: 'The zoning lot contains qualifying senior housing. This prevents applying a Limited Height District cap under ZR 23-739; verify the qualifying status.'},
+    qualifyingSeniorHousing: {type: 'boolean', description: 'All residential floor area modeled here is qualifying senior housing. Exempts that use from the dwelling unit factor under ZR 23-52 and prevents applying a Limited Height District cap under ZR 23-739; verify qualifying status. Mixed residential uses require separate floor-area allocation.'},
     limitedHeightDistrict: {type: 'string', enum: ['LH-1', 'LH-1A', 'LH-2', 'LH-3'], description: 'Limited Height District mapped on the lot. Defaults to PLUTO ltdheight when selected.'},
     form: {type: 'string', enum: ['sky-exposure-plane', 'tower', 'base', 'eligible'], description: 'Height and setback form: sky-exposure-plane or tower for commercial districts; base (fixed heights), tower, or eligible (ZR 23-434 eligible-site heights, districts without a letter suffix) for residential equivalents; sky-exposure-plane for residential use draws the optional ZR 23-73 rules (R6 through R10 districts without a letter suffix: height factor floor area ratio and open space, ZR 23-736 front setbacks and plane, ZR 23-737 towers in R9 and R10). Defaults to the tower form where towers are permitted.'},
     historicCore: {type: 'boolean', description: 'The lot is within the Historic and Commercial Core of the Special Lower Manhattan District (Appendix A Map 1), which raises the tower coverage (ZR 91-33).'},
@@ -541,7 +541,7 @@ export function createZoningTools({getProperty = () => null, record = () => null
       const source = record({
         title: `NYC Zoning Resolution curated district & envelope summary (${found.code})`,
         url: zoningResolutionUrlFor(found, []),
-        text: JSON.stringify({district: found.code, rules: found, envelopeSummary: summary, mechanisms: rules.mechanisms}),
+        text: JSON.stringify({district: found.code, rules: found, rulesVersion: rules.version, caveat: rules.caveat, envelopeSummary: summary, mechanisms: rules.mechanisms}),
         kind: 'zoning_envelope',
       });
       if (computed && capture) {captured = {...computed, summary}; capturedSourceId = source?.id ?? null; capturedBbl = null;}
@@ -604,7 +604,7 @@ export function createZoningTools({getProperty = () => null, record = () => null
     const source = record({
       title: `NYC Zoning Resolution curated district & envelope summary (BBL ${property.bbl}, ${districts.join('/') || 'NYC'})`,
       url: zoningResolutionUrlFor(described[0], specials),
-      text: JSON.stringify({parcel: parcelMeta, capacity: cap, headlineReconciliation: reconciliation, rules: described, envelopeSummary: summary, mechanisms: rules.mechanisms, flags}),
+      text: JSON.stringify({parcel: parcelMeta, capacity: cap, headlineReconciliation: reconciliation, rules: described, rulesVersion: rules.version, caveat: rules.caveat, envelopeSummary: summary, mechanisms: rules.mechanisms, flags}),
       kind: 'zoning_envelope',
     });
     // The captured envelope becomes project state, so it keeps capacity, summary and the headline beside the geometry.

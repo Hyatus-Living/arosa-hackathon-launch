@@ -7,6 +7,7 @@
 import {randomUUID} from 'node:crypto';
 import {setTimeout as sleep} from 'node:timers/promises';
 import {ListingResearchProvider, providerTerminal} from './listing-investigation-provider.mjs';
+import {MetaBackgroundProvider, metaUsageRecord} from './meta-background.mjs';
 
 export const ENRICH_STEPS = ['profile', 'contacts', 'identity'];
 export const JOB_TERMINAL = ['done', 'failed', 'stopped', 'skipped'];
@@ -14,8 +15,19 @@ export const IDENTITY_VERDICTS = ['confirmed', 'needs_review', 'mismatch'];
 // Spend held against the limits before a step runs. The recorded cost afterwards is the actual charge
 // for lookups and an estimate from token usage for identity checks.
 export const STEP_ESTIMATE_MICROS = {profile: 50_000, contacts: 900_000, identity: 1_500_000};
-// Estimated deep-research token prices in USD per million tokens (input, cached input, output and thinking).
+// Historical Gemini deep-research estimates in USD per million tokens.
 export const IDENTITY_TOKEN_RATES = {input: 2, cached: 0.2, output: 12};
+// Provider-cost estimates, not wallet prices or invoices. Published Model API rates,
+// including issued search queries: https://dev.meta.ai/docs/pricing-rate-limits
+const META_IDENTITY_RATES = {
+  'muse-spark-1.1': {input: 1.25, cached: 0.15, output: 4.25},
+  'muse-spark-1.2': {input: 1.25, cached: 0.15, output: 4.25},
+  'muse-spark-1.3': {input: 1.25, cached: 0.15, output: 4.25},
+  'muse-spark-1.2-contributor': {input: 0.10, cached: 0.002, output: 0.20},
+  'muse-spark-1.3-contributor': {input: 0.10, cached: 0.002, output: 0.20},
+  'muse-wonder-1.0': {input: 4, cached: 0.20, output: 20},
+};
+const META_RATE_VERSION = 'meta-model-api-2026-11-04';
 export const DEFAULT_DAILY_CAP_USD = 50;
 const IDENTITY_AGENT = 'deep-research-preview-04-2026';
 const IDENTITY_DEADLINE_MS = 45 * 60000;
@@ -135,7 +147,8 @@ export function identityPrompt(contact) {
 }
 
 export function interactionText(response) {
-  return response.output_text || (response.steps || []).filter((s) => s.type === 'model_output')
+  return response.output_text || (response.output || []).filter((s) => s.type === 'message').flatMap((s) => s.content || [])
+    .filter((p) => p.type === 'output_text').map((p) => p.text).join('\n') || (response.steps || []).filter((s) => s.type === 'model_output')
     .flatMap((s) => s.content || []).filter((p) => p.type === 'text').map((p) => p.text).join('\n');
 }
 
@@ -150,7 +163,7 @@ export function parseVerdict(answer) {
 
 // Cited pages: the answer's url citations, else the https links written in its text.
 export function interactionSources(response, answer) {
-  const urls = (response?.steps || []).flatMap((s) => s.content || []).flatMap((p) => p.annotations || [])
+  const urls = [...(response?.steps || []), ...(response?.output || [])].flatMap((s) => s.content || []).flatMap((p) => p.annotations || [])
     .filter((a) => a.type === 'url_citation').map((a) => ({url: a.url, title: a.title || null}));
   const found = urls.length ? urls : [...String(answer || '').matchAll(/https:\/\/[^\s)\]"'<>]+/g)].map((m) => ({url: m[0].replace(/[.,;:]+$/, ''), title: null}));
   const seen = new Set();
@@ -167,6 +180,27 @@ export function identityCostMicros(usage) {
   const cached = usage.total_cached_tokens || 0, input = Math.max(0, (usage.total_input_tokens || 0) - cached);
   const output = (usage.total_output_tokens || 0) + (usage.total_thought_tokens || 0);
   return Math.round(input * IDENTITY_TOKEN_RATES.input + cached * IDENTITY_TOKEN_RATES.cached + output * IDENTITY_TOKEN_RATES.output);
+}
+
+// Search actions can issue several queries. Missing query accounting is unknown,
+// never a zero-cost search. Open/find actions do not issue a search query.
+export function metaIdentityCost(response) {
+  const rate = META_IDENTITY_RATES[response.model], usage = response.usage;
+  if (!rate || !usage || !Array.isArray(response.output)) return null;
+  const input = usage.input_tokens, cached = usage.input_tokens_details?.cached_tokens ?? 0, output = usage.output_tokens;
+  if (![input, cached, output].every((n) => Number.isSafeInteger(n) && n >= 0) || cached > input) return null;
+  let searchQueries = 0;
+  for (const call of response.output.filter((item) => item.type === 'web_search_call')) {
+    const action = call.action;
+    if (action?.type === 'open_page' || action?.type === 'find_in_page') continue;
+    if (action?.type !== 'search') return null;
+    if (Array.isArray(action.queries) && action.queries.length && action.queries.every((query) => typeof query === 'string' && query.trim())) searchQueries += action.queries.length;
+    else if ((action.queries == null || (Array.isArray(action.queries) && action.queries.length === 0)) && typeof action.query === 'string' && action.query.trim()) searchQueries++;
+    else return null;
+  }
+  return {micros: Math.ceil((input - cached) * rate.input + cached * rate.cached + output * rate.output + searchQueries * 2500),
+    estimated: true, provider: 'meta', model: response.model, responseId: response.id, usage, searchQueries,
+    rateVersion: META_RATE_VERSION, basis: 'Published token rates plus issued web-search queries; estimated provider cost, not an invoice.'};
 }
 
 export class OutOfBalance extends Error {}
@@ -195,10 +229,13 @@ export class TregClient {
 }
 
 export class CrmEnrichment {
-  constructor({store, crm, secrets, treg, research, now = () => Date.now(), pollMs = 30000, retryMs = 5000, lanes = LANES}) {
+  constructor({store, crm, secrets, treg, research, legacyResearch, now = () => Date.now(), pollMs = 30000, retryMs = 5000, lanes = LANES}) {
     this.store = store; this.crm = crm; this.now = now; this.pollMs = pollMs; this.retryMs = retryMs; this.lanes = lanes;
     this.treg = treg !== undefined ? treg : (secrets.TREG_TOKEN ? new TregClient(secrets.TREG_TOKEN) : null);
-    this.research = research !== undefined ? research : (secrets.GEMINI_RESEARCH_API_KEY ? new ListingResearchProvider(secrets.GEMINI_RESEARCH_API_KEY) : null);
+    this.research = research !== undefined ? research : (secrets.MODEL_API_KEY ? new MetaBackgroundProvider(secrets) : null);
+    this.identityProvider = research !== undefined ? research?.provider || 'gemini' : 'meta';
+    this.legacyResearch = legacyResearch !== undefined ? legacyResearch : (research !== undefined && this.identityProvider === 'gemini' ? research
+      : secrets.GEMINI_RESEARCH_API_KEY ? new ListingResearchProvider(secrets.GEMINI_RESEARCH_API_KEY) : null);
     this.dailyCapMicros = Math.round(Number(secrets.CRM_ENRICH_DAILY_CAP_USD ?? DEFAULT_DAILY_CAP_USD) * 1e6);
     this.active = new Map(); this.closed = false;
     store.db.exec(`CREATE TABLE IF NOT EXISTS crm_jobs(id TEXT PRIMARY KEY,contact TEXT NOT NULL,step TEXT NOT NULL,status TEXT NOT NULL,
@@ -222,7 +259,9 @@ export class CrmEnrichment {
   }
   public(job) {
     const {id, contact, step, status, run, attempts, cost_micros: costMicros, created, started, finished, error} = job;
-    return {id, contact, step, status, run, attempts, costMicros, created, started, finished, error};
+    const state = typeof job.state === 'string' ? JSON.parse(job.state) : job.state;
+    return {id, contact, step, status, run, attempts, costMicros, created, started, finished, error,
+      ...(state?.provider === 'meta' ? {provider: 'meta', model: state.model, costPending: state.billing === 'pending', costEstimated: state.billing === 'estimated'} : {})};
   }
 
   configured() {return {contacts: Boolean(this.treg), identity: Boolean(this.research)};}
@@ -253,7 +292,8 @@ export class CrmEnrichment {
     const existing = this.activeJob(contact, step);
     if (existing) return existing;
     const id = randomUUID();
-    this.store.write('INSERT INTO crm_jobs(id,contact,step,status,run,after,by_email,created) VALUES(?,?,?,?,?,?,?,?)', id, contact, step, 'queued', run, after, byEmail, this.now());
+    const state = step === 'identity' ? {provider: this.identityProvider, model: this.research?.model || IDENTITY_AGENT} : {};
+    this.store.write('INSERT INTO crm_jobs(id,contact,step,status,run,after,by_email,state,created) VALUES(?,?,?,?,?,?,?,?,?)', id, contact, step, 'queued', run, after, byEmail, JSON.stringify(state), this.now());
     return id;
   }
 
@@ -269,6 +309,7 @@ export class CrmEnrichment {
   request(contactId, action, byEmail) {
     const contact = this.crm.get(contactId), steps = this.stepsFor(contact, action);
     for (const step of steps) if (!this.ready(step)) fail(503, 'This lookup is not set up on the server yet.');
+    if (steps.includes('identity') && this.pendingIdentity(contactId)) fail(409, 'An earlier identity check has unresolved provider usage. Reconcile it before starting another check.');
     if (this.spentToday() + steps.reduce((sum, s) => sum + STEP_ESTIMATE_MICROS[s], 0) > this.dailyCapMicros) fail(429, "Today's spending limit is reached.");
     let after = action === 'identity' ? this.activeJob(contactId, 'contacts') || this.activeJob(contactId, 'profile') || null : null;
     for (const step of steps) after = this.insert(contactId, step, {after, byEmail});
@@ -281,7 +322,7 @@ export class CrmEnrichment {
     const busy = new Set(this.store.query("SELECT DISTINCT contact FROM crm_jobs WHERE status IN ('queued','running')").map((r) => r.contact));
     // A contact whose profile search already found nothing is not searched again by a bulk run.
     const searched = new Set(this.store.query("SELECT DISTINCT contact FROM crm_jobs WHERE step='profile' AND status='done' AND json_extract(result,'$.noMatch')=1").map((r) => r.contact));
-    const contacts = this.crm.list().contacts.filter((c) => !busy.has(c.id) && !c.details?.identity && !(searched.has(c.id) && !pickProfile(c))
+    const contacts = this.crm.list().contacts.filter((c) => !busy.has(c.id) && !this.pendingIdentity(c.id) && !c.details?.identity && !(searched.has(c.id) && !pickProfile(c))
       && !['not_interested', 'do_not_contact'].includes(c.status) && c.details?.segment !== 'parked');
     const items = contacts.map((c) => ({id: c.id, steps: [...(pickProfile(c) ? [] : ['profile']), ...(c.details?.lookup ? [] : ['contacts']), 'identity']}));
     const estimateMicros = items.reduce((sum, item) => sum + item.steps.reduce((s, step) => s + STEP_ESTIMATE_MICROS[step], 0), 0);
@@ -313,7 +354,9 @@ export class CrmEnrichment {
     for (const r of this.store.query("SELECT id FROM crm_jobs WHERE status='running'")) {
       const job = this.job(r.id);
       if (job.step !== 'identity') this.save(job, {status: 'queued'});
-      else if (!job.provider_id) this.save(job, {status: 'failed', finished: this.now(), error: 'The server restarted while the check was starting. Run it again.'});
+      else if (!job.provider_id) this.save(job, {status: 'failed', finished: this.now(), error: job.state.provider === 'meta' && job.state.dispatchStarted
+        ? 'The server restarted after the identity check may have started. Reconcile provider usage before retrying.'
+        : 'The server restarted while the check was starting. Run it again.'});
     }
     this.pump();
   }
@@ -431,47 +474,86 @@ export class CrmEnrichment {
   }
 
   async runIdentity(job, signal) {
+    const isMeta = job.state.provider === 'meta';
+    if (job.state.provider && !['meta', 'gemini'].includes(job.state.provider)) throw new Error('Unknown saved identity research provider.');
+    const provider = isMeta ? this.research : this.legacyResearch;
+    if (!provider || (isMeta && provider.provider !== 'meta')) throw new Error('The saved identity research provider is not configured.');
     if (!job.provider_id) {
       const contact = this.crm.get(job.contact);
       let created;
       // A rate-limited start is refused before anything runs, so it is safe to retry.
       for (let attempt = 1; ; attempt++) {
         try {
-          created = await this.research.call('POST', '', {agent: IDENTITY_AGENT, input: identityPrompt(contact), background: true,
+          if (isMeta) {
+            if (!META_IDENTITY_RATES[provider.model]) throw Object.assign(new Error('Cost accounting is not configured for this identity model.'), {ambiguous: false});
+            this.save(job, {state: {...job.state, dispatchStarted: true, billing: 'pending'}, cost_micros: STEP_ESTIMATE_MICROS.identity,
+              cost: {identity: {provider: 'meta', model: provider.model, pending: true, reservedMicros: STEP_ESTIMATE_MICROS.identity}}});
+            created = await provider.create(identityPrompt(contact), {tools: [{type: 'web_search'}], metadata: {crmJobId: job.id}, signal});
+          } else created = await provider.call('POST', '', {agent: IDENTITY_AGENT, input: identityPrompt(contact), background: true,
             agent_config: {type: 'deep-research', thinking_summaries: 'auto'}}, signal);
           break;
         } catch (error) {
-          if (error.statusCode !== 429 || attempt >= RETRIES || this.closed) throw error;
+          if (isMeta && typeof error.responseId === 'string' && error.responseId) {
+            this.save(job, {provider_id: error.responseId});
+            created = {id: error.responseId};
+            break;
+          }
+          if (isMeta && error.ambiguous !== true && (error.ambiguous === false || (error.statusCode >= 400 && error.statusCode < 500 && error.statusCode !== 408))) {
+            this.save(job, {state: {...job.state, dispatchStarted: false, billing: 'not_started'}, cost_micros: 0, cost: null});
+          }
+          if (error.ambiguous === true || error.statusCode !== 429 || attempt >= RETRIES || this.closed) throw error;
           this.save(job, {attempts: job.attempts + 1});
           await sleep(this.backoff(attempt), undefined, {signal});
         }
       }
-      if (!created.id) throw new Error('The identity check did not start.');
+      if (!created.id) throw new Error(isMeta ? 'The identity check may have started without a response ID. Reconcile provider usage before retrying.' : 'The identity check did not start.');
       this.save(job, {provider_id: created.id});
     }
-    let response, misses = 0;
+    const terminal = (status) => providerTerminal(status) || (isMeta && status === 'incomplete');
+    let response = job.state.response, misses = 0;
     for (;;) {
       if (this.closed) return null;
+      if (response && terminal(response.status)) break;
       try {
-        response = await this.research.get(job.provider_id);
+        response = await provider.get(job.provider_id, signal);
+        if (isMeta) {
+          if (response.id !== job.provider_id) throw new Error('The identity provider returned a different response.');
+          const usage = response.usageRecord || metaUsageRecord(response);
+          if (usage) this.save(job, {state: {...job.state, usageRecords: {...job.state.usageRecords, [usage.id]: usage}}});
+        }
         misses = 0;
       } catch (error) {
+        response = null;
         if (++misses > 10) throw new Error('The identity check could not be reached.');
       }
-      if (response && providerTerminal(response.status)) break;
+      if (response && terminal(response.status)) break;
       if (this.now() - job.started > IDENTITY_DEADLINE_MS) {
-        await this.research.cancel(job.provider_id).catch(() => {});
+        const cancelled = await provider.cancel(job.provider_id, signal).catch(() => null);
+        if (isMeta && cancelled && terminal(cancelled.status)) {response = cancelled; break;}
         throw new Error('The identity check ran past its time limit.');
       }
       try {await sleep(this.pollMs, undefined, {signal});} catch {return null;}
     }
-    const costMicros = identityCostMicros(response.usage);
-    this.save(job, {cost_micros: costMicros, cost: {identity: {micros: costMicros, estimated: true, usage: response.usage || null}}});
+    if (isMeta) {
+      const usage = response.usageRecord || metaUsageRecord(response), cost = metaIdentityCost(response);
+      this.save(job, {state: {...job.state, response, model: response.model, billing: cost ? 'estimated' : 'pending',
+        usageRecords: {...job.state.usageRecords, ...(usage ? {[usage.id]: usage} : {})}},
+        cost_micros: cost?.micros ?? Math.max(job.cost_micros, STEP_ESTIMATE_MICROS.identity),
+        cost: {identity: cost || {provider: 'meta', model: response.model, responseId: response.id, pending: true,
+          reservedMicros: STEP_ESTIMATE_MICROS.identity, usage: response.usage || null, reason: 'Complete token and search-query usage is not available.'}}});
+    } else {
+      const costMicros = identityCostMicros(response.usage);
+      this.save(job, {cost_micros: costMicros, cost: {identity: {provider: 'gemini', model: IDENTITY_AGENT, responseId: response.id, micros: costMicros, estimated: true, usage: response.usage || null}}});
+    }
     if (response.status !== 'completed') throw new Error('The identity check did not finish.');
     const answer = interactionText(response), verdict = parseVerdict(answer);
     const identity = identityFromVerdict(verdict, {checked: day(this.now()), sources: interactionSources(response, answer)});
     this.applyDetails(job.contact, {identity});
     return {verdict: identity.verdict, confidence: identity.confidence, parsed: Boolean(verdict), minutes: Math.round((this.now() - job.started) / 6000) / 10, answer: answer.slice(0, 40000)};
+  }
+
+  pendingIdentity(contact) {
+    return this.store.one("SELECT id FROM crm_jobs WHERE contact=? AND step='identity' AND json_extract(state,'$.billing')='pending' AND status NOT IN ('queued','running') LIMIT 1", contact)?.id;
   }
 
   // Store a lookup or identity result on the contact, then fill fields by the enrichment rules.
