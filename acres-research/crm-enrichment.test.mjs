@@ -5,7 +5,8 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {ChatStore} from './store.mjs';
 import {Crm} from './crm.mjs';
-import {CrmEnrichment,OutOfBalance,enrichmentPatch,identityFromVerdict,parseVerdict,identityCostMicros,nameMatches,dayStart,STEP_ESTIMATE_MICROS,LANES} from './crm-enrichment.mjs';
+import {CrmEnrichment,OutOfBalance,enrichmentPatch,identityFromVerdict,parseVerdict,identityCostMicros,metaIdentityCost,interactionText,interactionSources,nameMatches,dayStart,STEP_ESTIMATE_MICROS,LANES} from './crm-enrichment.mjs';
+import {MetaBackgroundError,MetaBackgroundProvider,normalizeMetaResponse} from './meta-background.mjs';
 
 const lookup={at:'2026-10-21',profileUrl:'https://linkedin.com/in/pat-buyer',workEmail:'pat@firm.com',workEmailVerified:true,personalEmail:'pat@mail.com',personalEmailVerified:true,phone:'+12125550100',phoneLineType:'mobile'};
 const verdict=(same,email='unknown')=>identityFromVerdict({same_person:same,buyer_company:'Firm LLC',buyer_role:'Principal',website:'firm.com',evidence:['Profile names the firm.'],lookup_email_is_buyers:email},{checked:'2026-10-21'});
@@ -201,4 +202,211 @@ test('the enrich-all plan leaves parked contacts out',t=>{
   const plan=enrichment.plan();
   assert.equal(plan.contacts,1);
   assert.equal(plan.estimateMicros,STEP_ESTIMATE_MICROS.profile+STEP_ESTIMATE_MICROS.contacts+STEP_ESTIMATE_MICROS.identity);
+});
+
+const metaModel='muse-spark-1.3';
+function metaResult(over={}) {
+  return normalizeMetaResponse({id:'resp_identity',model:metaModel,status:'completed',
+    usage:{input_tokens:100000,input_tokens_details:{cached_tokens:20000},output_tokens:1000,output_tokens_details:{reasoning_tokens:200}},
+    output:[{type:'web_search_call',id:'search_identity',status:'completed',action:{type:'search',queries:['Pat Buyer Firm','Firm team Pat Buyer']}},
+      {type:'message',role:'assistant',content:[{type:'output_text',text:'Professional evidence.\n{"same_person":"high","buyer_company":"Firm LLC","buyer_role":"Principal","website":"https://firm.com","professional_contact":null,"evidence":["The firm team page matches the profile."],"lookup_email_is_buyers":"yes"}',
+        annotations:[{type:'url_citation',start_index:0,end_index:22,url:'https://firm.com/team',title:'Firm team'}]}]}],...over});
+}
+function metaFake(result=metaResult()) {
+  const calls={create:[],get:[],cancel:[]};
+  return {provider:'meta',model:metaModel,calls,
+    async create(input,options){calls.create.push({input,options});return normalizeMetaResponse({id:result.id,model:metaModel,status:'queued',output:[]});},
+    async get(id){calls.get.push(id);return result;},
+    async cancel(id){calls.cancel.push(id);return result;}};
+}
+
+test('Meta CRM cost uses the effective model, complete tokens and issued search queries',()=>{
+  const response=metaResult(), cost=metaIdentityCost(response);
+  assert.equal(cost.micros,112250);
+  assert.equal(cost.searchQueries,2);
+  assert.equal(cost.estimated,true);
+  assert.equal(cost.responseId,response.id);
+  assert.equal(cost.provider,'meta');
+  assert.match(cost.basis,/not an invoice/);
+  assert.equal(metaIdentityCost(metaResult({model:'muse-spark-1.3-contributor'})).micros,13240);
+  assert.equal(metaIdentityCost(metaResult({model:'muse-wonder-1.0'})).micros,349000);
+  assert.equal(metaIdentityCost(metaResult({output:[{type:'web_search_call',action:{type:'search',query:'legacy single query'}}]})).searchQueries,1);
+  assert.equal(metaIdentityCost(metaResult({output:[{type:'web_search_call',action:{type:'search',queries:[],query:'live single query'}}]})).searchQueries,1);
+  assert.equal(metaIdentityCost(metaResult({output:[{type:'web_search_call',action:{type:'open_page',url:'https://firm.com'}},{type:'web_search_call',action:{type:'find_in_page',pattern:'Pat'}}]})).searchQueries,0);
+  for(const over of [{usage:null},{model:'unknown'},{output:[{type:'web_search_call',action:{type:'search'}}]},
+    {output:[{type:'web_search_call',action:{type:'search',queries:[]}}]},{output:[{type:'web_search_call'}]},
+    {usage:{input_tokens:1,output_tokens:1,input_tokens_details:{cached_tokens:2}}}])assert.equal(metaIdentityCost(metaResult(over)),null);
+});
+
+test('Meta text and native citation annotations retain professional source evidence',()=>{
+  const response=metaResult(),native={...response,output_text:undefined};
+  assert.match(interactionText(native),/same_person/);
+  assert.deepEqual(interactionSources(native,interactionText(native)),[{url:'https://firm.com/team',title:'Firm team'}]);
+});
+
+test('server configuration selects Meta for new identity jobs without a Gemini fallback',t=>{
+  const {enrichment}=fixture(t,{secrets:{MODEL_API_KEY:'test-key',META_MODEL:metaModel,GEMINI_RESEARCH_API_KEY:'legacy-key'}});
+  assert.equal(enrichment.research.provider,'meta');
+  assert.equal(enrichment.research.model,metaModel);
+  assert.ok(enrichment.legacyResearch);
+  const disabled=fixture(t,{secrets:{GEMINI_RESEARCH_API_KEY:'legacy-key'}}).enrichment;
+  assert.equal(disabled.configured().identity,false);
+  assert.ok(disabled.legacyResearch,'old Gemini jobs can still recover while new Meta jobs are unavailable');
+});
+
+test('Meta dispatch preserves the existing per-check hold and refuses work beyond the daily cap',t=>{
+  const research=metaFake(),{crm,enrichment}=fixture(t,{research,secrets:{CRM_ENRICH_DAILY_CAP_USD:1}});
+  crm.import('buyers',[{name:'Pat Buyer',sourceRef:'meta-cap'}],1);
+  assert.equal(STEP_ESTIMATE_MICROS.identity,1500000);
+  assert.throws(()=>enrichment.request(crm.list().contacts[0].id,'identity'),{status:429});
+  assert.equal(research.calls.create.length,0);
+  assert.equal(enrichment.status().jobs.length,0);
+});
+
+test('new Meta identity work saves provider, citations, cumulative usage and an estimated inclusive cost once',async t=>{
+  const research=metaFake(),{crm,enrichment}=fixture(t,{research});
+  crm.import('buyers',[{name:'Pat Buyer',sourceRef:'meta',details:{lookup},email:'chosen@example.com'}],1);
+  const [c]=crm.list().contacts;
+  enrichment.request(c.id,'identity');
+  await until(()=>settledJobs(enrichment));
+  const [row]=enrichment.status().jobs,job=enrichment.job(row.id);
+  assert.equal(row.status,'done');
+  assert.equal(row.provider,'meta');
+  assert.equal(row.model,metaModel);
+  assert.equal(row.costEstimated,true);
+  assert.equal(row.costPending,false);
+  assert.equal(row.costMicros,112250);
+  assert.deepEqual(research.calls.create[0].options.tools,[{type:'web_search'}]);
+  assert.equal(research.calls.create[0].options.metadata.crmJobId,row.id);
+  assert.equal(job.state.provider,'meta');
+  assert.equal(job.state.response.id,'resp_identity');
+  assert.deepEqual(Object.keys(job.state.usageRecords),['meta:resp_identity']);
+  assert.equal(crm.get(c.id).details.identity.verdict,'confirmed');
+  assert.deepEqual(crm.get(c.id).details.identity.sources,[{url:'https://firm.com/team',title:'Firm team'}]);
+  assert.equal(crm.get(c.id).email,'chosen@example.com','existing contact choices survive enrichment');
+  await enrichment.runIdentity(job,new AbortController().signal);
+  assert.equal(enrichment.job(job.id).cost_micros,112250);
+  assert.equal(research.calls.get.length,1,'terminal evidence replays without refetch or redispatch');
+  assert.equal(Object.keys(enrichment.job(job.id).state.usageRecords).length,1);
+});
+
+test('legacy jobs recover on Gemini and new jobs keep their Meta identity through restart',async t=>{
+  const legacyResearch=fakes().research,research=metaFake(),{store,crm,enrichment,make}=fixture(t,{research,legacyResearch});
+  crm.import('buyers',[{name:'Pat Buyer',sourceRef:'legacy'},{name:'Pat Buyer',sourceRef:'meta-restart'}],1);
+  const [a,b]=crm.list().contacts;
+  await enrichment.close();
+  const at=Date.now();
+  store.write("INSERT INTO crm_jobs(id,contact,step,status,provider_id,state,created,started) VALUES(?,?,'identity','running',?,?,?,?)",'legacy',a.id,'i-existing','{}',at,at);
+  store.write("INSERT INTO crm_jobs(id,contact,step,status,provider_id,state,created,started,cost_micros) VALUES(?,?,'identity','running',?,?,?,?,?)",'meta',b.id,'resp_identity',JSON.stringify({provider:'meta',model:metaModel,billing:'pending'}),at,at,STEP_ESTIMATE_MICROS.identity);
+  legacyResearch.interactions.set('i-existing',{polls:0,prompt:''});
+  const next=make();t.after(()=>next.close());next.recover();
+  await until(()=>settledJobs(next));
+  assert.equal(next.job('legacy').status,'done');
+  assert.equal(next.job('legacy').cost.identity.provider,'gemini');
+  assert.equal(next.job('meta').status,'done');
+  assert.equal(next.job('meta').cost.identity.provider,'meta');
+  assert.equal(research.calls.create.length,0);
+  assert.deepEqual(research.calls.get,['resp_identity']);
+});
+
+test('a malformed Meta acknowledgment persists its response ID and recovers without another creation',async t=>{
+  const calls=[],result=metaResult();
+  let enrichment;
+  const research=new MetaBackgroundProvider({MODEL_API_KEY:'test',META_MODEL:metaModel},{fetch:async(url,options)=>{
+    calls.push(options.method);
+    if(options.method==='POST')return Response.json({id:result.id,status:'queued'});
+    assert.equal(enrichment.job(enrichment.status().jobs[0].id).provider_id,result.id,'ID is durable before retrieval');
+    assert.ok(url.endsWith('/'+result.id));
+    return Response.json(result);
+  }});
+  const fixtureResult=fixture(t,{research});enrichment=fixtureResult.enrichment;
+  fixtureResult.crm.import('buyers',[{name:'Pat Buyer',sourceRef:'acknowledged'}],1);
+  const [contact]=fixtureResult.crm.list().contacts;enrichment.request(contact.id,'identity');
+  await until(()=>settledJobs(enrichment));
+  const [row]=enrichment.status().jobs;
+  assert.equal(row.status,'done');
+  assert.deepEqual(calls,['POST','GET']);
+  assert.equal(row.costPending,false);
+  assert.equal(row.costMicros,112250);
+  assert.deepEqual(Object.keys(enrichment.job(row.id).state.usageRecords),['meta:'+result.id]);
+});
+
+test('an ambiguous Meta start retains the cap hold and cannot be automatically retried or bulk-enriched',async t=>{
+  const research=metaFake();let calls=0;
+  research.create=async()=>{calls++;throw new MetaBackgroundError(429,{ambiguous:true});};
+  const {crm,enrichment}=fixture(t,{research});
+  crm.import('buyers',[{name:'Pat Buyer',sourceRef:'ambiguous'}],1);
+  const [c]=crm.list().contacts;enrichment.request(c.id,'identity');
+  await until(()=>settledJobs(enrichment));
+  const [row]=enrichment.status().jobs;
+  assert.equal(row.status,'failed');assert.equal(row.costPending,true);
+  assert.equal(row.costMicros,STEP_ESTIMATE_MICROS.identity);
+  assert.equal(enrichment.spentToday(),STEP_ESTIMATE_MICROS.identity);
+  assert.equal(calls,1);
+  assert.throws(()=>enrichment.request(c.id,'identity'),{status:409});
+  assert.equal(enrichment.plan().contacts,0);
+  enrichment.recover();assert.equal(calls,1);
+});
+
+test('restart after uncertain Meta dispatch keeps the hold and never creates a replacement response',async t=>{
+  const research=metaFake(),{store,crm,enrichment,make}=fixture(t,{research});
+  crm.import('buyers',[{name:'Pat Buyer',sourceRef:'dispatch-restart'}],1);const [c]=crm.list().contacts;
+  await enrichment.close();const at=Date.now();
+  store.write("INSERT INTO crm_jobs(id,contact,step,status,state,created,started,cost_micros) VALUES(?,?,'identity','running',?,?,?,?)",'uncertain',c.id,
+    JSON.stringify({provider:'meta',model:metaModel,dispatchStarted:true,billing:'pending'}),at,at,STEP_ESTIMATE_MICROS.identity);
+  const next=make();t.after(()=>next.close());next.recover();
+  assert.equal(next.job('uncertain').status,'failed');
+  assert.match(next.job('uncertain').error,/Reconcile provider usage/);
+  assert.equal(next.spentToday(),STEP_ESTIMATE_MICROS.identity);
+  assert.equal(research.calls.create.length,0);
+  assert.throws(()=>next.request(c.id,'identity'),{status:409});
+});
+
+test('a mismatched Meta response cannot supply identity evidence or erase its held estimate',async t=>{
+  const research=metaFake();research.get=async()=>metaResult({id:'resp_unrelated'});
+  const {crm,enrichment}=fixture(t,{research});crm.import('buyers',[{name:'Pat Buyer',sourceRef:'wrong-response'}],1);
+  const [c]=crm.list().contacts;enrichment.request(c.id,'identity');await until(()=>settledJobs(enrichment));
+  const [row]=enrichment.status().jobs;
+  assert.equal(row.status,'failed');assert.equal(row.costPending,true);
+  assert.equal(row.costMicros,STEP_ESTIMATE_MICROS.identity);
+  assert.equal(crm.get(c.id).details?.identity,undefined);
+});
+
+test('incomplete Meta search accounting remains pending instead of using token-only cost',async t=>{
+  const response=metaResult();delete response.output[0].action.queries;
+  const research=metaFake(response),{crm,enrichment}=fixture(t,{research});
+  crm.import('buyers',[{name:'Pat Buyer',sourceRef:'unpriced'}],1);
+  enrichment.request(crm.list().contacts[0].id,'identity');await until(()=>settledJobs(enrichment));
+  const [row]=enrichment.status().jobs,job=enrichment.job(row.id);
+  assert.equal(row.status,'done');assert.equal(row.costPending,true);assert.equal(row.costEstimated,false);
+  assert.equal(row.costMicros,STEP_ESTIMATE_MICROS.identity);
+  assert.match(job.cost.identity.reason,/search-query usage/);
+  assert.equal(job.cost.identity.micros,undefined);
+  assert.equal(Object.keys(job.state.usageRecords).length,1);
+});
+
+test('known Meta rate-limit refusals retry, while terminal incomplete responses never change a contact',async t=>{
+  const research=metaFake(metaResult({status:'incomplete'})),start=research.create;let refused=2;
+  research.create=async(...args)=>{if(refused-->0)throw new MetaBackgroundError(429);return start(...args);};
+  const {crm,enrichment}=fixture(t,{research});crm.import('buyers',[{name:'Pat Buyer',sourceRef:'incomplete'}],1);
+  const [c]=crm.list().contacts;enrichment.request(c.id,'identity');await until(()=>settledJobs(enrichment));
+  const [row]=enrichment.status().jobs;
+  assert.equal(row.status,'failed');assert.equal(row.attempts,3);assert.equal(row.costEstimated,true);
+  assert.equal(research.calls.create.length,1);
+  assert.equal(crm.get(c.id).details?.identity,undefined);
+});
+
+test('a Meta cancellation completion race retains the authoritative completed evidence',async t=>{
+  const research=metaFake(),completed=metaResult();
+  research.get=async()=>normalizeMetaResponse({id:completed.id,model:metaModel,status:'in_progress',output:[]});
+  let now=Date.now();const {crm,enrichment}=fixture(t,{research,now:()=>now});
+  crm.import('buyers',[{name:'Pat Buyer',sourceRef:'cancel-race'}],1);
+  const [c]=crm.list().contacts;
+  const id=enrichment.insert(c.id,'identity'),job=enrichment.job(id);
+  enrichment.save(job,{status:'running',started:now-46*60000,provider_id:completed.id});
+  const result=await enrichment.runIdentity(job,new AbortController().signal);
+  assert.equal(result.verdict,'confirmed');
+  assert.deepEqual(research.calls.cancel,[completed.id]);
+  assert.equal(enrichment.job(id).state.response.status,'completed');
+  assert.equal(enrichment.job(id).cost_micros,112250);
 });
