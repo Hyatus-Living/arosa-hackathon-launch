@@ -14,10 +14,13 @@ set -euo pipefail
 URGENT=""
 if [[ "${1:-}" == --urgent ]]; then URGENT=urgent; fi
 cd "$(dirname "$0")/.."
-CHECKOUT=/home/openclaw/.openclaw/workspace/acres
+CHECKOUT=/srv/arosa
 
 if [[ "$(pwd -P)" != "$CHECKOUT" ]]; then
-  SSH=(gcloud compute ssh openclaw-builder --project hyatus-openclaw --zone us-central1-a --tunnel-through-iap --quiet)
+  : "${ACRES_GCP_PROJECT:?Set your deployment project}"
+  : "${ACRES_GCP_ZONE:?Set your research VM zone}"
+  : "${ACRES_DEPLOY_HOST:?Set your research VM name}"
+  SSH=(gcloud compute ssh "$ACRES_DEPLOY_HOST" --project "$ACRES_GCP_PROJECT" --zone "$ACRES_GCP_ZONE" --tunnel-through-iap --quiet)
   git fetch -q origin main
   TARGET=$(git rev-parse origin/main)
   BASE=$("${SSH[@]}" --command "sudo -u openclaw git -C $CHECKOUT rev-parse origin/main" | tail -n 1)
@@ -28,7 +31,7 @@ if [[ "$(pwd -P)" != "$CHECKOUT" ]]; then
     if git cat-file -e "$BASE^{commit}" 2>/dev/null; then RANGE="$BASE..origin/main"; fi
     BUNDLE=$(mktemp -d)/acres-$TARGET.bundle
     git bundle create -q "$BUNDLE" "$RANGE"
-    gcloud compute scp "$BUNDLE" "openclaw-builder:/tmp/acres-$TARGET.bundle" --project hyatus-openclaw --zone us-central1-a --tunnel-through-iap --quiet
+    gcloud compute scp "$BUNDLE" "$ACRES_DEPLOY_HOST:/tmp/acres-$TARGET.bundle" --project "$ACRES_GCP_PROJECT" --zone "$ACRES_GCP_ZONE" --tunnel-through-iap --quiet
     rm -rf "$(dirname "$BUNDLE")"
   fi
   echo "Deploying research at $(git log -1 --format='%h %s' origin/main)."

@@ -29,5 +29,12 @@
   "devDependencies": {
     "axe-core": "^4.14.0"
   },
-  "license": "MIT"
+  "overrides": {
+    "@pascal-app/core": {
+      "zod": "4.6.7"
+    },
+    "@pascal-app/mcp": {
+      "zod": "4.6.7"
+    }
+  }
 }

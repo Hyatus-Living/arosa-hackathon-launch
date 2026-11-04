@@ -19,7 +19,6 @@
       "workers_dev": false,
       "routes": [
         {"pattern":"acres.hyatus.com/*","zone_name":"hyatus.com"},
-        {"pattern":"build.hyatus.com/*","zone_name":"hyatus.com"},
         {"pattern":"mcp.acres.hyatus.com/*","zone_name":"hyatus.com"}
       ],
       "observability": {"enabled":false}

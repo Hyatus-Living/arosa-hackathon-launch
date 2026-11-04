@@ -54,3 +54,8 @@ test('administrators must be configured by the deployment owner',()=>{
   assert.equal(isAdminEmail('admin@example.com','admin@example.com'),true);
   assert.equal(isAdminEmail('other@example.com','admin@example.com'),false);
 });
+
+test('signed authentication requires an explicitly configured issuer and audience',()=>{
+  assert.throws(()=>createAuthenticator({audience:'example-audience'}),/AROSA_ACCESS_ISSUER and AROSA_ACCESS_AUD/);
+  assert.throws(()=>createAuthenticator({issuer:'https://access.example.com'}),/AROSA_ACCESS_ISSUER and AROSA_ACCESS_AUD/);
+});

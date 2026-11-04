@@ -747,8 +747,8 @@ export function dreamJudgeFromEnv(env=process.env,{agent,loadSecrets=()=>JSON.pa
 }
 
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
-  const statePath=process.env.RESEARCH_STATE_PATH||'/home/openclaw/.openclaw/acres-state/chat.sqlite';
-  const knowledgePath=process.env.KNOWLEDGE_DB_PATH||'/home/openclaw/.openclaw/acres-state/knowledge.sqlite';
+  const statePath=process.env.RESEARCH_STATE_PATH||'/var/lib/arosa/chat.sqlite';
+  const knowledgePath=process.env.KNOWLEDGE_DB_PATH||'/var/lib/arosa/knowledge.sqlite';
   const limit=Number(process.env.DREAM_BATCH_LIMIT||50);
   // A judge that cannot be built (e.g. unreadable secrets) degrades to heuristic scoring; an
   // unknown DREAM_JUDGE value is a config error and stays loud.

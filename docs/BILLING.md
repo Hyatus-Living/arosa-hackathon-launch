@@ -41,7 +41,7 @@ The wallet shows available, held and total balances; $10/$25/$50 Stripe Checkout
 
 ## Storage and charging
 
-Firestore in project `hyatus-openclaw`, default database:
+Optional Firestore wallet storage uses the explicitly configured `ACRES_WALLET_PROJECT`, default database:
 
 - `acres_wallets/{verifiedAccount}`: signed balance and nonnegative reserved funds.
 - `operations/{sha256(reference)}` beneath each wallet: durable idempotency state.
@@ -102,7 +102,7 @@ The Cloud Run wallet validates that the research backend is billing-enabled with
 
 ## Reconciliation
 
-Use only an approved administrator identity attached to `hyatus-openclaw`. The following source command has no public app endpoint:
+Use only an approved administrator identity for your configured wallet project. The following source command has no public app endpoint:
 
 ```sh
 node scripts/wallet-reconcile.mjs inspect ACCOUNT_NAMESPACE

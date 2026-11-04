@@ -3,7 +3,7 @@
 // one CSV per role plus the import payload, and with --post sends the payload to the research
 // service's admin import.
 //   node scripts/crm-import-filings.mjs --since 2023-10-01 --out <dir> [--cache <file>] [--developers 100] [--architects 50]
-//     [--post http://10.42.0.2:18800]   (reads RESEARCH_TOKEN, ACRES_ACCOUNT and ACRES_EMAIL from the environment)
+//     [--post http://127.0.0.1:18800]   (reads RESEARCH_TOKEN, ACRES_ACCOUNT and ACRES_EMAIL from the environment)
 import {existsSync, mkdirSync, readFileSync, writeFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {parseArgs} from 'node:util';

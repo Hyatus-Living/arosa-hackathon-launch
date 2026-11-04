@@ -123,7 +123,7 @@ test('missing or malformed costs stay unknown, not free; unconfigured providers 
 });
 test('Firestore compare-and-swap retries conflicts and commits ledger atomically',async()=>{
   const docs=new Map();let version=0,conflicts=0;
-  const root='https://firestore.googleapis.com/v1/',prefix='projects/hyatus-openclaw/databases/(default)/documents';
+  const root='https://firestore.googleapis.com/v1/',prefix='projects/test-wallet-project/databases/(default)/documents';
   const fetcher=async(url,options)=>{
     assert.equal(options.headers.authorization,'Bearer test-identity');
     if(options.method==='POST') {
@@ -138,10 +138,15 @@ test('Firestore compare-and-swap retries conflicts and commits ledger atomically
     const document=docs.get(String(url).slice(root.length));
     return document?{ok:true,status:200,json:async()=>structuredClone(document)}:{ok:false,status:404};
   };
-  const wallet=new Wallet(new FirestoreWalletRepository({token:async()=>'test-identity',fetcher}));
+  const wallet=new Wallet(new FirestoreWalletRepository({project:'test-wallet-project',token:async()=>'test-identity',fetcher}));
   await Promise.all(Array.from({length:6},(_,i)=>wallet.credit(owner,'payment-'+i,100)));
   const stored=JSON.parse(docs.get(prefix+'/acres_wallets/'+owner).fields.payload.stringValue);
   assert.equal(stored.balanceMicros,600);assert.equal(docs.size,13);assert.ok(conflicts>0);
+});
+
+test('Firestore refuses unconfigured storage before accessing credentials or the network',async()=>{
+  const repository=new FirestoreWalletRepository({project:'',token:()=>assert.fail('must not access credentials'),fetcher:()=>assert.fail('must not access network')});
+  await assert.rejects(()=>repository.request('/wallet'),/ACRES_WALLET_PROJECT/);
 });
 
 test('only undispatched holds can be released and small top-ups can repay negative balances',async()=>{

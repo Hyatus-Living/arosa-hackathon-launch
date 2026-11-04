@@ -2,14 +2,14 @@
 // OpenClaw exec SecretRef resolver backed by Google Secret Manager, using the VM's own
 // identity (metadata token; secretAccessor on exactly the mapped secrets). Protocol v1:
 // stdin {protocolVersion, provider, ids} -> stdout {protocolVersion, values, errors}.
-// Ref ids are allowlisted here; anything unmapped is NOT_FOUND, never guessed.
+// Ref ids are allowlisted in private operator configuration; anything unmapped is NOT_FOUND.
 // Source of truth is this repo file; acres-deploy-research installs it to
 // /usr/local/bin/openclaw-gsm-resolver.mjs on the builder VM.
-const PROJECT = 'hyatus-openclaw';
-const MAP = {
-  'openclaw/typesafe/apiKey': 'acres-typesafe-api-key',
-  'openclaw/gateway/password': 'openclaw-gateway-password',
-};
+import {readFileSync} from 'node:fs';
+const PROJECT = process.env.ACRES_GCP_PROJECT;
+const mapPath = process.env.ACRES_OPENCLAW_SECRET_MAP_JSON;
+if (!PROJECT || !mapPath) throw new Error('Set ACRES_GCP_PROJECT and ACRES_OPENCLAW_SECRET_MAP_JSON.');
+const MAP = JSON.parse(readFileSync(mapPath, 'utf8'));
 
 const readStdin = () => new Promise((resolve, reject) => {
   let input = '';
@@ -39,7 +39,7 @@ const values = {}, errors = {};
 // Unmapped ids fail closed without any network call.
 const mapped = [];
 for (const id of ids) {
-  if (MAP[id]) mapped.push(id);
+  if (Object.hasOwn(MAP,id) && typeof MAP[id] === 'string' && MAP[id]) mapped.push(id);
   else errors[id] = {code: 'NOT_FOUND'};
 }
 if (mapped.length) {

@@ -196,17 +196,12 @@ It starts `acres-architecture-worker@<systemd-escaped jobDir>.service`, waits fo
 stops the unit if it receives SIGTERM. The research deploy (`infra/acres-deploy-research`)
 installs the template whenever `/opt/acres-architecture-worker` exists, with a drop-in
 (`acres-architecture-worker@.service.d/user.conf`) that sets `User` and `Group` to the user
-`acres-research` runs as (`acres-runtime` on the VM). It also installs the polkit rule
+`acres-research` runs as. It also installs the polkit rule
 `infra/acres-architecture-worker.rules` as `/etc/polkit-1/rules.d/50-acres-architecture-worker.rules`,
 with `RESEARCH_USER` replaced by that user, so the research service may start and stop only
 these units.
 
-The unit, the rule and the research service must name the same user. That user creates the job
-directory (mode 700) and starts the unit, and the unit must read and write that directory. On
-2026-10-21 research moved to `acres-runtime` while the rule and the unit still named `openclaw`:
-every job then failed with `Interactive authentication required` before Blender started. A job
-that ends without a verification report now fails with the launcher's last output lines as its
-reason.
+The unit, the rule and the research service must name the same user. That user creates the private job directory and starts the unit, which must be able to read and write it. A job that ends without a verification report fails with the launcher's last output lines as its reason.
 
 The unit runs as the research service's user with:
 
@@ -261,46 +256,11 @@ The downloadable Blender file retains the finished materials and presentation me
 The presentation stills (`render_job.py`) use the same sky, brick with stone floor bands on residential
 storeys, framed reflective glass, and an asphalt roadway between sidewalks along the street front.
 
-## GPU render host
+## Remote GPU rendering
 
-Renders and previews run on `acres-render-gpu` when the research service points
-`ACRES_ARCHITECTURE_WORKER` at `bin/architecture-worker-gpu`. That host is a Compute Engine VM in
-`hyatus-openclaw`, `us-central1-a`, network `openclaw`: n1-standard-4 with one NVIDIA T4, 100 GB
-balanced disk, Ubuntu 22.04 with the NVIDIA 580 server driver (the prebuilt module for the GCP kernel), no service account, an ephemeral
-external address for package and Blender downloads only, and the network tag `acres-render-gpu`.
-Firewall rule `acres-render-gpu-ssh` admits SSH only from the research host (10.42.0.2) and IAP.
+`worker/remote_worker.py` optionally dispatches a job to a Google Cloud GPU VM. Configure your own project, zone, host and SSH key through `ACRES_GCP_PROJECT`, `ACRES_GCP_ZONE`, `ACRES_GPU_HOST` and optional `ACRES_GPU_SSH_KEY`. The account must have only the instance-start and OS Login permissions required for that VM. Host identity and credentials belong in private operator configuration.
 
-`worker/remote_worker.py` (run as the research user) starts the host when it is stopped, sends
-`job.json` and `input/` over SSH as the research host's OS Login user, runs the job there through `acres-gpu-job` in the same
-`acres-architecture-worker@.service` sandbox as here, and copies `output/` back. On that host the
-unit's `gpu.conf` drop-in (`infra/acres-architecture-worker-gpu.conf`) opens the NVIDIA devices
-only, sets `ACRES_CYCLES_DEVICE=OPTIX` and allows 4 vCPUs and 12 GB; Cycles then renders on the
-GPU, and `blender.log` says `cycles device: OPTIX`. When the host does not answer within 150
-seconds the job runs on this host's CPU unit instead. The research host's service account holds
-`roles/compute.instanceAdmin.v1` and `roles/compute.osAdminLogin` on that one instance only, and
-plain `ssh` uses a key on that account's OS Login profile, so no project-wide permission is needed.
-Create the key once as the research user (it lives in `/var/lib/acres-runtime/.ssh`):
-
-```bash
-sudo -u acres-runtime env HOME=/var/lib/acres-runtime ssh-keygen -q -t ed25519 -N "" -f /var/lib/acres-runtime/.ssh/acres-render-gpu
-sudo -u acres-runtime env HOME=/var/lib/acres-runtime gcloud compute os-login ssh-keys add \
-  --key-file=/var/lib/acres-runtime/.ssh/acres-render-gpu.pub
-```
-
-If the host is recreated, remove its old entry from `/var/lib/acres-runtime/.ssh/known_hosts`.
-
-The host powers itself off when it has been up 15 minutes and no job has run for 15 minutes
-(`acres-render-gpu-idle.timer`), so it bills only while rendering: about $0.54 an hour on demand.
-
-Set it up, or update its worker after a change here, from an export of `main`:
-
-```bash
-gcloud compute ssh acres-render-gpu --project hyatus-openclaw --zone us-central1-a --tunnel-through-iap \
-  --command 'sudo bash /var/tmp/acres/infra/acres-render-gpu-setup /var/tmp/acres'
-```
-
-after copying the export to `/var/tmp/acres` there. It installs the driver and the worker, then
-renders the smoke scene on the GPU.
+The dispatcher transfers only the job and its inputs, runs the same sandboxed worker and accepts only output files beneath the job directory. Cancellation terminates the remote job. If the configured GPU host cannot become ready in time, the existing local CPU worker handles the job.
 
 ## Measured resource use
 

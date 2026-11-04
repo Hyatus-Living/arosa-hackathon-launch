@@ -7,7 +7,7 @@ import {createHash, randomUUID} from 'node:crypto';
 import {performance} from 'node:perf_hooks';
 import {NYC_JURISDICTION, normalizeJurisdictionInput, resolveSearchJurisdiction, inferUrlJurisdiction} from './jurisdiction.mjs';
 
-export const knowledgePath = () => process.env.ACRES_KNOWLEDGE_DB || '/home/openclaw/.openclaw/acres-state/knowledge.sqlite';
+export const knowledgePath = () => process.env.ACRES_KNOWLEDGE_DB || '/var/lib/arosa/knowledge.sqlite';
 export const hash = value => createHash('sha256').update(value).digest('hex');
 export function knowledgeFreshness(row,now=Date.now()) {
   const checked=Date.parse(row.last_success);

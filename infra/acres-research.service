@@ -15,11 +15,11 @@ Type=simple
 User=openclaw
 Group=openclaw
 WorkingDirectory=/opt/acres-research
-Environment=HOME=/home/openclaw
+Environment=HOME=/var/lib/arosa
+Environment=ACRES_STATE_DIR=/var/lib/arosa
 Environment=ACRES_KNOWLEDGE_CONFIG=/run/acres-secrets/knowledge.json
-Environment=XDG_RUNTIME_DIR=/run/user/1001
 Environment=ACRES_SECRETS_JSON=/run/acres-secrets/secrets.json
-EnvironmentFile=/home/openclaw/.openclaw/gateway.env
+EnvironmentFile=/var/lib/arosa/openclaw/gateway.env
 EnvironmentFile=/run/acres-secrets/gateway-secrets.env
 # Runs as root before every start, after the previous process has exited: installs the release that
 # acres-deploy-research staged in /opt/acres-research/.next, if any (see acres-research-apply).
@@ -35,7 +35,7 @@ TimeoutStopSec=23min
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
-ReadWritePaths=/home/openclaw/.openclaw /tmp
+ReadWritePaths=/var/lib/arosa /tmp
 ProtectHome=read-only
 UMask=0077
 [Install]

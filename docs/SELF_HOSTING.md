@@ -55,7 +55,7 @@ The service prints its bound address. In another terminal, `curl http://127.0.0.
 |---|---|
 | `ACRES_STATE_DIR` | Directory for chat, account cost profiles, optional market/knowledge data, Composio sessions, optional MCP evidence, traces and architecture revisions/jobs |
 | `RESEARCH_STATE_PATH` | Existing explicit chat-database override; when set, its parent directory also determines the other service stores |
-| `RESEARCH_HOST`, `RESEARCH_PORT` | Listener outside systemd socket activation; defaults remain `10.42.0.2:18800` for the deployed service |
+| `RESEARCH_HOST`, `RESEARCH_PORT` | Listener outside systemd socket activation; defaults to the local listener `127.0.0.1:18800` |
 | `ACRES_MCP_EVIDENCE_DB` | Optional explicit MCP evidence database override |
 | `ACRES_PLANNING_DIR` | Planning sidecar directory; defaults to this checkout's `planning/` |
 
@@ -92,3 +92,5 @@ Verify a new independent Modeling project: save a plan, render it, reopen it and
 ## Services outside this local configuration
 
 Hosted access is free. `DAILY_LIMITS` can override the daily research, illustration, selection and render allowances for your own installation; reset boundaries use New York time. Legacy billing flags cannot re-enable charging. Historical wallet records remain tied to their owning store. Stripe webhooks, email delivery, external feeds, the public MCP service and scheduled jobs need their own separately configured deployment and credentials. Do not run the repository's GCP deployment scripts against a new account as a local setup step.
+
+Historical wallet storage is optional for free access. If you enable wallet operations, set `ACRES_WALLET_PROJECT` to your Firestore project and grant the service only its required database permissions. Without this setting wallet requests fail before credentials or network access.

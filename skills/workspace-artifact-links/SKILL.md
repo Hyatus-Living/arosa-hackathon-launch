@@ -33,9 +33,9 @@ The supplied Arosa project context establishes this example:
 
 | Coding sandbox project | Server-side project |
 | --- | --- |
-| `/workspace/acres/` | `/home/openclaw/.openclaw/workspace/acres/` |
+| `/workspace/acres/` | `/srv/arosa/` |
 
-Thus `docs/acres-credit-flow.html` maps to `/home/openclaw/.openclaw/workspace/acres/docs/acres-credit-flow.html`. This does not establish another session's mapping or viewer scope. Verify the active context each time.
+Thus `docs/acres-credit-flow.html` maps to `/srv/arosa/docs/acres-credit-flow.html`. This does not establish another session's mapping or viewer scope. Verify the active context each time.
 
 **Done when:** the candidate server path follows a verified mapping and lies within the active viewer's allowed workspace.
 

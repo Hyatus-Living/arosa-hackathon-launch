@@ -46,10 +46,10 @@ import {startAlertSweeper} from './alert-runner.mjs';
 // Architecture plans and jobs stay off until ACRES_ARCHITECTURE_ENABLED=true; jobs also need the
 // worker executable. Plan builds use the same planning directory as the chat tools (research.mjs).
 export function researchRuntimeOptions(env=process.env) {
-  const statePath=env.RESEARCH_STATE_PATH||join(env.ACRES_STATE_DIR||'/home/openclaw/.openclaw/acres-state','chat.sqlite');
+  const statePath=env.RESEARCH_STATE_PATH||join(env.ACRES_STATE_DIR||'/var/lib/arosa','chat.sqlite');
   const port=Number(env.RESEARCH_PORT??18800);
   if(!Number.isInteger(port)||port<0||port>65535)throw new Error('RESEARCH_PORT must be an integer from 0 to 65535.');
-  return {statePath,stateDir:dirname(statePath),host:env.RESEARCH_HOST||'10.42.0.2',port};
+  return {statePath,stateDir:dirname(statePath),host:env.RESEARCH_HOST||'127.0.0.1',port};
 }
 export function architectureOptions(secrets,env=process.env) {
   if(env.ACRES_ARCHITECTURE_ENABLED!=='true')return null;

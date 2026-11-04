@@ -94,7 +94,7 @@ no status. `planning/fixtures/sample-plan.json` is the sample as a plan document
 ## Files
 
 Each revision is written once, under the acres state directory (`dirname(RESEARCH_STATE_PATH)`, by
-default `/home/openclaw/.openclaw/acres-state`), overridable with `ACRES_ARCHITECTURE_DIR`:
+default `/var/lib/arosa`), overridable with `ACRES_ARCHITECTURE_DIR`:
 
 ```
 <state>/architecture/plans/<planId>/<revision>/

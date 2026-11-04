@@ -8,7 +8,7 @@ Type=oneshot
 User=openclaw
 Group=openclaw
 WorkingDirectory=/opt/acres-research
-Environment=HOME=/home/openclaw
+Environment=HOME=/var/lib/arosa
 # The Socrata app token is pulled with the gateway secrets at boot (infra/acres-pull-secrets).
 EnvironmentFile=-/run/acres-secrets/gateway-secrets.env
 # The LoopNet API key is read from the research secrets file (LOOPNET_API_KEY); without it the LoopNet feed is skipped.
@@ -22,5 +22,5 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=read-only
-ReadWritePaths=/home/openclaw/.openclaw/acres-state /tmp
+ReadWritePaths=/var/lib/arosa /tmp
 UMask=0077

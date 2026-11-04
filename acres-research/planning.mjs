@@ -82,7 +82,7 @@ export function planningCommand(planningDir) {
 
 // Plan revisions live in the acres state directory beside chat.sqlite, as store.mjs and dream.mjs resolve it.
 export function architectureDir() {
-  return process.env.ACRES_ARCHITECTURE_DIR || path.join(path.dirname(process.env.RESEARCH_STATE_PATH || '/home/openclaw/.openclaw/acres-state/chat.sqlite'), 'architecture');
+  return process.env.ACRES_ARCHITECTURE_DIR || path.join(path.dirname(process.env.RESEARCH_STATE_PATH || '/var/lib/arosa/chat.sqlite'), 'architecture');
 }
 
 export function planRevisionDir(planId, revision) {

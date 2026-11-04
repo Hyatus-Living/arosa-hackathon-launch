@@ -6,7 +6,7 @@ test('MCP edge pins its origin, forwards OAuth and preserves upstream challenges
   const prior=global.fetch,calls=[];
   global.fetch=async(request,options)=>{calls.push({url:request.url,authorization:request.headers.get('authorization'),origin:request.headers.get('origin'),host:request.headers.get('host'),body:request.method==='POST'?await request.text():null,redirect:options.redirect});return new Response('denied',{status:401,headers:{'www-authenticate':'Bearer resource_metadata="https://mcp.witharosa.ai/.well-known/oauth-protected-resource/mcp"'}});};
   try {
-    const env={UPSTREAM_ORIGIN:'https://acres-mcp-125672997221.us-central1.run.app'};
+    const env={UPSTREAM_ORIGIN:'https://mcp-service.example.com'};
     for(const path of ['/mcp','//evil.example/mcp']) {
       const response=await edge.fetch(new Request('https://mcp.witharosa.ai'+path,{method:'POST',headers:{authorization:'Bearer fixture',origin:'https://chatgpt.com',host:'mcp.witharosa.ai'},body:'{"jsonrpc":"2.0"}'}),env);
       assert.equal(response.status,401);assert.match(response.headers.get('www-authenticate'),/resource_metadata/);

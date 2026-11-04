@@ -9,7 +9,7 @@ import compression from 'compression';
 import {Wallet,FirestoreWalletRepository,BillingError} from '../acres-research/wallet.mjs';
 import {createPayments} from './payments.mjs';
 import {createSubscriptions} from './subscriptions.mjs';
-const researchOrigin=(process.env.ACRES_RESEARCH_ORIGIN||'http://10.42.0.2:18800').replace(/\/$/,'');
+const researchOrigin=(process.env.ACRES_RESEARCH_ORIGIN||'http://127.0.0.1:18800').replace(/\/$/,'');
 const wallet=new Wallet(new FirestoreWalletRepository());
 const payments=createPayments({wallet,secretKey:process.env.STRIPE_SECRET_KEY,webhookSecret:process.env.STRIPE_WEBHOOK_SECRET,live:process.env.STRIPE_LIVE==='true'});
 const paymentDeliveryAvailable=Boolean(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_WEBHOOK_SECRET);

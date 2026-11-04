@@ -8,11 +8,11 @@ set -euo pipefail
 OUT=/run/acres-secrets/codex-oauth.json
 TMP=$(mktemp /run/acres-secrets/.codex-oauth.XXXXXX)
 trap 'rm -f "$TMP"' EXIT
-runuser -u openclaw -- env HOME=/home/openclaw /usr/local/bin/node --input-type=module -e '
+runuser -u openclaw -- env HOME=/var/lib/arosa /usr/local/bin/node --input-type=module -e '
 import {readFile} from "node:fs/promises";
 const {resolveApiKeyForProvider} = await import("/usr/local/lib/node_modules/openclaw/dist/plugin-sdk/provider-auth-runtime.js");
-const cfg = JSON.parse(await readFile("/home/openclaw/.openclaw/openclaw.json", "utf8"));
-const auth = await resolveApiKeyForProvider({provider: "openai", cfg, agentDir: "/home/openclaw/.openclaw/agents/builder/agent"});
+const cfg = JSON.parse(await readFile("/var/lib/arosa/openclaw/openclaw.json", "utf8"));
+const auth = await resolveApiKeyForProvider({provider: "openai", cfg, agentDir: "/var/lib/arosa/openclaw/agents/builder/agent"});
 const claims = JSON.parse(Buffer.from(auth.apiKey.split(".")[1], "base64url").toString());
 const chatgptAccountId = claims["https://api.openai.com/auth"].chatgpt_account_id;
 if (!chatgptAccountId) throw new Error("The subscription token has no ChatGPT account id.");

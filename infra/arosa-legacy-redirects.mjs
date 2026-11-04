@@ -3,7 +3,6 @@ const destinations = {
   'www.witharosa.ai': 'witharosa.ai',
   'acres.witharosa.ai': 'build.witharosa.ai',
   'acres.hyatus.com': 'build.witharosa.ai',
-  'build.hyatus.com': 'openclaw.witharosa.ai',
   'mcp.acres.hyatus.com': 'mcp.witharosa.ai',
 };
 

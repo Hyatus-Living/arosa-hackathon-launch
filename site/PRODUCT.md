@@ -18,4 +18,4 @@ Visitor success: understand who Arosa is for and what it produces for a real sit
 sources and accuracy, and apply for the private beta (`/beta`). Existing accounts sign in at
 `https://build.witharosa.ai`.
 
-Surfaces: the home page (Persuade, a pitch in seven parts: opening, proof, what it replaces, one real site, who it is for, sources, questions, then one action), the beta page, the roadmap, accuracy and help pages. The app itself is at build.witharosa.ai (app.witharosa.ai serves it too); the builder at openclaw.witharosa.ai.
+Surfaces: the home page (Persuade, a pitch in seven parts: opening, proof, what it replaces, one real site, who it is for, sources, questions, then one action), the beta page, the roadmap, accuracy and help pages. The app itself is at build.witharosa.ai (app.witharosa.ai serves it too).

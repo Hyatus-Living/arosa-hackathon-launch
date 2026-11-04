@@ -134,8 +134,9 @@ test('the env names match the server wiring and the durable secret route',()=>{
   for(const name of ['STRIPE_SECRET_KEY','STRIPE_LIVE','STRIPE_PRICE_PRO_MONTHLY','STRIPE_PRICE_PRO_YEARLY','STRIPE_SUBSCRIPTION_WEBHOOK_SECRET'])
     assert.ok(server.includes(name),`server.js reads ${name}`);
   const pull=readFileSync(join(repoRoot,'infra','acres-pull-secrets'),'utf8');
-  assert.ok(pull.includes("'STRIPE_SECRET_KEY': 'acres-stripe-secret-key'"),'GSM name for the Stripe secret key');
-  assert.ok(pull.includes("'STRIPE_SUBSCRIPTION_WEBHOOK_SECRET': 'acres-stripe-subscription-webhook-secret'"),'GSM name for the webhook secret');
+  assert.ok(pull.includes("os.environ['ACRES_SECRET_MAP_JSON']"),'GSM names come from private operator configuration');
+  for(const name of ['STRIPE_SECRET_KEY','STRIPE_SUBSCRIPTION_WEBHOOK_SECRET'])
+    assert.ok(pull.includes(name),`secret mapping supports ${name}`);
 });
 
 test('the CLI refuses bad keys with exit 2 and accepts --dry-run, all without network',()=>{

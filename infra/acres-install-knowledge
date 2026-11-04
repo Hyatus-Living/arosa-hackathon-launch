@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-ROOT=/home/openclaw/.openclaw/workspace/acres
+ROOT=/srv/arosa
 [[ $(id -u) == 0 ]]
 [[ -r /etc/acres-research/knowledge.json ]]
 command -v pdftotext >/dev/null || { echo 'Install poppler-utils before enabling knowledge ingestion.' >&2; exit 1; }
@@ -10,7 +10,7 @@ install -m 644 "$ROOT/package.json" "$ROOT/package-lock.json" "$STAGE/"
 npm ci --prefix "$STAGE" --omit=dev --ignore-scripts
 install -d -m 755 /opt/acres-research/node_modules
 cp -a "$STAGE/node_modules/." /opt/acres-research/node_modules/
-install -d -m 700 -o openclaw -g openclaw /home/openclaw/.openclaw/acres-state
+install -d -m 700 -o openclaw -g openclaw /var/lib/arosa
 for FILE in knowledge.mjs knowledge-providers.mjs knowledge-refresh.mjs knowledge-query.mjs; do
   install -m 644 "$ROOT/acres-research/$FILE" "/opt/acres-research/$FILE"
 done
