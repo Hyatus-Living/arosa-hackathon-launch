@@ -19,7 +19,7 @@ test('every planner process runs with the same hash seed, so a redrawn option dr
   const dir = mkdtempSync(path.join(tmpdir(), 'planning-'));
   mkdirSync(path.join(dir, '.venv', 'bin'), {recursive: true});
   const python = path.join(dir, '.venv', 'bin', 'python');
-  writeFileSync(python, '#!/bin/sh\nprintf \'{"seed": "%s"}\' "$PYTHONHASHSEED"\n');
+  writeFileSync(python, '#!/bin/sh\ncat >/dev/null\nprintf \'{"seed": "%s"}\' "$PYTHONHASHSEED"\n');
   chmodSync(python, 0o755);
   assert.deepEqual(await spawnPlanner({}, {planningDir: dir}), {seed: '0'});
 });

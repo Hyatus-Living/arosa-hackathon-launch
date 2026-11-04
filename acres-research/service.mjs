@@ -1,6 +1,7 @@
 import http from 'node:http';
 import net from 'node:net';
 import {fileURLToPath} from 'node:url';
+import {dirname,join} from 'node:path';
 import {readFileSync,existsSync,createReadStream} from 'node:fs';
 import {randomUUID,timingSafeEqual} from 'node:crypto';
 import {research} from './research.mjs';
@@ -46,9 +47,15 @@ import {mailerFromSecrets} from './alert-mailer.mjs';
 import {startAlertSweeper} from './alert-runner.mjs';
 // Architecture plans and jobs stay off until ACRES_ARCHITECTURE_ENABLED=true; jobs also need the
 // worker executable. Plan builds use the same planning directory as the chat tools (research.mjs).
+export function researchRuntimeOptions(env=process.env) {
+  const statePath=env.RESEARCH_STATE_PATH||join(env.ACRES_STATE_DIR||'/home/openclaw/.openclaw/acres-state','chat.sqlite');
+  const port=Number(env.RESEARCH_PORT??18800);
+  if(!Number.isInteger(port)||port<0||port>65535)throw new Error('RESEARCH_PORT must be an integer from 0 to 65535.');
+  return {statePath,stateDir:dirname(statePath),host:env.RESEARCH_HOST||'10.42.0.2',port};
+}
 export function architectureOptions(secrets,env=process.env) {
   if(env.ACRES_ARCHITECTURE_ENABLED!=='true')return null;
-  return {stateDir:'/home/openclaw/.openclaw/acres-state',emails:env.ACRES_ARCHITECTURE_EMAILS||'',worker:env.ACRES_ARCHITECTURE_WORKER||null,pipelineVersion:env.ACRES_ARCHITECTURE_PIPELINE_VERSION||'1',
+  return {stateDir:researchRuntimeOptions(env).stateDir,emails:env.ACRES_ARCHITECTURE_EMAILS||'',worker:env.ACRES_ARCHITECTURE_WORKER||null,pipelineVersion:env.ACRES_ARCHITECTURE_PIPELINE_VERSION||'1',
     planningDir:secrets.ACRES_PLANNING_DIR||env.ACRES_PLANNING_DIR||undefined,buildPlan:planning.buildArchitectureRevision,lotPolygons:true};
 }
 // Each workflow can choose a provider without changing its project or tool boundary.
@@ -1003,15 +1010,18 @@ server.drain=({graceMs=1290000,cleanupMs=15000,requestMs=30000}={})=>drainPromis
 return server;
 }
 if(process.argv[1]===fileURLToPath(import.meta.url)) {
+  const runtime=researchRuntimeOptions();
+  // Planning tools resolve their revision files beside the same chat database.
+  process.env.RESEARCH_STATE_PATH=runtime.statePath;
   const secrets=JSON.parse(readFileSync(process.env.ACRES_SECRETS_JSON||'/etc/acres-research/secrets.json','utf8'));
-  const evidence=secrets.MCP_SERVICE_TOKEN?new EvidenceStore(process.env.ACRES_MCP_EVIDENCE_DB||'/home/openclaw/.openclaw/acres-state/mcp-evidence.sqlite'):null;
-  const sessions=new SessionStore('/home/openclaw/.openclaw/acres-state/composio.sqlite',secrets);
-  const store=new ChatStore('/home/openclaw/.openclaw/acres-state/chat.sqlite');
+  const evidence=secrets.MCP_SERVICE_TOKEN?new EvidenceStore(process.env.ACRES_MCP_EVIDENCE_DB||join(runtime.stateDir,'mcp-evidence.sqlite')):null;
+  const sessions=new SessionStore(join(runtime.stateDir,'composio.sqlite'),secrets);
+  const store=new ChatStore(runtime.statePath);
   const mcp=evidence?createMcpDomain({evidence,releasedSourceIds:secrets.MCP_RELEASED_SOURCE_IDS||[],searchWeb:secrets.MCP_ENABLE_EXA_SEARCH===true?createExaSearch(secrets,sessions):null,
     readState:(account,projectId)=>store.projectView(account,projectId),listProjects:(account,args)=>store.projectPage(account,args),
     writeState:(account,projectId,{version,assumptions})=>store.updateProjectState(account,projectId,{version,fields:{assumptions}})}):null;
   const releaseFile=new URL('./.deployed-commit',import.meta.url);
-  const server=createResearchServer({secrets,store,mcp,sessions,architecture:architectureOptions(secrets),
+  const server=createResearchServer({secrets,store,mcp,sessions,architecture:architectureOptions(secrets),traceRoot:join(runtime.stateDir,'traces'),
     release:existsSync(releaseFile)?readFileSync(releaseFile,'utf8').trim():null});
   const alertSweeper=startAlertSweeper({store,alerts:server.alertStore,mailer:mailerFromSecrets(secrets),
     openMarket:async()=>openMarketStore({readOnly:true}),appUrl:process.env.ALERTS_APP_URL||'https://build.witharosa.ai'});
@@ -1019,7 +1029,7 @@ if(process.argv[1]===fileURLToPath(import.meta.url)) {
   // made while one process hands over to the next wait in its backlog instead of being refused.
   const activated=process.env.LISTEN_FDS==='1'&&process.env.LISTEN_PID===String(process.pid);
   for(const name of ['LISTEN_FDS','LISTEN_PID','LISTEN_FDNAMES'])delete process.env[name];
-  server.listen(activated?{fd:3}:{port:18800,host:'10.42.0.2'});
+  server.listen(activated?{fd:3}:{port:runtime.port,host:runtime.host},()=>console.log(JSON.stringify({event:'research_listening',address:server.address()})));
   if(dealStoreEnabled()) {
     const warm=()=>{try{warmDealValuations();}catch(error){console.error(JSON.stringify({event:'deal_warm_failed',message:error.message}));}};
     // Each warm is a cache hit unless the store or the day changed, so a short interval keeps a sync's

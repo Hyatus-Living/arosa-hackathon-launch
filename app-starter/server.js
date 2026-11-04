@@ -9,6 +9,7 @@ import compression from 'compression';
 import {Wallet,FirestoreWalletRepository,BillingError} from '../acres-research/wallet.mjs';
 import {createPayments} from './payments.mjs';
 import {createSubscriptions,PRO_PRICES} from './subscriptions.mjs';
+const researchOrigin=(process.env.ACRES_RESEARCH_ORIGIN||'http://10.42.0.2:18800').replace(/\/$/,'');
 const billingEnabled=process.env.BILLING_ENABLED==='true';
 const wallet=new Wallet(new FirestoreWalletRepository());
 const payments=createPayments({wallet,secretKey:process.env.STRIPE_SECRET_KEY,webhookSecret:process.env.STRIPE_WEBHOOK_SECRET,live:process.env.STRIPE_LIVE==='true'});
@@ -17,7 +18,7 @@ const checkoutAvailable=billingEnabled && Boolean(process.env.STRIPE_SECRET_KEY 
 const subscriptions=createSubscriptions({secretKey:process.env.STRIPE_SECRET_KEY,webhookSecret:process.env.STRIPE_SUBSCRIPTION_WEBHOOK_SECRET,live:process.env.STRIPE_LIVE==='true',
   prices:{month:process.env.STRIPE_PRICE_PRO_MONTHLY,year:process.env.STRIPE_PRICE_PRO_YEARLY},
   research:async(account,subscription)=>{
-    const response=await fetch('http://10.42.0.2:18800/plan/subscription',{method:'PUT',headers:{'content-type':'application/json',authorization:`Bearer ${process.env.RESEARCH_TOKEN}`,'x-acres-account':account},body:JSON.stringify(subscription),signal:AbortSignal.timeout(10000)});
+    const response=await fetch(`${researchOrigin}/plan/subscription`,{method:'PUT',headers:{'content-type':'application/json',authorization:`Bearer ${process.env.RESEARCH_TOKEN}`,'x-acres-account':account},body:JSON.stringify(subscription),signal:AbortSignal.timeout(10000)});
     if(!response.ok)throw new BillingError('The subscription could not be recorded.');
   }});
 const app=express();
@@ -44,7 +45,7 @@ app.get('/healthz',(_req,res)=>res.json({ok:true}));
 // public API path: a path-scoped Cloudflare Access application bypasses sign-in for it.
 app.get('/api/public/stats',async(_req,res)=>{
   try {
-    const response=await fetch('http://10.42.0.2:18800/public-stats',{headers:{authorization:`Bearer ${process.env.RESEARCH_TOKEN}`},signal:AbortSignal.timeout(5000)});
+    const response=await fetch(`${researchOrigin}/public-stats`,{headers:{authorization:`Bearer ${process.env.RESEARCH_TOKEN}`},signal:AbortSignal.timeout(5000)});
     if(!response.ok)throw new Error('Research stats are unavailable.');
     res.set('Cache-Control','public, max-age=60, s-maxage=300').json(await response.json());
   } catch {res.set('Cache-Control','no-store').status(503).json({error:'Stats are unavailable.'});}
@@ -61,7 +62,7 @@ app.get('/api/public/alerts/unsubscribe',(req,res)=>{
 app.post('/api/public/alerts/unsubscribe',express.urlencoded({extended:false,limit:'2kb'}),async(req,res)=>{
   res.set('Cache-Control','no-store');
   try {
-    const response=await fetch('http://10.42.0.2:18800/alerts/unsubscribe',{method:'POST',headers:{'content-type':'application/json',authorization:`Bearer ${process.env.RESEARCH_TOKEN}`},body:JSON.stringify({token:String(req.query.token||'')}),signal:AbortSignal.timeout(10000)});
+    const response=await fetch(`${researchOrigin}/alerts/unsubscribe`,{method:'POST',headers:{'content-type':'application/json',authorization:`Bearer ${process.env.RESEARCH_TOKEN}`},body:JSON.stringify({token:String(req.query.token||'')}),signal:AbortSignal.timeout(10000)});
     if(response.status===404)return res.status(404).type('html').send(unsubscribePage('Link not recognized','This stop link is not valid. Ask Arosa in chat to show your alerts to manage them.'));
     if(!response.ok)throw new Error('Unsubscribe failed.');
     const {stopped}=await response.json();
@@ -80,7 +81,7 @@ app.post('/api/public/beta-apply',express.json({limit:'8kb'}),async(req,res)=>{
   if(!betaApplyAllowed(betaApplyLog,client))return res.status(429).json({error:'Too many applications from here. Try again in an hour.'});
   const {name,email,company,role,phone,focus}=req.body||{};
   try {
-    const response=await fetch('http://10.42.0.2:18800/public/beta-applications',{method:'POST',headers:{'content-type':'application/json',authorization:`Bearer ${process.env.RESEARCH_TOKEN}`},body:JSON.stringify({name,email,company,role,phone,focus}),signal:AbortSignal.timeout(10000)});
+    const response=await fetch(`${researchOrigin}/public/beta-applications`,{method:'POST',headers:{'content-type':'application/json',authorization:`Bearer ${process.env.RESEARCH_TOKEN}`},body:JSON.stringify({name,email,company,role,phone,focus}),signal:AbortSignal.timeout(10000)});
     res.status(response.status).json(await response.json());
   } catch {res.status(503).json({error:'We could not send your application. Try again in a minute.'});}
 });
@@ -93,7 +94,7 @@ app.get('/api/public/options/:token',async(req,res)=>{
   res.set({'Cache-Control':'no-store','Referrer-Policy':'no-referrer','X-Robots-Tag':'noindex'});
   const token=encodeURIComponent(req.params.token);
   try {
-    const response=await fetch(`http://10.42.0.2:18800/public/options/${token}`,{headers:researchBearer(),signal:AbortSignal.timeout(10000)});
+    const response=await fetch(`${researchOrigin}/public/options/${token}`,{headers:researchBearer(),signal:AbortSignal.timeout(10000)});
     if(response.status===404)return res.status(404).type('html').send(messagePage('This link is not available','It may have been mistyped or withdrawn. Ask the person who sent it for a new one.'));
     if(!response.ok)throw new Error('The option could not be read.');
     res.type('html').send(optionPage(await response.json(),{files:`/api/public/options/${token}/files`}));
@@ -113,7 +114,7 @@ function requireAdmin(req,res,next) {
   next();
 }
 async function touchPerson(req) {
-  try{await fetch('http://10.42.0.2:18800/people/me',{method:'POST',headers:{'content-type':'application/json',...identityHeaders(req)},body:JSON.stringify({}),signal:AbortSignal.timeout(5000)});}
+  try{await fetch(`${researchOrigin}/people/me`,{method:'POST',headers:{'content-type':'application/json',...identityHeaders(req)},body:JSON.stringify({}),signal:AbortSignal.timeout(5000)});}
   catch{/* The people directory is additive; a failed touch must not block sign-in. */}
 }
 app.get('/api/session',async(req,res)=>{void touchPerson(req);res.set('Cache-Control','no-store').json({namespace:req.account,email:req.email||null,isAdmin:isAdminEmail(req.email),architectureEnabled:isArchitectureEnabled(req.email),...(process.env.GOOGLE_MAP_TILES_API_KEY?{maps:{tilesKey:process.env.GOOGLE_MAP_TILES_API_KEY}}:{})});});
@@ -122,7 +123,7 @@ app.use('/api',(req,res,next)=>{
   if(origin&&!appOrigins.has(origin))return res.status(403).json({error:'Please use the Arosa app to send messages.'});next();
 });
 async function billingPolicy(account,email) {
-  const response=await fetch('http://10.42.0.2:18800/billing-policy',{headers:{authorization:`Bearer ${process.env['RESEARCH_TOKEN']}`,'x-acres-account':account,...(email?{'x-acres-email':email}:{})},signal:AbortSignal.timeout(10000)});
+  const response=await fetch(`${researchOrigin}/billing-policy`,{headers:{authorization:`Bearer ${process.env['RESEARCH_TOKEN']}`,'x-acres-account':account,...(email?{'x-acres-email':email}:{})},signal:AbortSignal.timeout(10000)});
   if(!response.ok)throw new Error('Research billing configuration is unavailable.');
   const policy=await response.json();
   if(!policy.enabled || !policy.ready)throw new Error('Research billing configuration is not ready.');
@@ -135,7 +136,7 @@ app.get('/api/wallet',async(req,res)=>{
     const [snapshot,policy]=await Promise.all([wallet.snapshot(req.account),billingPolicy(req.account,req.email)]);
     // Each research charge is named by the conversation it ran in.
     const ids=[...new Set(snapshot.entries.map(entry=>entry.runId).filter(Boolean))];
-    const titles=ids.length?(await (await fetch(`http://10.42.0.2:18800/run-titles?ids=${encodeURIComponent(ids.join(','))}`,{headers:identityHeaders(req),signal:AbortSignal.timeout(5000)})).json()).titles:{};
+    const titles=ids.length?(await (await fetch(`${researchOrigin}/run-titles?ids=${encodeURIComponent(ids.join(','))}`,{headers:identityHeaders(req),signal:AbortSignal.timeout(5000)})).json()).titles:{};
     res.json({...snapshot,entries:snapshot.entries.map(entry=>titles[entry.runId]?{...entry,conversationTitle:titles[entry.runId]}:entry),enabled:true,checkoutAvailable,policy});
   }
   catch(error){res.status(error.status||503).json({error:error.message});}
@@ -147,7 +148,7 @@ app.post('/api/wallet/checkout',async(req,res)=>{
   catch(error){res.status(error.status||503).json({error:error.message});}
 });
 async function planStatus(req) {
-  const response=await fetch('http://10.42.0.2:18800/plan',{headers:identityHeaders(req),signal:AbortSignal.timeout(10000)});
+  const response=await fetch(`${researchOrigin}/plan`,{headers:identityHeaders(req),signal:AbortSignal.timeout(10000)});
   if(!response.ok)throw new BillingError('Your plan could not load.');
   return response.json();
 }
@@ -173,7 +174,7 @@ async function proxy(req,res,path,payload,cacheControl='no-store') {
   const requestId=randomUUID();res.set('Cache-Control',cacheControl);res.set('X-Request-ID',requestId);
   const controller=new AbortController();res.on('close',()=>{if(!res.writableEnded)controller.abort();});
   try {
-    const upstream=await fetch(`http://10.42.0.2:18800${path}`,{method:req.method,headers:{'content-type':'application/json',...identityHeaders(req),'x-request-id':requestId},...(payload?{body:JSON.stringify(payload)}:{}),signal:AbortSignal.any([controller.signal,AbortSignal.timeout(path.includes('/events')?600000:330000)])});
+    const upstream=await fetch(`${researchOrigin}${path}`,{method:req.method,headers:{'content-type':'application/json',...identityHeaders(req),'x-request-id':requestId},...(payload?{body:JSON.stringify(payload)}:{}),signal:AbortSignal.any([controller.signal,AbortSignal.timeout(path.includes('/events')?600000:330000)])});
     res.status(upstream.status);res.set('Content-Type',upstream.headers.get('content-type')||'application/json');
     if(upstream.headers.get('content-type')?.includes('text/event-stream')) {res.set('X-Accel-Buffering','no');res.flushHeaders();const stream=Readable.fromWeb(upstream.body);stream.on('error',()=>res.end());stream.pipe(res);}
     else res.send(await upstream.text());
@@ -188,7 +189,7 @@ app.get('/api/street-view',async(req,res)=>{
   if(!/^[A-Za-z0-9_-]{8,128}$/.test(pano)||!(heading>=0&&heading<=360)||!(fov>=40&&fov<=120))return res.status(400).json({error:'Unknown street photo.'});
   const query=new URLSearchParams({pano,heading:String(Math.round(heading)),fov:String(Math.round(fov))});
   try {
-    const upstream=await fetch(`http://10.42.0.2:18800/street-view?${query}`,{headers:identityHeaders(req),signal:AbortSignal.timeout(20000)});
+    const upstream=await fetch(`${researchOrigin}/street-view?${query}`,{headers:identityHeaders(req),signal:AbortSignal.timeout(20000)});
     if(!upstream.ok)return res.status(upstream.status===404?404:502).json({error:'The street photo is unavailable.'});
     res.status(200).set('Content-Type',upstream.headers.get('content-type')||'image/jpeg').set('Cache-Control','private, max-age=86400');
     res.send(Buffer.from(await upstream.arrayBuffer()));
@@ -275,7 +276,7 @@ const artifactHeaders=['content-type','content-length','etag','content-dispositi
 async function streamFile(req,res,path,headers=identityHeaders(req)) {
   const controller=new AbortController();res.on('close',()=>{if(!res.writableEnded)controller.abort();});
   try {
-    const upstream=await fetch(`http://10.42.0.2:18800${path}`,{headers:{...headers,...(req.get('if-none-match')?{'if-none-match':req.get('if-none-match')}:{})},signal:AbortSignal.any([controller.signal,AbortSignal.timeout(330000)])});
+    const upstream=await fetch(`${researchOrigin}${path}`,{headers:{...headers,...(req.get('if-none-match')?{'if-none-match':req.get('if-none-match')}:{})},signal:AbortSignal.any([controller.signal,AbortSignal.timeout(330000)])});
     res.status(upstream.status).set('Cache-Control','private, no-cache');
     for(const name of artifactHeaders)if(upstream.headers.get(name))res.set(name,upstream.headers.get(name));
     if(!upstream.body||upstream.status===304)return res.end();
@@ -299,7 +300,7 @@ app.post('/api/projects/:id/architecture/drawings',async(req,res)=>{
   const controller=new AbortController();res.on('close',()=>{if(!res.writableEnded)controller.abort();});
   try {
     // 600 s leaves room for 25 MB on a slow link; a browser that goes away aborts the upstream upload.
-    const upstream=await fetch(`http://10.42.0.2:18800${path}`,{method:'POST',headers:{'content-type':req.get('content-type')||'application/octet-stream','content-length':String(length),...(req.get('x-drawing-name')?{'x-drawing-name':req.get('x-drawing-name')}:{}),...identityHeaders(req),'x-request-id':requestId},body:Readable.toWeb(req),duplex:'half',signal:AbortSignal.any([controller.signal,AbortSignal.timeout(600000)])});
+    const upstream=await fetch(`${researchOrigin}${path}`,{method:'POST',headers:{'content-type':req.get('content-type')||'application/octet-stream','content-length':String(length),...(req.get('x-drawing-name')?{'x-drawing-name':req.get('x-drawing-name')}:{}),...identityHeaders(req),'x-request-id':requestId},body:Readable.toWeb(req),duplex:'half',signal:AbortSignal.any([controller.signal,AbortSignal.timeout(600000)])});
     res.status(upstream.status).set('Content-Type',upstream.headers.get('content-type')||'application/json').send(await upstream.text());
   } catch(e) {
     console.error(JSON.stringify({event:'architecture_drawing_upload_failed',requestId,account:req.account,path,error:e.name}));
