@@ -79,3 +79,11 @@ test('an HTML gateway error keeps its status, while an HTML sign-in page still r
   globalThis.fetch = async () => page(200);
   await assert.rejects(chatRequest('/runs/r1'), e => e.status === undefined && /sign-in could not be verified/.test(e.message));
 });
+
+
+test('a daily allowance error retains reset metadata for the usage dialog',async t=>{
+  const original=globalThis.fetch;t.after(()=>{globalThis.fetch=original;});
+  const resetsAt=Date.UTC(2026,10,5,5);
+  globalThis.fetch=async()=>new Response(JSON.stringify({error:'Your daily allowance resets at midnight in New York.',code:'daily_limit_reached',kind:'research',limit:50,resetsAt}),{status:429,headers:{'content-type':'application/json'}});
+  await assert.rejects(chatRequest('/conversations/c1/runs'),error=>error.status===429&&error.code==='daily_limit_reached'&&error.kind==='research'&&error.limit===50&&error.resetsAt===resetsAt&&/resets at midnight/.test(error.message));
+});

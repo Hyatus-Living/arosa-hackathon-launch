@@ -6,7 +6,15 @@ Explore the product at [witharosa.ai](https://witharosa.ai/) or [open Modeling](
 
 This repository contains the full Arosa application source: the website, web application and API, research service, independent Modeling and Underwriting workflows, planning tools, Pascal integration, Blender worker, MCP service, tests and deployment recipes. This is the public launch repository for the Meta Global AI Developer Hackathon. Its Git history begins with the complete application snapshot published here; source provenance and project attribution are recorded in [CONTRIBUTIONS.md](CONTRIBUTIONS.md).
 
-Run the research service, gateway and rendering worker with your own providers and sign-in using the [self-hosting guide](docs/SELF_HOSTING.md). Local startup keeps authentication enabled; paid billing is documented separately.
+Run the research service, gateway and rendering worker with your own providers and sign-in using the [self-hosting guide](docs/SELF_HOSTING.md). Local startup keeps authentication enabled. Hosted access is free, and self-hosted installations use their own provider accounts.
+
+## Free access
+
+No card, subscription or beta invitation is needed. Each signed-in account receives 50 research
+requests, 20 AI illustrations, 100 photo selections and 50 new 3D renders per day. Allowances reset
+automatically at midnight New York time. Browsing, editing saved work and downloading artifacts
+remain free. The hosted service and this MIT-licensed source share the same daily access model;
+self-hosters can configure their own allowances. See [daily access](docs/BILLING.md).
 
 ## Try the interface locally
 
@@ -33,7 +41,7 @@ Open http://127.0.0.1:8090. Both previews use the real frontend. Saved projects 
 
 The complete runtime code is here. A production installation needs its own authentication, data stores, provider credentials and worker installation. The included infrastructure files are reference configurations from Arosa; review and adapt their project IDs, hostnames and paths before running a deployment. They do not grant access to Arosa's infrastructure. No automatic deployment is connected to this repository.
 
-- `app-starter/`: React/Three.js viewers, web pages, Express gateway, project authorization, wallet and sharing.
+- `app-starter/`: React/Three.js viewers, web pages, Express gateway, project authorization, daily usage and sharing.
 - `acres-research/`: research tools and agents, source registry, durable project state, Underwriting, market research, listings, CRM, alerts and Meta image workflows.
 - `planning/`: geometry, floor-plan editing, IFC import/export, scan validation and Pascal scene export/import.
 - `worker/`: versioned Blender/Bonsai rendering, editable `.blend`, GLB and previews. See [worker setup](docs/architecture-worker.md).

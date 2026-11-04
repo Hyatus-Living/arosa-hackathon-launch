@@ -167,18 +167,15 @@
 .deals-comp-metrics { text-align: right; font-size: 12px; white-space: nowrap; display: flex; flex-direction: column; }
 .deals-comp-metrics small { font-size: 11px; color: var(--ink-muted); }
 
-/* Plan: this month's free research and the Arosa Pro upgrade, in the Plan dialog. */
+/* Free daily allowances, shared by every account. */
 .plan-summary .plan-line { font-size: 22px; letter-spacing: -0.02em; line-height: 1.25; }
 .plan-meter { height: 6px; margin: 6px 0 2px; border-radius: var(--r-pill); background: var(--surface-3); overflow: hidden; }
 .plan-meter span { display: block; height: 100%; border-radius: inherit; background: var(--ink); transition: width var(--dur-2) var(--ease); }
 .plan-meter.is-full span { background: var(--warning); }
-.plan-upgrade { padding: 14px; border: 1px solid var(--line); border-radius: var(--r-md); }
-.plan-upgrade-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
-.plan-upgrade-head strong { font-size: 15px; }
-.plan-upgrade-head span { color: var(--ink-muted); font-size: 12.5px; }
-.wallet-amounts.plan-intervals { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.wallet-amount.plan-interval { display: grid; gap: 1px; justify-items: center; align-content: center; min-height: 58px; padding: 6px; }
-.plan-interval span { font-size: 11.5px; }
-.plan-interval strong { font-size: 14px; font-variant-numeric: tabular-nums; }
-.plan-interval small { color: var(--ink-muted); font-size: 11px; font-weight: 500; }
+.daily-usage-list { display: grid; gap: 18px; margin: 0; padding: 0; list-style: none; }
+.daily-usage-row { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; }
+.daily-usage-row strong { font-weight: 500; }
+.daily-usage-row span { color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+.daily-usage-note { margin: 0; font-size: 13px; line-height: 1.5; color: var(--ink-muted); }
+.daily-usage-source { justify-self: start; color: var(--ink); font-size: 13px; text-underline-offset: 3px; }
 .plan-manage { justify-self: start; }

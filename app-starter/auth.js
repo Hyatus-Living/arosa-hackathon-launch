@@ -54,7 +54,7 @@ export const authenticate=createAuthenticator({
 // The architecture plan editor and walkthrough are shown only while the feature is switched on for the
 // deployment and, when an allowlist is configured, only to the listed accounts. An allowlist entry is
 // an exact email, an `@domain` suffix admitting every account on that domain, or `*` admitting every
-// verified account (the judging-window demo mode; pair it with FREE_RUNS_PER_MONTH to bound spend).
+// verified account (the judging-window demo mode; daily account allowances bound hosted usage).
 export function architectureAllowlistAdmits(email,emailsEnv) {
   const normalized=String(email||'').trim().toLowerCase();
   if(!normalized)return false;

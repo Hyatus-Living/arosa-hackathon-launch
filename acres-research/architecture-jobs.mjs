@@ -187,6 +187,7 @@ export class ArchitectureJobs {
     }
     if (match) return {...this.view(match), reused: true};
     const jobId = randomUUID(), jobDir = join(this.root, jobId);
+    this.beforeCreate?.(account,jobId);
     mkdirSync(join(jobDir, 'input'), {recursive: true, mode: 0o700});
     writeFileSync(join(jobDir, 'input', 'scene.json'), text, {mode: 0o600});
     this.store.write(`INSERT INTO architecture_jobs(job_id,project,kind,scheme,revision,status,input_hash,pipeline_version,settings_hash,settings,created_by,created_at,job_dir) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)`,
@@ -248,6 +249,7 @@ export class ArchitectureJobs {
       this.emit(row);
       return {...this.view(row), reused: true};
     }
+    this.beforeCreate?.(account,jobId);
     this.store.write(`INSERT INTO architecture_jobs(${JOB_COLUMNS}) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, jobId, projectId, planId, revision, 'queued', null, ifc.sha256, this.pipelineVersion, settingsHash, JSON.stringify(settings), account, now, null, null, jobDir, null, '[]');
     this.emit(this.row(jobId));
     setImmediate(() => this.pump());

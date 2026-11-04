@@ -5,6 +5,10 @@
     "ignore": ["firebase.json", ".firebaserc", "proxy", "experiments", "**/*.md", "build.mjs", "demo-sites.mjs"],
     "cleanUrls": true,
     "trailingSlash": false,
+    "redirects": [
+      {"source": "/beta", "destination": "https://app.witharosa.ai/modeling", "type": 302},
+      {"source": "/beta.html", "destination": "https://app.witharosa.ai/modeling", "type": 302}
+    ],
     "rewrites": [
       {"source": "/api/**", "run": {"serviceId": "arosa-site-proxy", "region": "us-central1"}}
     ],

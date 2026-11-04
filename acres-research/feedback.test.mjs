@@ -215,7 +215,7 @@ test('admins grant beta access over HTTP; beta testers send feedback that admins
   assert.equal((await api('/feedback',{method:'POST',body:{text:'hi'}})).status,403,'only beta testers send feedback');
   assert.equal((await api('/admin/beta-testers',{method:'POST',body:{email:'tester@example.com'}})).status,403,'only admins grant access');
   assert.equal((await api('/admin/feedback')).status,403);
-  assert.equal((await api('/plan').then(r=>r.json())).plan,'free');
+  assert.equal((await api('/plan').then(r=>r.json())).plan,'community');
 
   await asAdmin('/admin/crm/import',{method:'POST',body:{source:'test',contacts:[{name:'Tess Tester',sourceRef:'1'},{name:'Other',sourceRef:'2'}]}});
   const contacts=(await (await asAdmin('/admin/crm')).json()).contacts;
@@ -230,7 +230,7 @@ test('admins grant beta access over HTTP; beta testers send feedback that admins
   assert.equal(crm.contacts.find(c=>c.id===other.id).status,'beta_active');
 
   const plan=await (await api('/plan')).json();
-  assert.equal(plan.plan,'beta');assert.equal(plan.beta,true);assert.equal(plan.limit,1000);assert.equal(plan.betaAllowance,1000);
+  assert.equal(plan.plan,'community');assert.equal(plan.beta,true);assert.equal(plan.limit,50);
   const runsBefore=store.one('SELECT count(*) n FROM runs').n;
   const opened=await api('/feedback',{method:'POST',body:{text:'The map went blank',page:'/',context:{view:'home'}}});
   assert.equal(opened.status,201);
@@ -249,6 +249,6 @@ test('admins grant beta access over HTTP; beta testers send feedback that admins
 
   const revoked=await (await asAdmin('/admin/beta-testers/tester%40example.com',{method:'DELETE'})).json();
   assert.deepEqual(revoked.betaTesters,[]);
-  assert.equal((await api('/plan').then(r=>r.json())).plan,'free');
+  assert.equal((await api('/plan').then(r=>r.json())).plan,'community');
   assert.equal((await api('/feedback',{method:'POST',body:{text:'hi'}})).status,403);
 });

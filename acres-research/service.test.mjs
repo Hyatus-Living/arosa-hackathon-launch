@@ -6,15 +6,15 @@ import assert from 'node:assert/strict';
 import {ChatStore} from './store.mjs';
 import {createResearchServer} from './service.mjs';
 
-test('direct research cannot select a project workflow',async()=>{
+test('unscoped research cannot bypass daily account limits',async()=>{
   const dir=mkdtempSync(join(tmpdir(),'acres-direct-workflow-')),store=new ChatStore(join(dir,'chat.sqlite'));
   let received;
   const server=createResearchServer({secrets:{RESEARCH_TOKEN:'test'},store,traceRoot:join(dir,'traces'),execute:async input=>{received=input;return {answer:'ok',sources:[],ui:[]};}});
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
   try {
     const response=await fetch(`http://127.0.0.1:${server.address().port}/research`,{method:'POST',headers:{authorization:'Bearer test','content-type':'application/json'},body:JSON.stringify({message:'Test',workflow:'modeling'})});
-    assert.equal(response.status,200);
-    assert.equal(received.workflow,undefined);
+    assert.equal(response.status,410);
+    assert.equal(received,undefined);
   } finally {server.closeAllConnections();await new Promise(resolve=>server.close(resolve));store.close();rmSync(dir,{recursive:true,force:true});}
 });
 
@@ -78,7 +78,7 @@ test('HTTP authorization, durable disconnect recovery and owner-scoped event rep
   } finally {server.closeAllConnections();await new Promise(r=>server.close(r));store.close();rmSync(dir,{recursive:true});}
 });
 
-test('billing exposes only a validated policy and disables the unscoped legacy bypass',async()=>{
+test('legacy billing settings cannot enable charges or the unscoped endpoint',async()=>{
   const dir=mkdtempSync(join(tmpdir(),'acres-billing-api-')),store=new ChatStore(join(dir,'chat.sqlite'));
   const server=createResearchServer({secrets:{RESEARCH_TOKEN:'test',BILLING_ENABLED:true,BILLING_RATES:{codex:{mode:'estimated_call',amountMicros:100,reserveMicros:200,version:'v1',basis:'Subscription allocation'},invalid:{mode:'reported_usd'}}},store});
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
@@ -86,7 +86,7 @@ test('billing exposes only a validated policy and disables the unscoped legacy b
   try {
     assert.equal((await fetch(base+'/billing-policy',{headers:{authorization:'Bearer test'}})).status,401);
     const policy=await (await fetch(base+'/billing-policy',{headers:{authorization:'Bearer test','x-acres-account':'a'.repeat(24)}})).json();
-    assert.equal(policy.enabled,true);assert.equal(policy.ready,true);assert.deepEqual(Object.keys(policy.rates),['codex']);
+    assert.equal(policy.enabled,false);assert.equal(policy.ready,true);assert.deepEqual(policy.rates,{});
     assert.equal((await fetch(base+'/research',{method:'POST',headers:{authorization:'Bearer test','content-type':'application/json'},body:JSON.stringify({message:'Do not bypass wallet'})})).status,410);
   } finally {server.closeAllConnections();await new Promise(resolve=>server.close(resolve));store.close();rmSync(dir,{recursive:true});}
 });

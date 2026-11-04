@@ -37,11 +37,12 @@ test('drain deadline cancels durable execution and keeps the next request queued
   await server.drain({graceMs:15,cleanupMs:500});
   assert.equal(signal.aborted,true);assert.equal(store.runStatus(owner,run.id).status,'interrupted');assert.equal(store.runStatus(owner,queued.id).status,'queued');
 });
-test('legacy execution participates in shutdown cancellation',{timeout:3000},async t=>{
-  const entered=deferred();let signal;
-  const {server,base}=await fixture(t,async()=>{signal=executionSignal();entered.resolve();await abortable(new Promise(()=>{}));return answer;});
-  const pending=fetch(base+'/research',{method:'POST',headers:{authorization:'Bearer test','content-type':'application/json'},body:JSON.stringify({message:'legacy'})}).then(r=>r.text()).catch(()=>null);
-  await entered.promise;await server.drain({graceMs:15,cleanupMs:500});await pending;assert.equal(signal.aborted,true);
+test('the retired unscoped endpoint never starts work during shutdown',async t=>{
+  let executions=0;
+  const {server,base}=await fixture(t,async()=>{executions++;return answer;});
+  const response=await fetch(base+'/research',{method:'POST',headers:{authorization:'Bearer test','content-type':'application/json'},body:JSON.stringify({message:'legacy'})});
+  assert.equal(response.status,410);assert.equal(executions,0);
+  await server.drain({graceMs:15,cleanupMs:500});
 });
 const headers={authorization:'Bearer test','x-acres-account':owner,'content-type':'application/json'};
 const health=async base=>(await fetch(base+'/healthz')).json();

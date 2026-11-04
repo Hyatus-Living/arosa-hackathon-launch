@@ -34,7 +34,6 @@ Create the secrets JSON with your own values:
   "MODEL_API_KEY": "your-meta-model-api-key",
   "META_MODEL": "muse-spark-1.3",
   "COMPOSIO_API_KEY": "your-composio-project-key",
-  "BILLING_ENABLED": false,
   "LISTING_RESEARCH_ENABLED": true,
   "LISTING_RESEARCH_PROVIDER": "meta"
 }
@@ -92,4 +91,4 @@ Verify a new independent Modeling project: save a plan, render it, reopen it and
 
 ## Services outside this local configuration
 
-Leave billing disabled. The current wallet repository is bound to the hosted GCP Firestore project and attached service identity; changing the research origin does not make paid billing portable. Stripe webhooks, email delivery, external feeds, the public MCP service and scheduled jobs need their own separately configured deployment and credentials. Do not run the repository's GCP deployment scripts against a new account as a local setup step.
+Hosted access is free. `DAILY_LIMITS` can override the daily research, illustration, selection and render allowances for your own installation; reset boundaries use New York time. Legacy billing flags cannot re-enable charging. Historical wallet records remain tied to their owning store. Stripe webhooks, email delivery, external feeds, the public MCP service and scheduled jobs need their own separately configured deployment and credentials. Do not run the repository's GCP deployment scripts against a new account as a local setup step.

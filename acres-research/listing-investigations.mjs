@@ -109,8 +109,8 @@ export class ListingInvestigations extends EventEmitter {
     for(const row of this.store.query("SELECT data FROM listing_investigations WHERE owner=? AND status='needs_attention'",owner)){const stuck=JSON.parse(row.data);this.expireProviderlessAttention(stuck)||this.expireAttention(stuck);}
     const active=this.store.query("SELECT data FROM listing_investigations WHERE owner=? AND status NOT IN ('completed','failed','cancelled')",owner).map(r=>JSON.parse(r.data));
     if(active.length)throw fail('An investigation is already active or needs attention. Open it before starting another.',409);
-    if(this.store.one('SELECT COUNT(*) AS count FROM listing_investigations WHERE owner=? AND created>?',owner,Date.now()-86400000).count>=10)throw fail('Daily listing research limit reached.',429);
     const now=Date.now(),job={id:input.id,owner,listingId,projectId:input.projectId||null,requestHash,snapshot:listingInvestigationSnapshot(deal),depth,objective,question,status:'queued',created:now,updated:now,deadline:now+DEPTH_POLICY[depth].deadlineMs,promptVersion:PROMPT_VERSION,provider:this.newProvider,model:this.newProvider==='meta'?this.providers.meta.model:RESEARCH_AGENTS[depth],providerId:null,cursor:null,billing:'not_started',rate:this.wallet?this.secrets.BILLING_RATES[`listing_research_${depth}`]:null,dispatchGuard:randomUUID(),cancelRequested:false,result:null,error:null,usage:null,usageRecords:{}};
+    this.beforeCreate?.(owner,job.id,now);
     this.store.write('INSERT INTO listing_investigations VALUES(?,?,?,?,?,?,?)',job.id,owner,listingId,job.status,now,now,JSON.stringify(job));this.save(job);queueMicrotask(()=>this.pump());return this.public(job);
   }
   // A provider-less needs_attention job can never be cancelled or reconnected (no provider interaction

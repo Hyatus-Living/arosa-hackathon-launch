@@ -8,13 +8,12 @@ import {optionPage,messagePage} from './share-view.mjs';
 import compression from 'compression';
 import {Wallet,FirestoreWalletRepository,BillingError} from '../acres-research/wallet.mjs';
 import {createPayments} from './payments.mjs';
-import {createSubscriptions,PRO_PRICES} from './subscriptions.mjs';
+import {createSubscriptions} from './subscriptions.mjs';
 const researchOrigin=(process.env.ACRES_RESEARCH_ORIGIN||'http://10.42.0.2:18800').replace(/\/$/,'');
-const billingEnabled=process.env.BILLING_ENABLED==='true';
 const wallet=new Wallet(new FirestoreWalletRepository());
 const payments=createPayments({wallet,secretKey:process.env.STRIPE_SECRET_KEY,webhookSecret:process.env.STRIPE_WEBHOOK_SECRET,live:process.env.STRIPE_LIVE==='true'});
-const checkoutAvailable=billingEnabled && Boolean(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_WEBHOOK_SECRET);
-// Arosa Pro subscriptions; their webhook records each change in the research service, which applies the free allowance.
+const paymentDeliveryAvailable=Boolean(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_WEBHOOK_SECRET);
+// Historical subscription events and billing management remain available; new purchases are closed.
 const subscriptions=createSubscriptions({secretKey:process.env.STRIPE_SECRET_KEY,webhookSecret:process.env.STRIPE_SUBSCRIPTION_WEBHOOK_SECRET,live:process.env.STRIPE_LIVE==='true',
   prices:{month:process.env.STRIPE_PRICE_PRO_MONTHLY,year:process.env.STRIPE_PRICE_PRO_YEARLY},
   research:async(account,subscription)=>{
@@ -25,9 +24,9 @@ const app=express();
 // Compress at the origin: Cloudflare compresses only toward the browser, so the tunnel otherwise carries API JSON raw.
 // Event streams stay uncompressed so each event flushes as it arrives; other types use the default compressible check.
 app.use(compression({filter:(req,res)=>!String(res.getHeader('Content-Type')).includes('text/event-stream')&&compression.filter(req,res)}));
-// Payment delivery remains disabled unless the separately configured billing integration is enabled.
+// Preserve delivery for any historical payment; free access never creates a new checkout.
 app.post('/api/payments/stripe/webhook',express.raw({type:'application/json',limit:'60kb'}),async(req,res)=>{
-  if(!checkoutAvailable)return res.status(503).json({error:'Payments are not enabled.'});
+  if(!paymentDeliveryAvailable)return res.status(503).json({error:'Payments are not enabled.'});
   try{res.json(await payments.webhook(req.body,req.get('stripe-signature')));}
   catch(error){res.status(error.status||503).json({error:error.message});}
 });
@@ -122,30 +121,13 @@ app.use('/api',(req,res,next)=>{
   const origin=req.get('origin');
   if(origin&&!appOrigins.has(origin))return res.status(403).json({error:'Please use the Arosa app to send messages.'});next();
 });
-async function billingPolicy(account,email) {
-  const response=await fetch(`${researchOrigin}/billing-policy`,{headers:{authorization:`Bearer ${process.env['RESEARCH_TOKEN']}`,'x-acres-account':account,...(email?{'x-acres-email':email}:{})},signal:AbortSignal.timeout(10000)});
-  if(!response.ok)throw new Error('Research billing configuration is unavailable.');
-  const policy=await response.json();
-  if(!policy.enabled || !policy.ready)throw new Error('Research billing configuration is not ready.');
-  return policy;
-}
-app.get('/api/wallet',async(req,res)=>{
+app.get('/api/wallet',(req,res)=>{
   res.set('Cache-Control','no-store');
-  if(!billingEnabled)return res.json({enabled:false,checkoutAvailable:false,currency:'USD',entries:[]});
-  try{
-    const [snapshot,policy]=await Promise.all([wallet.snapshot(req.account),billingPolicy(req.account,req.email)]);
-    // Each research charge is named by the conversation it ran in.
-    const ids=[...new Set(snapshot.entries.map(entry=>entry.runId).filter(Boolean))];
-    const titles=ids.length?(await (await fetch(`${researchOrigin}/run-titles?ids=${encodeURIComponent(ids.join(','))}`,{headers:identityHeaders(req),signal:AbortSignal.timeout(5000)})).json()).titles:{};
-    res.json({...snapshot,entries:snapshot.entries.map(entry=>titles[entry.runId]?{...entry,conversationTitle:titles[entry.runId]}:entry),enabled:true,checkoutAvailable,policy});
-  }
-  catch(error){res.status(error.status||503).json({error:error.message});}
+  res.json({enabled:false,checkoutAvailable:false,currency:'USD',entries:[]});
 });
-app.post('/api/wallet/checkout',async(req,res)=>{
+app.post('/api/wallet/checkout',(req,res)=>{
   res.set('Cache-Control','no-store');
-  if(!checkoutAvailable)return res.status(503).json({error:'Credit top-ups are not enabled yet.'});
-  try{await billingPolicy(req.account,req.email);res.json(await payments.checkout(req.account,req.body.amountCents,req.body.id));}
-  catch(error){res.status(error.status||503).json({error:error.message});}
+  res.status(410).json({error:'Arosa is free to use. No credit purchase is needed.'});
 });
 async function planStatus(req) {
   const response=await fetch(`${researchOrigin}/plan`,{headers:identityHeaders(req),signal:AbortSignal.timeout(10000)});
@@ -154,16 +136,12 @@ async function planStatus(req) {
 }
 app.get('/api/plan',async(req,res)=>{
   res.set('Cache-Control','no-store');
-  try{const {customer,...plan}=await planStatus(req);res.json({...plan,manageable:Boolean(customer),checkoutAvailable:subscriptions.available,prices:PRO_PRICES});}
+  try{const {customer,...plan}=await planStatus(req);res.json({...plan,manageable:Boolean(customer),checkoutAvailable:false});}
   catch(error){res.status(error.status||503).json({error:error.message});}
 });
-app.post('/api/plan/checkout',async(req,res)=>{
+app.post('/api/plan/checkout',(req,res)=>{
   res.set('Cache-Control','no-store');
-  try{
-    const plan=await planStatus(req);
-    if(!['free','beta'].includes(plan.plan))throw new BillingError('Your plan already includes unlimited research.',409);
-    res.json(await subscriptions.checkout(req.account,req.email,req.body.interval,plan.customer,req.body.id));
-  }catch(error){res.status(error.status||503).json({error:error.message});}
+  res.status(410).json({error:'Arosa is free to use. Daily allowances reset automatically; no subscription is needed.'});
 });
 app.post('/api/plan/portal',async(req,res)=>{
   res.set('Cache-Control','no-store');

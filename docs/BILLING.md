@@ -1,6 +1,39 @@
-# Arosa prepaid wallet
+# Free hosted access
 
-## Product policy
+Arosa is free to use. Signing in saves work and assigns each person their own daily allowance.
+No card, prepaid balance, subscription, beta invitation or upgrade is required.
+
+| Activity | Allowance per account per day |
+| --- | ---: |
+| Research requests, including listing investigations | 50 |
+| AI illustrations | 20 |
+| Photo selections | 100 |
+| New 3D render jobs | 50 |
+
+Allowances reset automatically at midnight in `America/New_York`, including daylight-saving
+changes. Browsing, editing saved plans and downloading existing artifacts do not consume them.
+Requests already saved under the same request ID and reused render artifacts do not consume a
+second allowance. Dispatched image failures count because the provider may have done work.
+Every account has the same limits; historical subscriptions and staff/beta labels do not bypass them.
+
+`acres-research/plans.mjs` owns the defaults. Optional `DAILY_LIMITS` entries in the research
+configuration override individual defaults for a self-hosted installation. Legacy
+`FREE_RUNS_PER_MONTH`, `BETA_RUNS_PER_MONTH`, `PLAN_UNMETERED_EMAILS` and `BILLING_ENABLED`
+do not restore paid access or monthly admission in the hosted service. The usage API returns each
+remaining allowance and the next reset timestamp. Exhaustion returns HTTP 429 with
+`daily_limit_reached`, the activity and reset time. It never offers payment.
+
+New subscription and prepaid checkout routes return HTTP 410. Existing subscription records,
+wallet ledgers and signed webhook delivery are retained for historical accounting; the change does
+not cancel, refund or alter a past purchase. Provider usage recording continues independently of
+user billing. The public MIT source is at https://github.com/Hyatus-Living/arosa-hackathon-launch.
+
+## Historical prepaid-wallet design
+
+The following documents the retained ledger and reconciliation format. It does not describe a
+current paywall or authorize reactivation of charging.
+
+### Previous product policy
 
 Prepaid USD credits, no markup. $1 purchased adds 1,000,000 microcredits. Provider-reported USD costs are preferred. Codex subscription allocation and providers lacking trustworthy metering use an explicitly versioned estimate. This is cost recovery, not a claim that subscription tokens have API invoice prices. Card-processing fees are not deducted from purchased credits or separately passed through in this version.
 
@@ -78,51 +111,3 @@ node scripts/wallet-reconcile.mjs release ACCOUNT_NAMESPACE OPERATION_REFERENCE
 ```
 
 Operation references appear in reservation ledger entries and take the form `RUN_UUID:SEQUENCE:OPERATION`. Confirm the provider's outcome and actual USD cost before settling. A definitive zero charge can settle a dispatched hold with `0`. `release` only accepts an undispatched `reserved` operation; it never releases a dispatched timeout blindly. References and account namespaces are operational data, not authentication credentials; inspect them only in approved private administration. Provider invoice ingestion, policy administration UI, automated aging, dispute resolution and auto-recharge are follow-up features.
-
-## Free plan and Arosa Pro
-
-Everyone can use Arosa. Browsing listings is unlimited; research runs (each message to Arosa, each
-underwriting step, and each listing investigation started) count against a monthly free allowance
-that resets on the first of the month, UTC. A run counts against the person who sends it. Arosa Pro
-removes the limit for $100 a month or $600 a year. `@witharosa.ai` accounts, admins and any email in
-`PLAN_UNMETERED_EMAILS` are unlimited.
-
-- Research (`/etc/acres-research/secrets.json`): `FREE_RUNS_PER_MONTH` (integer) turns the limit on;
-  without it nobody is limited. `PLAN_UNMETERED_EMAILS` (array) lists extra unlimited accounts.
-  `acres-research/plans.mjs` keeps a `subscriptions` table in `chat.sqlite` that mirrors Stripe.
-- Web app (`app.env`): `STRIPE_SECRET_KEY`, `STRIPE_LIVE`, `STRIPE_PRICE_PRO_MONTHLY`,
-  `STRIPE_PRICE_PRO_YEARLY` and `STRIPE_SUBSCRIPTION_WEBHOOK_SECRET`. Without all of them the
-  Upgrade button stays visible but closed.
-- Stripe: two recurring prices on one Arosa Pro product, a customer portal configuration (cancel and
-  payment-method updates), and a webhook endpoint at
-  `https://build.witharosa.ai/api/public/stripe/subscriptions` for `checkout.session.completed` and
-  `customer.subscription.created`, `.updated`, `.deleted`, `.paused` and `.resumed`. Cloudflare
-  Access must let `/api/public/stripe/subscriptions` through without sign-in; the Stripe signature
-  authenticates it.
-
-Turn on the limit only after checkout works end to end, so nobody hits it without a way to upgrade.
-
-Sandbox setup: `scripts/stripe-sandbox-setup.mjs` creates the test product, both prices,
-a portal configuration and the webhook above, and writes the web app env lines to a file
-outside this repository (`--out <path>`, mode 0600). It reads `STRIPE_SECRET_KEY` from the
-environment, refuses live keys, and never prints a secret. Checkout is Stripe-hosted and
-created server-side, so the app needs no publishable (`pk_test_`) key. One command, with
-the Stripe **test** secret in the environment (never in the repo or chat):
-
-```sh
-STRIPE_SECRET_KEY=<test key> node scripts/stripe-sandbox-setup.mjs --out /path/outside/repo/arosa-stripe.env
-```
-
-Then install the env lines into `/etc/arosa-acres.env` on the app host and restart
-`acres-secrets.service` and the app. Durable route: store `STRIPE_SECRET_KEY` and
-`STRIPE_SUBSCRIPTION_WEBHOOK_SECRET` in Secret Manager as `acres-stripe-secret-key` and
-`acres-stripe-subscription-webhook-secret`; `infra/acres-pull-secrets` pulls them as
-optional app env keys (billing stays closed while they are missing, and fetched values
-override the template lines). The price ids and `STRIPE_LIVE` are not secrets and stay in
-the template. Keep
-`FREE_RUNS_PER_MONTH` unset until a test subscription (card 4242…, a non-`@witharosa.ai`
-test account) verifies: `/api/plan` shows Pro, webhook deliveries return 200, and the
-portal opens. An unauthenticated POST to the webhook URL must return the app's JSON
-signature error, not a Cloudflare Access redirect; on or after the Oct 22 Cloudflare
-account move, recreate the Access bypass app in the new org first
-(`docs/arosa-cloudflare-cutover.md`).

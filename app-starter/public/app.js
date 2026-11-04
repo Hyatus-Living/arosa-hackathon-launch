@@ -2242,7 +2242,7 @@ async function send(text, { keepDraft = true, fromListings = listingsMode(), bbl
     }
     if (!started && keepDraft && !state.draft) state.draft = text;
     save();
-    if (e.code === "free_limit_reached") window.dispatchEvent(new CustomEvent("acres:plan-limit", { detail: { message: e.message } }));
+    if (e.code === "daily_limit_reached") window.dispatchEvent(new CustomEvent("acres:plan-limit", { detail: { message: e.message, kind: e.kind, resetsAt: e.resetsAt, limit: e.limit } }));
     else toast(started ? `Your request was saved. Reopen this conversation to check its progress. ${e.message}` : e.message);
   } finally {
     if (token === generation) {

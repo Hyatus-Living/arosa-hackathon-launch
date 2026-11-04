@@ -20,7 +20,7 @@ export class RunManager extends EventEmitter {
   }
   emitEvent(id,event,data={}) {const record=this.store.event(id,event,data);this.emit(id,record);return record;}
   enqueue(sender,conversation,message,id,listingFilters=null) {
-    const run=this.store.createRun(sender,conversation,message,id,listingFilters);this.pump();return run;
+    const run=this.store.createRun(sender,conversation,message,id,listingFilters,this.admit);this.pump();return run;
   }
   pump() {
     if(this.draining||this.admission.closed)return;

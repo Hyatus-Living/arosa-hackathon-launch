@@ -1,7 +1,7 @@
-// What's new entries, newest first. Seeded from merged pull requests #277-#290 only;
-// titles are the pull request titles, dates are the merge dates. Add new entries at the top
-// when a change ships; do not list work that has not merged.
+// What's new entries, newest first. New entries ship with their corresponding release.
+// Keep dated entries as the historical record of earlier behavior.
 export const WHATS_NEW = [
+  { date: "2026-11-04", title: "Free daily access for everyone: 50 research requests, 20 AI illustrations, 100 photo selections and 50 renders, resetting automatically at midnight in New York. No subscription or payment needed." },
   { date: "2026-10-20", pr: 290, title: "Price rental taxes and let each scheme elect 485-x, including a 99-unit Option B building" },
   { date: "2026-10-20", pr: 289, title: "Ask new accounts for their development costs, one step at a time, before the app opens" },
   { date: "2026-10-20", pr: 288, title: "Record the Access bypass for the Stripe subscription webhook" },
