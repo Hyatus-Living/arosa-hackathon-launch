@@ -244,6 +244,20 @@ test('Meta text and native citation annotations retain professional source evide
   assert.deepEqual(interactionSources(native,interactionText(native)),[{url:'https://firm.com/team',title:'Firm team'}]);
 });
 
+test('CRM uses only final Meta text and citations, including an empty normalized answer',()=>{
+  const message=(phase,text,url)=>({type:'message',phase,content:[{type:'output_text',text,annotations:[{type:'url_citation',url,title:text}]}]});
+  const commentary=message('commentary','Checking an unverified lead','https://example.com/progress');
+  const final=message('final_answer','Verified professional evidence','https://example.com/final');
+  for(const output of [[commentary,final],[commentary]]){
+    const native={id:'finality-test',model:'muse-spark-1.3',status:'completed',output};
+    for(const response of [native,normalizeMetaResponse(native)]){
+      const answer=interactionText(response);
+      assert.equal(answer,output.length===2?'Verified professional evidence':'');
+      assert.deepEqual(interactionSources(response,answer),output.length===2?[{url:'https://example.com/final',title:'Verified professional evidence'}]:[]);
+    }
+  }
+});
+
 test('server configuration selects Meta for new identity jobs without a Gemini fallback',t=>{
   const {enrichment}=fixture(t,{secrets:{MODEL_API_KEY:'test-key',META_MODEL:metaModel,GEMINI_RESEARCH_API_KEY:'legacy-key'}});
   assert.equal(enrichment.research.provider,'meta');
