@@ -65,7 +65,7 @@ SAM 3.1 selections guide Muse Image illustrations. Editable plans and geometric 
 
 Jev is retained for decision and selection tasks, including listing-filter interpretation and knowledge-source routing. Its role is disclosed alongside Meta rather than presenting Arosa as exclusively Meta-powered.
 
-New listing and CRM deep research use durable Meta responses; historical Gemini jobs retain their provider for recovery. Feedback and the scheduled improvement judge also use Meta, with operator-owned usage logging. Data retrieval continues through configured services such as Exa and Firecrawl. The [submission guide](docs/hackathon/index.html) records the remaining migration and live verification steps.
+New listing and CRM deep research use durable Meta responses; historical Gemini jobs retain their provider for recovery. Feedback and the scheduled improvement judge also use Meta, with operator-owned usage logging. Data retrieval continues through configured services such as Exa and Firecrawl. The [contribution record](CONTRIBUTIONS.md#demonstrated-hackathon-additions) identifies which Meta workflows were demonstrated during the event.
 
 ## Verify
 
