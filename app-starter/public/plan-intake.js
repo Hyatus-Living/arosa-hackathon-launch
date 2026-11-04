@@ -181,6 +181,7 @@ const mul = (m, n) => [
 ];
 const apply = (m, p) => [m[0] * p[0] + m[2] * p[1] + m[4], m[1] * p[0] + m[3] * p[1] + m[5]];
 function parseTransform(text) {
+  if (text && text.length > 1024) throw new Error("SVG transform is too long.");
   let m = IDENTITY;
   for (const [, op, args] of (text || "").matchAll(/(matrix|translate|scale|rotate|skewX|skewY)\s*\(([^)]*)\)/g)) {
     const v = args.trim().split(/[\s,]+/).map(Number);
@@ -475,6 +476,18 @@ export function planFromFixture(json, { ref }) {
   return plan;
 }
 
+// Bound polygon work before any coordinate traversal or pairwise geometry checks.
+export function assertRoomPolygonLimits(rooms) {
+  let total = 0;
+  for (const room of rooms) {
+    if (!Array.isArray(room.polygon) || room.polygon.length > 2000)
+      throw Object.assign(new Error("Each room polygon must contain at most 2,000 coordinates."), {status: 400});
+    total += room.polygon.length;
+    if (total > 20000)
+      throw Object.assign(new Error("The plan polygons must contain at most 20,000 coordinates in total."), {status: 400});
+  }
+}
+
 // Import shape checks protect editor operations; geometry issues remain editable in validatePlan.
 export function planFromJson(json, { ref }) {
   const object = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
@@ -515,6 +528,7 @@ export function planFromJson(json, { ref }) {
     require(opening.kind === "door" || opening.kind === "window", `openings[${i}].kind must be door or window.`);
     numbers(opening, ["offset", "width", "height", "sill"], `openings[${i}]`);
   });
+  assertRoomPolygonLimits(plan.rooms);
   plan.rooms.forEach((room, i) => {
     require(Array.isArray(room.polygon) && room.polygon.length >= 3, `rooms[${i}].polygon needs at least three coordinates.`);
     room.polygon.forEach((p, j) => point(p, `rooms[${i}].polygon[${j}]`));
@@ -658,6 +672,7 @@ function segmentsCross(a, b, c, d) {
 }
 
 export function validatePlan(plan) {
+  assertRoomPolygonLimits(plan.rooms);
   const issues = [];
   const add = (severity, code, kind, id, message) => issues.push({ severity, code, ref: { kind, id }, message });
   // Ids are unique within each collection; the fixture names a wall and a room "kitchen".

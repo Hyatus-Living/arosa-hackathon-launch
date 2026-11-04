@@ -163,6 +163,22 @@ def site_account(site):
 
 
 class Contract(unittest.TestCase):
+    def test_schedule_labels_remain_text_when_reopened(self):
+        label = '=1+1'
+        schedule = {'areas': [], 'doors': [], 'windows': [],
+                    'units': [{'unit': label, 'storey': label, 'type': label, 'beds': 2,
+                               'rooms': 3, 'netSqft': 710, 'grossSqft': 800}]}
+        with tempfile.TemporaryDirectory() as directory:
+            path = os.path.join(directory, 'schedules.xlsx')
+            drawings.write_schedules(path, schedule)
+            book = load_workbook(path, read_only=True, data_only=False)
+            try:
+                row = next(book['Units'].iter_rows(min_row=2))
+                self.assertEqual([(cell.value, cell.data_type) for cell in row[:4]],
+                                 [(label, 's'), (label, 's'), (label, 's'), (2, 'n')])
+            finally:
+                book.close()
+
     def test_synthetic_plans_are_valid_plan_documents(self):
         for doc in (building(), building(upper=3.0, site=outlines('wide-100x100-C6-2'))):
             self.assertEqual(arch.validate(doc), [])

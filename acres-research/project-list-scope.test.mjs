@@ -30,11 +30,11 @@ test('scoped pages match the existing per-project access oracle across roles, du
  }
 });
 
-test('later scoped pages reevaluate direct revocation and archived teams while preserving owned-conversation read access',t=>{
+test('later scoped pages reevaluate direct revocation and archived teams without retaining access through attached conversations',t=>{
  const {s}=setup(t);for(let i=0;i<100;i++)site(s,alice,'Owned',2000);const direct=site(s,bob),group=site(s,bob),attached=site(s,bob),team=s.createTeam(bob,'Shared');
  s.grantMember(bob,direct.id,'account',alice,'participant');s.addTeamMember(bob,team.id,alice);s.grantMember(bob,group.id,'team',team.id,'viewer');s.grantMember(bob,attached.id,'account',alice,'viewer');s.createConversation(alice,{projectId:attached.projectId});s.removeGrant(bob,attached.id,'account',alice);
  const first=s.projectPage(alice,{sitesOnly:true});assert.equal(first.projects.length,100);assert.ok(first.nextCursor);s.removeGrant(bob,direct.id,'account',alice);s.archiveTeam(bob,team.id);
- const last=s.projectPage(alice,{sitesOnly:true,cursor:first.nextCursor});assert.deepEqual(last.projects.map(p=>[p.id,p.access]),[[attached.projectId,'viewer']]);assert.equal(last.nextCursor,null);
+ const last=s.projectPage(alice,{sitesOnly:true,cursor:first.nextCursor});assert.deepEqual(last.projects,[]);assert.equal(last.nextCursor,null);
 });
 
 test('existing databases gain active-principal indexes idempotently without rewriting project or sharing data',t=>{

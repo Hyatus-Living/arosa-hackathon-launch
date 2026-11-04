@@ -21,8 +21,11 @@ export function cleanFetchedMarkdown(rawText) {
   }
   // Strip the ~20,000-char Drupal global navigation tree on NYC Zoning Resolution pages
   // while preserving frontmatter/title and the ## Breadcrumb + section body.
-  if (text.includes('[Skip to main content]') && text.includes('## Breadcrumb')) {
-    text = text.replace(/\[Skip to main content\][\s\S]*?(?=## Breadcrumb\b)/, '');
+  const navigation = text.indexOf('[Skip to main content]');
+  const afterNavigation = navigation < 0 ? '' : text.slice(navigation);
+  const breadcrumb = afterNavigation.search(/## Breadcrumb\b/);
+  if (breadcrumb >= 0) {
+    text = text.slice(0, navigation) + afterNavigation.slice(breadcrumb);
   }
   return text.replace(/\n{3,}/g, '\n\n').trim();
 }
@@ -88,7 +91,7 @@ export function createUrlFetcher(secrets,{request=fetch,directRequest=pinnedRequ
       await assertPublicDns(new URL(url).hostname,lookup);
       const out=await viaCloudflare(url,secrets,(...args)=>meterRender(()=>request(...args)));
       if(out.text.length<200)throw new Error('Rendered page returned too little usable text.');
-      return {url,title:out.text.match(/^#\s+(.+)$/m)?.[1]?.replace(/\[([^\]]*)\]\([^)]*\)/g,'$1').trim()||out.text.match(/^title:\s*"?([^"\n]+)"?/m)?.[1]?.trim()||url,...out};
+      return {url,title:out.text.match(/^#\s+(.+)$/m)?.[1]?.slice(0,300).replace(/\[([^\]]*)\]\([^)]*\)/g,'$1').trim()||out.text.match(/^title:\s*"?([^"\n]+)"?/m)?.[1]?.trim()||url,...out};
     };
     const failed=(label,e)=>{throwIfCancelled();if(e.code==='PUBLIC_DESTINATION_DENIED'||e instanceof BillingError)throw e;attempts.push(`${label}: ${e.message}`);};
     const renderFirst=cloudflareConfigured(secrets)&&!staticHosts.has(new URL(url).hostname);

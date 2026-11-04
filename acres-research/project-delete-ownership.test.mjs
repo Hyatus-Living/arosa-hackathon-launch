@@ -23,8 +23,8 @@ test('a collaborator can delete their own final conversation without deleting th
   const {store:s}=fixture(t);
   for(const role of ['viewer','participant']){
     const {first,own}=shared(s,'owner','collaborator',role),run=s.createRun('collaborator',own.id,'Private research note');s.begin(run);s.finish(run,'completed',{answer:'Private answer',sources:[]});
-    s.deleteConversation('owner',first.id);assert.equal(s.projectAccess('collaborator',first.projectId),'viewer');
-    assert.throws(()=>s.requireProject('collaborator',first.projectId,'participant'),e=>e.status===403);
+    s.deleteConversation('owner',first.id);assert.equal(s.projectAccess('collaborator',first.projectId),null);
+    assert.throws(()=>s.requireProject('collaborator',first.projectId,'participant'),e=>e.status===404);
     const before=snapshot(s,first.projectId);assert.equal(s.deleteConversation('collaborator',own.id),true);
     assert.equal(snapshot(s,first.projectId),before);assert.equal(s.conversation('collaborator',own.id),null);assert.equal(s.runRow(run.id),null);
     assert.equal(s.projectAccess('owner',first.projectId),'owner');assert.equal(s.projectAccess('collaborator',first.projectId),null);

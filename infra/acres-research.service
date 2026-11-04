@@ -4,7 +4,7 @@ After=network-online.target acres-secrets.service
 # Ordered after the secrets oneshot, which is enabled on its own, so the boot pulls secrets first.
 # Neither Wants nor Requires: restarting the secrets oneshot must not restart research, and a
 # research restart (every deploy) must not pull secrets again and wait for it.
-# Research reads secrets.json and the env files at start and knowledge.json on each use.
+# Research uses read-only systemd credentials. Restart after a secret rotation.
 Wants=network-online.target
 # The listener is acres-research.socket's, so a restart never refuses a connection. Stopping only
 # the service is not enough to keep research down: the socket starts it on the next connection.
@@ -12,13 +12,15 @@ Requires=acres-research.socket
 After=acres-research.socket
 [Service]
 Type=simple
-User=openclaw
-Group=openclaw
+User=acres-runtime
+Group=acres-runtime
 WorkingDirectory=/opt/acres-research
 Environment=HOME=/var/lib/arosa
 Environment=ACRES_STATE_DIR=/var/lib/arosa
-Environment=ACRES_KNOWLEDGE_CONFIG=/run/acres-secrets/knowledge.json
-Environment=ACRES_SECRETS_JSON=/run/acres-secrets/secrets.json
+LoadCredential=knowledge.json:/run/acres-secrets/knowledge.json
+LoadCredential=secrets.json:/run/acres-secrets/secrets.json
+Environment=ACRES_KNOWLEDGE_CONFIG=%d/knowledge.json
+Environment=ACRES_SECRETS_JSON=%d/secrets.json
 EnvironmentFile=/var/lib/arosa/openclaw/gateway.env
 EnvironmentFile=/run/acres-secrets/gateway-secrets.env
 # Runs as root before every start, after the previous process has exited: installs the release that

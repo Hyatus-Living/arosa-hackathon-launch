@@ -7,12 +7,12 @@ Wants=network-online.target
 Type=oneshot
 User=openclaw
 Group=openclaw
-WorkingDirectory=/srv/arosa
+WorkingDirectory=/opt/acres-research
 Environment=HOME=/var/lib/arosa
 EnvironmentFile=/var/lib/arosa/openclaw/gateway.env
 # The Socrata app token is pulled with the gateway secrets at boot (infra/acres-pull-secrets).
 EnvironmentFile=-/run/acres-secrets/gateway-secrets.env
-ExecStart=/usr/local/bin/node /srv/arosa/scripts/ledger-sync.mjs
+ExecStart=/usr/local/bin/node /opt/scripts/ledger-sync.mjs
 TimeoutStartSec=45min
 NoNewPrivileges=true
 PrivateTmp=true

@@ -3,7 +3,7 @@ import {isModelInputRequest,mountModelInputProxy} from './model-intake-proxy.mjs
 import {Readable} from 'node:stream';
 import {randomUUID} from 'node:crypto';
 import {authenticate,resolveAccount,isAdminEmail,isArchitectureEnabled} from './auth.js';
-import {betaApplyAllowed} from './beta-apply.mjs';
+import {betaApplyAllowed,betaApplyClient} from './beta-apply.mjs';
 import {optionPage,messagePage} from './share-view.mjs';
 import compression from 'compression';
 import {Wallet,FirestoreWalletRepository,BillingError} from '../acres-research/wallet.mjs';
@@ -76,7 +76,8 @@ app.post('/api/public/beta-apply',express.json({limit:'8kb'}),async(req,res)=>{
   res.set('Cache-Control','no-store');
   if(req.get('origin')!=='https://witharosa.ai')return res.status(403).json({error:'Apply from witharosa.ai/beta.'});
   if(req.body?.website)return res.json({ok:true});
-  const client=String(req.get('x-forwarded-for')||req.get('cf-connecting-ip')||req.ip).split(',')[0].trim();
+  const client=betaApplyClient(req);
+  if(!client)return res.status(403).json({error:'The site proxy could not be verified.'});
   if(!betaApplyAllowed(betaApplyLog,client))return res.status(429).json({error:'Too many applications from here. Try again in an hour.'});
   const {name,email,company,role,phone,focus}=req.body||{};
   try {
@@ -104,6 +105,8 @@ app.get('/api/public/options/:token/files/:fileId',(req,res)=>{
   return streamFile(req,res,`/public/options/${encodeURIComponent(req.params.token)}/files/${encodeURIComponent(req.params.fileId)}`,researchBearer());
 });
 app.use('/api',authenticate);
+app.use(['/api/conversations/:id','/api/runs/:id'],(req,res,next)=>/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(req.params.id)?next():res.status(404).json({error:'Not found.'}));
+app.use(['/api/projects/:id/architecture','/api/projects/:id/schemes/:schemeId/render'],(req,res,next)=>isArchitectureEnabled(req.email)?next():res.status(404).json({error:'Not found.'}));
 // The app lives at build.witharosa.ai and still answers on app.witharosa.ai; witharosa.ai is the public site. AROSA_APP_ORIGINS lists the origins that may call the API.
 const appOrigins=new Set((process.env.AROSA_APP_ORIGINS||'https://build.witharosa.ai,https://app.witharosa.ai,https://witharosa.ai').split(','));
 // The Map Tiles key is a browser key: restrict it to this app's origin and the Map Tiles API in Google Cloud.
@@ -177,9 +180,9 @@ app.get('/api/street-view',async(req,res)=>{
   }
 });
 app.all('/api/conversations',(req,res)=>proxy(req,res,`/conversations${req.url.includes('?')?req.url.slice(req.url.indexOf('?')):''}`,req.method==='POST'?(typeof req.body?.projectId==='string'?{projectId:req.body.projectId}:req.body?.bbl!==undefined?{bbl:req.body.bbl}:{}):null));
-app.all('/api/conversations/:id',(req,res)=>proxy(req,res,`/conversations/${req.params.id}`));
+app.all('/api/conversations/:id',(req,res)=>proxy(req,res,`/conversations/${encodeURIComponent(req.params.id)}`));
 app.get('/api/conversations/:id/deck',(req,res)=>proxy(req,res,`/conversations/${encodeURIComponent(req.params.id)}/deck${querySuffix(req)}`));
-app.post('/api/conversations/:id/runs',(req,res)=>proxy(req,res,`/conversations/${req.params.id}/runs`,{message:req.body.message,id:req.body.id,...(req.body.listingFilters?{listingFilters:req.body.listingFilters}:{})}));
+app.post('/api/conversations/:id/runs',(req,res)=>proxy(req,res,`/conversations/${encodeURIComponent(req.params.id)}/runs`,{message:req.body.message,id:req.body.id,...(req.body.listingFilters?{listingFilters:req.body.listingFilters}:{})}));
 app.get('/api/listing-investigations/policy',(req,res)=>proxy(req,res,'/listing-investigations/policy'));
 app.get('/api/listing-investigations',(req,res)=>proxy(req,res,`/listing-investigations?listingId=${encodeURIComponent(req.query.listingId||'')}`));
 app.post('/api/listing-investigations',(req,res)=>proxy(req,res,'/listing-investigations',{id:req.body.id,listingId:req.body.listingId,depth:req.body.depth,objective:req.body.objective,question:req.body.question,projectId:req.body.projectId}));
@@ -188,7 +191,7 @@ app.get('/api/listing-investigations/:id/events',(req,res)=>proxy(req,res,`/list
 app.post('/api/listing-investigations/:id/cancel',(req,res)=>proxy(req,res,`/listing-investigations/${encodeURIComponent(req.params.id)}/cancel`,{}));
 app.post('/api/listing-investigations/:id/resume',(req,res)=>proxy(req,res,`/listing-investigations/${encodeURIComponent(req.params.id)}/resume`,{}));
 app.get('/api/runs',(req,res)=>proxy(req,res,'/runs'));
-app.get('/api/runs/:id',(req,res)=>proxy(req,res,`/runs/${req.params.id}`));
+app.get('/api/runs/:id',(req,res)=>proxy(req,res,`/runs/${encodeURIComponent(req.params.id)}`));
 app.get('/api/listing-investigations/policy',(req,res)=>proxy(req,res,'/listing-investigations/policy'));
 app.get('/api/listing-investigations',(req,res)=>proxy(req,res,`/listing-investigations?listingId=${encodeURIComponent(req.query.listingId||'')}`));
 app.post('/api/listing-investigations',(req,res)=>proxy(req,res,'/listing-investigations',{id:req.body.id,listingId:req.body.listingId,depth:req.body.depth,objective:req.body.objective,question:req.body.question,projectId:req.body.projectId}));
@@ -196,15 +199,16 @@ app.get('/api/listing-investigations/:id',(req,res)=>proxy(req,res,`/listing-inv
 app.get('/api/listing-investigations/:id/events',(req,res)=>proxy(req,res,`/listing-investigations/${encodeURIComponent(req.params.id)}/events?after=${encodeURIComponent(req.get('last-event-id')||req.query.after||0)}`));
 app.post('/api/listing-investigations/:id/cancel',(req,res)=>proxy(req,res,`/listing-investigations/${encodeURIComponent(req.params.id)}/cancel`,{}));
 app.post('/api/listing-investigations/:id/resume',(req,res)=>proxy(req,res,`/listing-investigations/${encodeURIComponent(req.params.id)}/resume`,{}));
-app.get('/api/runs/:id/status',(req,res)=>proxy(req,res,`/runs/${req.params.id}/status`));
-app.get('/api/runs/:id/events',(req,res)=>proxy(req,res,`/runs/${req.params.id}/events?after=${encodeURIComponent(req.get('last-event-id')||req.query.after||0)}`));
-app.post('/api/runs/:id/:action',(req,res)=>proxy(req,res,`/runs/${req.params.id}/${req.params.action}`,{message:req.body.message}));
+app.get('/api/runs/:id/status',(req,res)=>proxy(req,res,`/runs/${encodeURIComponent(req.params.id)}/status`));
+app.get('/api/runs/:id/events',(req,res)=>proxy(req,res,`/runs/${encodeURIComponent(req.params.id)}/events?after=${encodeURIComponent(req.get('last-event-id')||req.query.after||0)}`));
+app.post('/api/runs/:id/:action',(req,res)=>['steer','interrupt'].includes(req.params.action)?proxy(req,res,`/runs/${encodeURIComponent(req.params.id)}/${encodeURIComponent(req.params.action)}`,{message:req.body.message}):res.status(404).json({error:'Not found.'}));
 function querySuffix(req) {return req.url.includes('?')?req.url.slice(req.url.indexOf('?')):'';}
 function resolveInvitee(body) {
   if(!body||typeof body!=='object')return body;
-  if(typeof body.email==='string'&&body.email.trim()&&!body.teamId) {
+  if(typeof body.email==='string'&&body.email.trim()&&!body.teamId&&!body.team&&body.principalType!=='team') {
     const email=body.email.trim().toLowerCase();
-    return {...body,email,account:body.account||resolveAccount(email)};
+    const {account,principal,...invite}=body;
+    return {...invite,email,account:resolveAccount(email)};
   }
   return body;
 }

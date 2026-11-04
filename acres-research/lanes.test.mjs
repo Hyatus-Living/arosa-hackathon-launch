@@ -13,6 +13,8 @@ import {createParcelOperations,addressIdentity} from './parcels.mjs';
 
 const htmlFor=n=>'<html><body><main><p>'+`Evidence page ${n}. `.repeat(20)+'</p></main></body></html>';
 after(installOfflinePublicWeb());
+const fixtureSources='https://www.nyc.gov/page1 https://www.nyc.gov/page2 https://www.nyc.gov/page3';
+const withFixtureSources=input=>({...input,userMessage:`${input.message} Use ${fixtureSources}`});
 function stubFetch(){
   const original=global.fetch;
   global.fetch=async(url)=>{
@@ -37,7 +39,7 @@ test('legacy lanes mode: parallel lanes share one citation pool and the judge wr
     return 'Verified final answer [1].';
   };
   try{
-    const out=await research({message:'What can I build?'},{RESEARCH_MODE:'lanes'},()=>{},(e,d)=>events.push({e,d}),()=>{},agent);
+    const out=await research(withFixtureSources({message:'What can I build?'}),{RESEARCH_MODE:'lanes'},()=>{},(e,d)=>events.push({e,d}),()=>{},agent);
     assert.deepEqual(calls.slice(0,3).sort(),['lane_cases','lane_comps','lane_zoning']);
     assert.equal(calls[3],'judge');
     assert.equal(out.sources.length,1);
@@ -60,7 +62,7 @@ test('one failed lane degrades to a partial judge answer instead of failing the 
     return 'Partial but verified [1]. Case coverage is missing.';
   };
   try{
-    const out=await research({message:'Q?'},{RESEARCH_MODE:'lanes'},()=>{},()=>{},()=>{},agent);
+    const out=await research(withFixtureSources({message:'Q?'}),{RESEARCH_MODE:'lanes'},()=>{},()=>{},()=>{},agent);
     assert.equal(out.lanes.find(l=>l.id==='cases').status,'failed');
     assert.match(out.answer,/Partial/);
   }finally{restore();}
@@ -82,7 +84,7 @@ test('judge citations are validated against the shared pool and lanes cannot cal
     return 'Fabricated [99].';
   };
   try{
-    await assert.rejects(research({message:'Q?'},{RESEARCH_MODE:'lanes'},()=>{},()=>{},()=>{},agent),/invalid source reference/);
+    await assert.rejects(research(withFixtureSources({message:'Q?'}),{RESEARCH_MODE:'lanes'},()=>{},()=>{},()=>{},agent),/invalid source reference/);
   }finally{restore();}
   assert.throws(()=>validateCitations('x [2]',[{id:1}]),/invalid source/);
   assert.equal(parallelEnabled({}),false);
@@ -112,7 +114,7 @@ test('lead mode is the default: one agent call, same citation rules, no forced l
     return `Legacy answer [${fetched.sourceId}].`;
   };
   try{
-    const out=await research({message:'Q?'},{},()=>{},()=>{},()=>{},agent);
+    const out=await research(withFixtureSources({message:'Q?'}),{},()=>{},()=>{},()=>{},agent);
     assert.equal(calls,1);assert.match(out.answer,/Legacy/);assert.equal(out.lanes,undefined);
   }finally{restore();}
 });
@@ -125,7 +127,7 @@ test('the historical RESEARCH_PARALLEL_ENABLED flag no longer forces the lanes p
     return `Lead answer [${fetched.sourceId}].`;
   };
   try{
-    const out=await research({message:'What is the lot area?'},{RESEARCH_PARALLEL_ENABLED:true},()=>{},()=>{},()=>{},agent);
+    const out=await research(withFixtureSources({message:'What is the lot area?'}),{RESEARCH_PARALLEL_ENABLED:true},()=>{},()=>{},()=>{},agent);
     assert.deepEqual(calls,['research']);
     assert.equal(out.lanes,undefined);
   }finally{restore();}
@@ -143,7 +145,7 @@ test('the NYC specialist tools are direct only when the run is about New York Ci
       const fetched=await execute('acres_fetch_url',{url:'https://www.nyc.gov/page1'});
       return `Answer [${fetched.sourceId}].`;
     };
-    await research(input,{ENABLE_CURATED_ZONING:true},()=>{},()=>{},()=>{},agent);
+    await research(withFixtureSources(input),{ENABLE_CURATED_ZONING:true},()=>{},()=>{},()=>{},agent);
     return {names,how};
   };
   try{
@@ -186,7 +188,7 @@ test('the lead agent can search capabilities, load a skill, and spawn self-chart
     return `FINDINGS lane evidence [${fetched.sourceId}]\nDECISION-CHANGERS none\nGAPS none`;
   };
   try{
-    const out=await research({message:'Can this site build more?'},{ENABLE_CURATED_ZONING:true},()=>{},(e,d)=>events.push({e,d}),()=>{},agent);
+    const out=await research(withFixtureSources({message:'Can this site build more?'}),{ENABLE_CURATED_ZONING:true},()=>{},(e,d)=>events.push({e,d}),()=>{},agent);
     assert.deepEqual(calls,['research','lane_operative-text','lane_contrary-authority']);
     assert.match(out.answer,/Lead synthesis/);
     assert.deepEqual(out.lanes.map(l=>l.id).sort(),['contrary-authority','operative-text']);
@@ -205,7 +207,7 @@ test('a simple lead question that never spawns produces no lane or judge events'
     return `Short answer [${fetched.sourceId}].`;
   };
   try{
-    await research({message:'What is the zoning district?'},{},()=>{},(e,d)=>events.push({e,d}),()=>{},agent);
+    await research(withFixtureSources({message:'What is the zoning district?'}),{},()=>{},(e,d)=>events.push({e,d}),()=>{},agent);
     assert.ok(!events.some(x=>x.e.startsWith('lane.')||x.e.startsWith('judge.')));
   }finally{restore();}
 });

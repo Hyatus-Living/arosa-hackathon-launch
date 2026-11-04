@@ -116,7 +116,7 @@ test('every sizing call runs locally in well under a second with the network dis
   };
   try{
     const priorState={property:{bbl:'1000470001',zonedist1:'R9A',lotarea:'10000',lotfront:'100',lotdepth:'100',bldgarea:'5000',yearbuilt:'1960'}};
-    await research({message:'How much more can this site build?',priorState},{ENABLE_CURATED_ZONING:true},()=>{},()=>{},()=>{},agent);
+    await research({message:`How much more can this site build? Use ${budgetSourceUrls}`,priorState},{ENABLE_CURATED_ZONING:true},()=>{},()=>{},()=>{},agent);
   }finally{global.fetch=original;}
   for(const [name,result] of Object.entries(out))assert.equal(typeof result.budget?.compute,'number',`${name} returned no budget: ${JSON.stringify(result).slice(0,300)}`);
   const computeTagged=CAPABILITIES.filter(c=>c.kind==='tool'&&c.cost==='compute').map(c=>c.name);
@@ -259,6 +259,8 @@ test('pure-compute specialist tools charge their own cap after the fetch and rec
   }finally{restore();}
 });
 
+const budgetSourceUrls=Array.from({length:42},(_,i)=>`https://www.nyc.gov/page${i}`).join(' ');
+
 test('entitlement scenarios and the pro forma still run through the lead gateway once fetching is exhausted',async()=>{
   const restore=stubFetch();
   const retrievedAt='2026-10-12';
@@ -281,7 +283,7 @@ test('entitlement scenarios and the pro forma still run through the lead gateway
   };
   try{
     const priorState={property:{zonedist1:'R9A',lotarea:'10000',bldgarea:'5000',yearbuilt:'1960'}};
-    await research({message:'How much more can this site build?',priorState},{ENABLE_CURATED_ZONING:true},()=>{},()=>{},()=>{},agent);
+    await research({message:`How much more can this site build? Use ${budgetSourceUrls}`,priorState},{ENABLE_CURATED_ZONING:true},()=>{},()=>{},()=>{},agent);
     assert.ok(seen.scenarios.scenarios.length>0);
     assert.equal(seen.scenarios.budget.fetch,0);
     assert.equal(seen.scenarios.budget.compute,BUDGET.compute-1);
@@ -507,7 +509,7 @@ test('research wires the deliverable check, reserve unlock and run outcome field
     return `Short answer [${extra.sourceId}].`;
   };
   try{
-    const out=await research({message:'What can I build?'},{},()=>{},()=>{},()=>{},agent);
+    const out=await research({message:`What can I build? Use ${budgetSourceUrls}`},{},()=>{},()=>{},()=>{},agent);
     assert.equal(seen.checkDeliverables,true);
     assert.equal(out.effort,'high');
     assert.equal(out.budgetExhausted,true);

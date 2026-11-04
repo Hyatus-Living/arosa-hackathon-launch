@@ -183,7 +183,7 @@ async function drawingUpload(req,account,id) {
 const artifactExtension={plan:'json',svg:'svg',ifc:'ifc','pascal-scene':'json',idmap:'json','zd1-svg':'svg','zd1-pdf':'pdf',zoning:'json','drawings-pdf':'pdf',dxf:'dxf',schedules:'xlsx',selfcheck:'json',package:'zip',verification:'json',blend:'blend',preview:'png',glb:'glb',manifest:'json','render-street':'png','render-aerial':'png'};
 const downloads=['ifc','blend','zd1-pdf','drawings-pdf','dxf','schedules','package'];
 async function architectureRoute(req,res,account,id,rest) {
-  if(!architecture)return respond(res,404,{error:'Not found.'});
+  if(!architecture||!rolloutAdmits(account))return respond(res,404,{error:'Not found.'});
   if(rest.length===1&&['visual-segment','visual-illustrate'].includes(rest[0])&&req.method==='POST') {
     const project=store.projectView(account,id);
     if(!project||project.workflow!=='modeling')return respond(res,404,{error:'Open a Modeling project to use image tools.'});
@@ -334,7 +334,6 @@ function body(req,{signal,check=()=>signal?.throwIfAborted()}={}) {
 function message(value){if(typeof value!=='string'||!value.trim()||value.length>3000)throw new Error('Enter a question of up to 3,000 characters.');return value.trim();}
 function fail(status,text){const e=new Error(text);e.status=status;throw e;}
 function validEmail(value){if(typeof value!=='string')fail(400,'A valid email is required.');const email=value.trim().toLowerCase();if(email.length>320||!emailRe.test(email))fail(400,'A valid email is required.');return email;}
-function optionalEmail(value){return value===undefined||value===null||value==='' ? undefined : validEmail(value);}
 function validAccount(value){if(typeof value!=='string'||!accountRe.test(value))fail(400,'A valid account is required.');return value;}
 function inviteeAccount(input){
   const candidate=input?.account||(input?.principalType==='account'?input?.principal:undefined);
@@ -709,10 +708,13 @@ async function handle(req,res,enteredAt){
     }
     // People
     if(parts[0]==='people') {
-      if(parts.length===1&&req.method==='GET')return respond(res,200,{people:store.searchPeople((url.searchParams.get('q')||'').slice(0,200))});
+      if(parts.length===1&&req.method==='GET'){
+        if(!isMarketAdmin(email)&&!String(email||'').endsWith('@witharosa.ai'))return respond(res,200,{people:[]});
+        return respond(res,200,{people:store.searchPeople((url.searchParams.get('q')||'').slice(0,200))});
+      }
       if(parts.length===2&&parts[1]==='me'&&req.method==='POST') {
         const input=await body(req);
-        const myEmail=email||(input&&typeof input==='object'&&input.email?validEmail(input.email):undefined);
+        const myEmail=email;
         if(input&&typeof input==='object'&&'name' in input) {
           if(input.name!==null&&typeof input.name!=='string')fail(400,'Name must be 1 to 80 characters.');
           if(typeof input.name==='string'&&input.name.trim().length>80)fail(400,'Name must be 1 to 80 characters.');
@@ -746,7 +748,7 @@ async function handle(req,res,enteredAt){
       }
       if(parts.length===3&&parts[2]==='members'&&req.method==='POST') {
         const input=await body(req);
-        return respond(res,200,store.addTeamMember(account,teamId,inviteeAccount(input),optionalEmail(input.email)));
+        return respond(res,200,store.addTeamMember(account,teamId,inviteeAccount(input)));
       }
       if(parts.length===4&&parts[2]==='members'&&req.method==='DELETE') {
         return respond(res,200,store.removeTeamMember(account,teamId,parts[3]));
@@ -818,6 +820,7 @@ async function handle(req,res,enteredAt){
       }
       // Render one scheme: queues its presentation render (street and aerial stills) and returns its render part.
       if(parts[2]==='schemes'&&parts[4]==='render'&&parts.length===5&&req.method==='POST') {
+        if(!architecture||!rolloutAdmits(account))return respond(res,404,{error:'Not found.'});
         if(!architectureJobs?.worker)return respond(res,503,{error:'Rendering is not available.'});
         return respond(res,202,await requestSchemeRender({store,jobs:architectureJobs,loadContext:renderContext.load},account,id,parts[3]));
       }
@@ -879,7 +882,7 @@ async function handle(req,res,enteredAt){
             member=store.grantMember(account,id,'team',principal,role);
           } else {
             const principal=inviteeAccount(input);
-            member=store.grantMember(account,id,'account',principal,role,optionalEmail(input.email));
+            member=store.grantMember(account,id,'account',principal,role);
           }
           return respond(res,200,{member,members:store.listGrants(id)});
         }

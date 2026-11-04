@@ -2310,11 +2310,22 @@ function renderPlanNotes() {
 document.addEventListener("acres-follow-up", (e) => {
   if (e.detail.planNote) return queuePlanNote(e.detail);
   const text = e.detail.ref ? followUpMessage(e.detail.ref) : e.detail.text;
-  if (dockOnSite()) return void send(text);
+  const followUp = () => {
+    if (!e.detail.draft) return void send(text);
+    if ($("#prompt").value.trim()) return toast("Send or clear your current draft before adding a suggested question.");
+    historyView.close();
+    setChatDock(true);
+    state.draft = text;
+    $("#prompt").value = text;
+    save();
+    updateInput();
+    $("#prompt").focus();
+  };
+  if (dockOnSite()) return followUp();
   // The page's request is for the site's own conversation, which comes back into the dock first.
   const projectId = route.projectId;
   void reattachSite().then(() => {
-    if (route.projectId === projectId && dockOnSite()) void send(text);
+    if (route.projectId === projectId && dockOnSite()) followUp();
   });
 });
 $("#plan-button").addEventListener("click", () => {

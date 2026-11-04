@@ -5,7 +5,7 @@ import {z} from 'zod';
 import {skel} from '../public/skeleton.js';
 import {assertGeneratedUiLimits} from './generated-ui-limits.mjs';
 const roots=new Map();
-const functions=[{name:'sendPrompt',description:'Ask a follow-up question after the user clicks an interface control.',parameters:z.object({text:z.string().min(1).max(3000)}),handler:async args=>{if(!navigator.userActivation.isActive)throw new Error('Click an interface control to ask a follow-up.');const {text}=z.object({text:z.string().min(1).max(3000)}).parse(args);document.dispatchEvent(new CustomEvent('acres-follow-up',{detail:{text}}));return {queued:true};}}];
+const functions=[{name:'sendPrompt',description:'Prepare a follow-up question for the user to review and send.',parameters:z.object({text:z.string().min(1).max(3000)}),handler:async args=>{if(!navigator.userActivation.isActive)throw new Error('Click an interface control to ask a follow-up.');const {text}=z.object({text:z.string().min(1).max(3000)}).parse(args);document.dispatchEvent(new CustomEvent('acres-follow-up',{detail:{text,draft:true}}));return {prepared:true};}}];
 const csp="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; base-uri 'none'; form-action 'none';";
 // The sandbox document follows the app's theme: its color scheme and the app's surface, ink and line
 // colors as CSS variables, with a base style the agent's HTML inherits. The agent's own CSS comes

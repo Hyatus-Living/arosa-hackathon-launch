@@ -46,7 +46,7 @@ export function sniffDrawing(bytes) {
 
 // A display name: printable, at most 200 characters, with the kind's extension.
 export function drawingName(value, kind) {
-  const base = String(value ?? '').replace(/[\u0000-\u001f\u007f"\\/]/g, '').replace(/\s*[\u2013\u2014]\s*/g, ', ').trim().slice(0, 200).replace(/(?:\.pascal)?\.[A-Za-z0-9]{1,5}$/i, '');
+  const base = String(value ?? '').replace(/[\u0000-\u001f\u007f"\\/]/g, '').trim().slice(0, 200).replace(/\s*[\u2013\u2014]\s*/g, ', ').trim().slice(0, 200).replace(/(?:\.pascal)?\.[A-Za-z0-9]{1,5}$/i, '');
   return `${base || 'drawing'}.${EXTENSION[kind]}`;
 }
 

@@ -60,10 +60,10 @@ test('project access mirrors the owning conversation, and attaching never widens
   complete(store,bob,attached.id,'look at another parcel',subject('3000010001'));
   assert.equal(store.projectState(bob,attached.id).property,undefined);
   store.grantMember(bob,attached.id,'account',eve,'participant');
-  assert.equal(store.projectView(eve,owned.projectId).access,'viewer');
+  assert.equal(store.projectView(eve,owned.projectId),null);
   store.setGrantRole(alice,owned.id,'account',bob,'participant');
   assert.equal(store.projectView(bob,owned.projectId).access,'participant');
-  assert.deepEqual(store.listProjects(eve).map(p=>p.id),[owned.projectId]);
+  assert.deepEqual(store.listProjects(eve),[]);
 });
 
 test('existing conversations each get a project and their fields move over on open',t=>{

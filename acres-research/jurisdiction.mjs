@@ -81,7 +81,7 @@ const HOST_JURISDICTIONS = [
   [/(?:^|\.)myboca\.us$/i, 'US-FL-BOCARATON'],
   [/(?:^|\.)orlando\.gov$/i, 'US-FL-ORLANDO'],
   [/(?:^|\.)tampa\.gov$/i, 'US-FL-TAMPA'],
-  [/(?:^|\.)myflorida\.com|flsenate\.gov|leg\.state\.fl\.us$/i, 'US-FL'],
+  [/(?:^|\.)(?:myflorida\.com|flsenate\.gov|leg\.state\.fl\.us)$/i, 'US-FL'],
   [/(?:^|\.)austintexas\.gov$/i, 'US-TX-AUSTIN'],
   [/(?:^|\.)dallascityhall\.com$/i, 'US-TX-DALLAS'],
   [/(?:^|\.)houstontx\.gov$/i, 'US-TX-HOUSTON'],
@@ -91,8 +91,8 @@ const HOST_JURISDICTIONS = [
   [/(?:^|\.)sandiego\.gov$/i, 'US-CA-SANDIEGO'],
   [/(?:^|\.)sanjoseca\.gov$/i, 'US-CA-SANJOSE'],
   [/(?:^|\.)oaklandca\.gov$/i, 'US-CA-OAKLAND'],
-  [/(?:^|\.)ca\.gov|leginfo\.legislature\.ca\.gov$/i, 'US-CA'],
-  [/(?:^|\.)cityofchicago\.org|chicago\.gov$/i, 'US-IL-CHICAGO'],
+  [/(?:^|\.)(?:ca\.gov|leginfo\.legislature\.ca\.gov)$/i, 'US-CA'],
+  [/(?:^|\.)(?:cityofchicago\.org|chicago\.gov)$/i, 'US-IL-CHICAGO'],
   [/(?:^|\.)(?:bostonplans\.org|boston\.gov)$/i, 'US-MA-BOSTON'],
   [/(?:^|\.)cambridgema\.gov$/i, 'US-MA-CAMBRIDGE'],
   [/(?:^|\.)mass\.gov$/i, 'US-MA'],
@@ -235,7 +235,7 @@ export function inferUrlJurisdiction(rawUrl) {
       return `US-${stateHost[1].toUpperCase()}`;
     }
     // Codifier URL paths: library.municode.com/<st>/<city>, up.codes/viewer/<state>/<code-slug>
-    if (/municode\.com$/i.test(host)) {
+    if (/(?:^|\.)municode\.com$/i.test(host)) {
       const m = u.pathname.match(/^\/([a-z]{2})\/([a-z0-9_-]+)/i);
       if (m && ABBREVIATIONS.has(m[1].toUpperCase())) {
         const st = m[1].toUpperCase();
@@ -243,7 +243,7 @@ export function inferUrlJurisdiction(rawUrl) {
         return result(city, st, 'url-path')?.jurisdiction || `US-${st}`;
       }
     }
-    if (/up\.codes$/i.test(host)) {
+    if (/(?:^|\.)up\.codes$/i.test(host)) {
       const m = u.pathname.match(/^\/viewer\/([a-z_]+)\/([a-z0-9_-]+)/i);
       if (m) {
         const stateKey = m[1].replace(/_/g, ' ').toLowerCase();

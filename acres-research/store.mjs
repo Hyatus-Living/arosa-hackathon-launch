@@ -16,20 +16,20 @@ import {validateListingPage,listingPageResearchContext,listingPageHistoryNote} f
 const RANK={viewer:1,participant:2,owner:3};
 const RUN_ATTEMPTS=2;
 const personName=p=>p?.name||(p?.email?(p.email.split('@')[0]||p.email):'A teammate');
-const PROJECT_VISIBLE=`EXISTS(SELECT 1 FROM conversations c WHERE c.project=p.id AND (c.owner=?
+const PROJECT_VISIBLE=`EXISTS(SELECT 1 FROM conversations c WHERE c.project=p.id AND c.owner=p.owner AND (c.owner=?
   OR EXISTS(SELECT 1 FROM conversation_members cm WHERE cm.conversation=c.id AND cm.principal_type='account' AND cm.principal=? AND cm.removed_at IS NULL)
   OR EXISTS(SELECT 1 FROM conversation_members cm JOIN teams t ON t.id=cm.principal JOIN team_members tm ON tm.team=cm.principal AND tm.account=? WHERE cm.conversation=c.id AND cm.principal_type='team' AND cm.removed_at IS NULL AND tm.removed_at IS NULL AND t.archived_at IS NULL)))`;
 function fail(status,message){const e=new Error(message);e.status=status;return e;}
-// The projects an account can see: its own, and every project of a conversation it owns or is shared.
+// Project access comes from ownership or active grants on the project owner's conversations.
 // Takes the account four times.
 const VISIBLE_PROJECTS=`SELECT rowid FROM projects WHERE owner=?
-  UNION ALL SELECT visible.rowid FROM conversations c JOIN projects visible ON visible.id=c.project WHERE c.owner=?
+  UNION ALL SELECT visible.rowid FROM conversations c JOIN projects visible ON visible.id=c.project WHERE c.owner=? AND c.owner=visible.owner
   UNION ALL SELECT visible.rowid FROM conversation_members cm JOIN conversations c ON c.id=cm.conversation JOIN projects visible ON visible.id=c.project
-    WHERE cm.principal_type='account' AND cm.principal=? AND cm.removed_at IS NULL
+    WHERE cm.principal_type='account' AND cm.principal=? AND cm.removed_at IS NULL AND c.owner=visible.owner
   UNION ALL SELECT visible.rowid FROM team_members tm JOIN teams t ON t.id=tm.team
     JOIN conversation_members cm ON cm.principal_type='team' AND cm.principal=tm.team AND cm.removed_at IS NULL
     JOIN conversations c ON c.id=cm.conversation JOIN projects visible ON visible.id=c.project
-    WHERE tm.account=? AND tm.removed_at IS NULL AND t.archived_at IS NULL`;
+    WHERE tm.account=? AND tm.removed_at IS NULL AND t.archived_at IS NULL AND c.owner=visible.owner`;
 const like=q=>`%${String(q).replace(/[\\%_]/g,'\\$&')}%`;
 const requestJson=value=>JSON.stringify(value,(_key,v)=>v&&typeof v==='object'&&!Array.isArray(v)?Object.fromEntries(Object.keys(v).sort().map(k=>[k,v[k]])):v);
 
@@ -93,7 +93,13 @@ CREATE TABLE IF NOT EXISTS dream_runs(
 // parenthetical figures and everything after the first sentence are dropped, and long ones cut at a word.
 export function conversationTitle(input) {
   let text=String(input).replace(/^\[[^\]]*\]\n\n/,'');
-  for(let prev='';prev!==text;){prev=text;text=text.replace(/\s*\([^()]*\)/g,'');}
+  const title=[],parentheses=[];let whitespaceStart=0;
+  for(const char of text){
+    if(char==='(')parentheses.push(whitespaceStart);
+    if(char===')'&&parentheses.length){title.length=parentheses.pop();whitespaceStart=title.length;continue;}
+    title.push(char);if(!/\s/.test(char))whitespaceStart=title.length;
+  }
+  text=title.join('');
   const sentence=text.replace(/\s+/g,' ').trim().split(/(?<=[.!?])\s/)[0].replace(/\.$/,'');
   return sentence.length<=72?sentence:sentence.slice(0,72).replace(/[\s,;:]+\S*$/,'')+'…';
 }
@@ -338,9 +344,10 @@ export class ChatStore {
     const access=this.access(account,id);
     if(!access)return null;
     const c=this.one('SELECT * FROM conversations WHERE id=?',id);
-    const property=this.project.property(c.project)??(c.property?JSON.parse(c.property):null);
+    const projectVisible=this.canReadProject(account,c.project);
+    const property=projectVisible?(this.project.property(c.project)??(c.property?JSON.parse(c.property):null)):null;
     return {id:c.id,title:c.title,projectId:c.project,property,created:c.created,updated:c.updated,
-      ...(this.one('SELECT 1 FROM modeling_projects WHERE project=?',c.project)?{workflow:'modeling',site:{id:c.project,title:this.project.row(c.project).title,workflow:'modeling'}}:{}),
+      ...(projectVisible&&this.one('SELECT 1 FROM modeling_projects WHERE project=?',c.project)?{workflow:'modeling',site:{id:c.project,title:this.project.row(c.project).title,workflow:'modeling'}}:{}),
       owner:{account:c.owner,name:this.displayName(c.owner)},access,members:this.effectiveMembers(c),
       messages:this.messageRows(id),
       runs:this.query('SELECT id,owner,status,input,created,updated,error FROM runs WHERE conversation=? ORDER BY created',id).map(r=>({...r,authorName:this.displayName(r.owner)}))};
@@ -358,7 +365,7 @@ export class ChatStore {
           WHERE NULLIF(TRIM(p.bbl),'') IS NOT NULL AND twin.bbl=p.bbl AND twin.rowid IN (SELECT rowid FROM visible_projects)
             AND p.id NOT IN (SELECT project FROM modeling_projects) AND twin.id NOT IN (SELECT project FROM modeling_projects)
           ORDER BY (SELECT COUNT(*) FROM project_fields f WHERE f.project=twin.id) DESC,twin.updated DESC,twin.id DESC LIMIT 1),p.id)
-        WHERE p.id=c.project AND (NULLIF(TRIM(p.bbl),'') IS NOT NULL OR EXISTS(SELECT 1 FROM project_fields f WHERE f.project=p.id))) AS site FROM conversations c
+        WHERE p.id=c.project AND p.rowid IN (SELECT rowid FROM visible_projects) AND (NULLIF(TRIM(p.bbl),'') IS NOT NULL OR EXISTS(SELECT 1 FROM project_fields f WHERE f.project=p.id))) AS site FROM conversations c
       WHERE (c.owner=?
         OR EXISTS(SELECT 1 FROM conversation_members cm WHERE cm.conversation=c.id AND cm.principal_type='account' AND cm.principal=? AND cm.removed_at IS NULL)
         OR EXISTS(SELECT 1 FROM conversation_members cm JOIN teams t ON t.id=cm.principal JOIN team_members tm ON tm.team=cm.principal AND tm.account=? WHERE cm.conversation=c.id AND cm.principal_type='team' AND cm.removed_at IS NULL AND tm.removed_at IS NULL AND t.archived_at IS NULL))
@@ -432,6 +439,7 @@ export class ChatStore {
     const access=this.access(sender,conversation);
     if(!access)throw fail(404,'Conversation not found.');
     if(access==='viewer')throw fail(403,'Viewers cannot send messages.');
+    this.requireProject(sender,this.projectOf(conversation));
     if(existingRaw)throw fail(409,'This request ID already belongs to another request.');
     if(this.query("SELECT id FROM runs WHERE owner=? AND created>?",sender,Date.now()-3600000).length>=30)throw new Error('You have reached 30 research requests this hour.');
     if(this.query("SELECT id FROM runs WHERE conversation=? AND status='queued'",conversation).length>=10)throw new Error('This conversation already has 10 queued messages.');
@@ -442,7 +450,7 @@ export class ChatStore {
     this.write("UPDATE projects SET title=? WHERE id=? AND title='New conversation'",title,this.projectOf(conversation));
     this.event(id,'run.queued',{message:input,...(listingFilters?{listingFilters}:{})});return this.run(sender,id);
   }
-  projectState(account,id){return this.access(account,id)?this.project.read(this.projectOf(id)):null;}
+  projectState(account,id){const project=this.projectOf(id);return this.access(account,id)&&this.canReadProject(account,project)?this.project.read(project):null;}
   // The reusable sources the project's current fields cite, with the text the citing run recorded,
   // read from the runs of the project's own chats, most cited and newest first. SQLite selects the
   // matching sources, so other source text is never parsed here. Saved knowledge is excluded, since a
@@ -475,6 +483,7 @@ export class ChatStore {
     this.db.exec('SAVEPOINT run_begin');
     try {
       this.requireAccess(run.owner,run.conversation,'participant');
+      this.requireProject(run.owner,this.projectOf(run.conversation));
       const claimed=this.write("UPDATE runs SET status='running',updated=? WHERE id=? AND status IN ('queued','running')",Date.now(),run.id);
       if(!claimed.changes)throw new Error('Run is no longer queued.');
       // A run resumed after a restart already saved its user message on its first start.
@@ -680,16 +689,16 @@ export class ChatStore {
   close(){this.db.close();}
 
   // -- Projects -----------------------------------------------------------
-  // The project owner owns it; grants on the owner's attached conversations carry over as they are,
-  // and any access to any other attached conversation gives read access only.
+  // Only the project's owner can originate project access. A collaborator's attached
+  // conversation cannot preserve or extend access after the owner's grant is removed.
   projectAccess(account,projectId){
     const p=projectId?this.project.row(projectId):null;
     if(!p||!account)return null;
     if(p.owner===account)return 'owner';
     let best=null;
-    for(const c of this.query('SELECT id,owner FROM conversations WHERE project=?',projectId)){
+    for(const c of this.query('SELECT id,owner FROM conversations WHERE project=? AND owner=?',projectId,p.owner)){
       const a=this.access(account,c.id);if(!a)continue;
-      const role=c.owner===p.owner?a:'viewer';
+      const role=a;
       if(!best||RANK[role]>RANK[best])best=role;
     }
     return best;
@@ -769,6 +778,7 @@ export class ChatStore {
       WHERE r.owner=? AND (r.status IN ('queued','running') OR (r.status IN ('completed','failed','interrupted') AND r.updated>?))
         AND (NULLIF(TRIM(p.bbl),'') IS NOT NULL OR EXISTS(SELECT 1 FROM project_fields f WHERE f.project=p.id))
       ORDER BY r.created DESC LIMIT 20`,account,now-ENDED_JOB_MS)
+      .filter(r=>this.canReadProject(account,r.project))
       .map(r=>{
         const state={fields:this.project.read(r.project)};
         const base={id:r.id,status:r.status,created:r.created,conversationId:r.conversation,projectId:r.project,title:r.title,bbl:r.bbl,progress:siteProgress(state),...(r.modeling?{workflow:'modeling'}:{})};
@@ -884,7 +894,7 @@ export class ChatStore {
     });
   }
   grantEntry(conversationId,principalType,principal){return this.listGrants(conversationId).find(g=>g.principalType===principalType&&g.principal===principal)||null;}
-  grantMember(owner,conversationId,principalType,principal,role,inviteeEmail){
+  grantMember(owner,conversationId,principalType,principal,role){
     this.requireAccess(owner,conversationId,'owner');
     if(!['account','team'].includes(principalType))throw fail(400,'Invalid member type.');
     if(!['viewer','participant'].includes(role))throw fail(400,'Role must be viewer or participant.');
@@ -894,9 +904,8 @@ export class ChatStore {
       return {principalType,principal,role:'owner',name:this.displayName(principal),email:this.personRow(principal)?.email??null,addedBy:owner,addedAt:now};
     }
     if(principalType==='team'){
-      const t=this.one('SELECT * FROM teams WHERE id=?',principal);
-      if(!t||t.archived_at)throw fail(404,'Team not found.');
-    }else if(inviteeEmail)this.touchPerson(principal,inviteeEmail);
+      this.requireTeam(owner,principal);
+    }
     this.write(`INSERT INTO conversation_members(conversation,principal_type,principal,role,added_by,added_at,removed_at) VALUES(?,?,?,?,?,?,NULL)
       ON CONFLICT(conversation,principal_type,principal) DO UPDATE SET role=excluded.role,added_by=excluded.added_by,added_at=excluded.added_at,removed_at=NULL`,
       conversationId,principalType,principal,role,owner,now);
@@ -1042,11 +1051,10 @@ export class ChatStore {
     const now=Date.now();this.write('UPDATE teams SET archived_at=? WHERE id=?',now,id);
     return {id,archived:true,archivedAt:now};
   }
-  addTeamMember(owner,id,accountToAdd,email){
+  addTeamMember(owner,id,accountToAdd){
     const t=this.requireTeam(owner,id,true);
     if(typeof accountToAdd!=='string'||!accountToAdd)throw fail(400,'A member account is required.');
     if(accountToAdd!==t.owner){
-      if(email)this.touchPerson(accountToAdd,email);
       const now=Date.now();
       this.write(`INSERT INTO team_members(team,account,role,added_by,added_at,removed_at) VALUES(?,?,?,?,?,NULL)
         ON CONFLICT(team,account) DO UPDATE SET role=CASE WHEN team_members.role='owner' THEN 'owner' ELSE excluded.role END,added_by=excluded.added_by,added_at=excluded.added_at,removed_at=NULL`,

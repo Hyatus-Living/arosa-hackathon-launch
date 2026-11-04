@@ -810,8 +810,11 @@ def write_schedules(path, sched):
         ws.append(header)
         for cell in ws[1]:
             cell.font = Font(bold=True)
-        for row in rows:
-            ws.append(row)
+        for row_number, row in enumerate(rows, start=2):
+            for column, value in enumerate(row, start=1):
+                cell = ws.cell(row=row_number, column=column, value=value)
+                if isinstance(value, str):
+                    cell.data_type = 's'
     sheet('Areas', ['Storey', 'Use', 'Floor elevation (ft)', 'Gross (sq ft)', 'Zoning floor area (sq ft)', 'Net in units (sq ft)', 'Units'],
           [[a['storey'], a['use'], round(a['elevationFeet'], 2), round(a['grossSqft']), None if a['zfaSqft'] is None else round(a['zfaSqft']), round(a['netSqft']), a['units']] for a in sched['areas']], first=True)
     sheet('Units', ['Unit', 'Storey', 'Type', 'Bedrooms', 'Rooms', 'Net (sq ft)', 'Gross (sq ft)'],
