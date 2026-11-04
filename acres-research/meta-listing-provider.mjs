@@ -32,7 +32,7 @@ function boundedEvidence(evidence,sources){
 // Meta citations address characters, whereas the existing Gemini parser addresses
 // UTF-8 bytes. Convert each native text block before sharing reference validation.
 export function reportFromMetaResponse(response,options){
-  const outputs=response.output.filter(item=>item.type==='message').flatMap(item=>item.content).filter(part=>part.type==='output_text').map(part=>{
+  const outputs=response.output.filter(item=>item.type==='message'&&(item.phase==null||item.phase==='final_answer')).flatMap(item=>item.content).filter(part=>part.type==='output_text').map(part=>{
     const characters=Array.from(part.text),byteIndex=index=>Buffer.byteLength(characters.slice(0,index).join(''));
     const annotations=(part.annotations||[]).filter(annotation=>annotation.type==='url_citation'&&Number.isInteger(annotation.start_index)&&Number.isInteger(annotation.end_index)&&annotation.start_index>=0&&annotation.end_index>=annotation.start_index&&annotation.end_index<=characters.length)
       .map(annotation=>({...annotation,start_index:byteIndex(annotation.start_index),end_index:byteIndex(annotation.end_index)}));

@@ -86,6 +86,8 @@ ACRES_WORKER_ROOT="$HOME/.local/share/arosa-worker" worker/install.sh
 
 The installer downloads pinned official Blender and Bonsai releases, checks their hashes and runs a real import/render smoke job before activation. Linux requires the packages listed in [Architecture worker](architecture-worker.md). Set `ACRES_ARCHITECTURE_WORKER` in the research environment to the installed absolute `current/bin/architecture-worker` path, then restart research. Restrict accepted file uploads and worker resources for an internet-facing deployment as described in the worker documentation.
 
+When using the sandboxed `architecture-worker-unit` wrapper, run research as the existing service account named in the worker unit and its narrow polkit rule. Its state directory must belong to that account. Set `ACRES_ARCHITECTURE_PIPELINE_VERSION` to the installed worker release ID after each worker update so new renders do not reuse older artifacts.
+
 Verify a new independent Modeling project: save a plan, render it, reopen it and compare its revision across IFC, Pascal, GLB and Blender files. Then run a sourced research question and inspect the saved provider usage. Sign in with a second account and confirm it cannot read the first account's projects. These live checks require your configured providers and sign-in, even when the installation tests pass.
 
 ## Services outside this local configuration

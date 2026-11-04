@@ -40,7 +40,8 @@ export function normalizeMetaResponse(response) {
   const texts=[],citations=[],searchCalls=[];
   for(const [outputIndex,item] of response.output.entries()) {
     if(item.type==='web_search_call')searchCalls.push(item);
-    if(item.type!=='message')continue;
+    // Native final messages may be unphased; progress commentary is not an answer.
+    if(item.type!=='message'||(item.phase!=null&&item.phase!=='final_answer'))continue;
     for(const [contentIndex,part] of item.content.entries()) {
       if(part.type!=='output_text')continue;
       texts.push(part.text);
