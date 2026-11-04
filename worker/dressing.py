@@ -9,6 +9,7 @@ their room.
 """
 
 import math
+import re
 
 import bmesh
 import bpy
@@ -34,12 +35,28 @@ MATERIALS = {
     "rug": ((0.62, 0.60, 0.55), 1.00, 0.0, 1.0),
     "room": ((1.0, 1.0, 1.0), 1.00, 0.0, 0.0),
 }
-# The floor finish of a room by its kind (the IFC space's ObjectType); others are concrete.
-FLOORS = {"living": "oak", "bedroom": "oak", "hall": "oak", "closet": "oak", "bath": "tile"}
+# Floor finish by the authored or name-inferred room use; unknown uses remain concrete.
+FLOORS = {"living": "oak", "studio": "oak", "kitchen": "oak", "bedroom": "oak", "hall": "oak", "closet": "oak", "bath": "tile"}
 ELEMENTS = { "IfcDoor": "door", "IfcWindow": "glass", "IfcStair": "concrete",
             "IfcStairFlight": "concrete", "IfcRailing": "metal", "IfcTransportElement": "plaster"}
 RECTANGULAR = 0.85  # rooms filling less of their best rectangle than this get no furniture
 FINISH_LIFT = 0.01  # m above the slab, so the finish never fights the slab's top face
+
+
+def room_use(entity):
+    """Respect an authored IFC use; infer illustrative finishes from names when it is absent."""
+    if entity.ObjectType:
+        return entity.ObjectType.lower()
+    name = (entity.Name or "").lower()
+    if re.search(r"stair|elevator|shaft|closet|storage|mechanical", name):
+        return ""
+    for pattern, use in ((r"corridor|hall|lobby", "hall"), (r"kitchen|kitchenette", "kitchen"),
+                         (r"bath|washroom|restroom|toilet", "bath"),
+                         (r"living.*sleep|sleep.*living|studio", "studio"),
+                         (r"bedroom|sleeping|bed", "bedroom"), (r"living|lounge|sitting", "living")):
+        if re.search(pattern, name):
+            return use
+    return ""
 
 
 def material(name, cache={}):
@@ -194,14 +211,14 @@ def furnish(space, entity, ring, floor, z, windows, collection):
     L, S = frame.half_u, frame.half_v
     back = side * (S - 0.05)
     out = lambda depth: back - side * depth  # a point `depth` in front of the back wall
-    name, kind, made = space.name, entity.ObjectType or "", []
+    name, kind, made = space.name, room_use(entity), []
 
     def put(label, a0, a1, d0, d1, z0, z1, mat):
         b0, b1 = sorted((out(d0), out(d1)))
         made.append(box(f"{name}-{label}", space, frame, a0, a1, b0, b1, z + z0, z + z1, mat, collection))
 
     label = (entity.Name or "").lower()
-    if kind == "living" and "sleeping" in label and L >= 1.7 and S >= 1.6:
+    if (kind == "studio" or kind == "living" and "sleeping" in label) and L >= 1.7 and S >= 1.6:
         bed = 1.4
         put("bed", -L + 0.1, -L + 0.1 + bed, 0, 2.0, 0, 0.45, "linen")
         put("headboard", -L + 0.1, -L + 0.1 + bed, 0, 0.08, 0, 1.0, "walnut")
@@ -256,13 +273,15 @@ def wall_faces(obj, rooms):
 
 
 def slab_faces(obj):
-    """A slab's edges in stone, like a floor band on the facade, and its top and soffit in concrete."""
+    """Stone edges, a concrete top and a light plaster soffit, without changing the slab mesh."""
     obj.data.materials.clear()
     obj.data.materials.append(material("slab"))
     obj.data.materials.append(material("stone"))
+    obj.data.materials.append(material("plaster"))
     rotation = obj.matrix_world.to_3x3()
     for poly in obj.data.polygons:
-        poly.material_index = 0 if abs((rotation @ poly.normal).normalized().z) > 0.7 else 1
+        z = (rotation @ poly.normal).normalized().z
+        poly.material_index = 2 if z < -0.7 else 0 if z > 0.7 else 1
 
 
 def dress(reopened, storey_of, collection):
@@ -283,7 +302,7 @@ def dress(reopened, storey_of, collection):
         rooms.append((ring, z, top))
         obj.data.materials.clear()
         obj.data.materials.append(material("room"))
-        kind = entity.ObjectType or ""
+        kind = room_use(entity)
         floor = finish(obj, kind, collection)
         if floor:
             added.append(floor)

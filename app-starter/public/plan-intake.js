@@ -65,7 +65,7 @@ export function pointInPolygon(p, poly) {
 // What a room's label says at a zoom of ppu pixels a metre, so the labels of a floor drawn with every room
 // never run over each other: the name and area where both fit inside the room, the name alone where only it
 // fits, "Unit N" on a unit's living room where its full name does not, else nothing (the room still names
-// itself when selected or hovered). A character is taken as 0.6 of the 13 px font size wide.
+// itself in the selected-room details or hover title). A character is taken as 0.6 of the 13 px font size wide.
 export function roomLabel(room, ppu) {
   const xs = room.polygon.map((p) => p[0]), ys = room.polygon.map((p) => p[1]);
   const width = (Math.max(...xs) - Math.min(...xs)) * ppu * 0.9, height = (Math.max(...ys) - Math.min(...ys)) * ppu * 0.9;

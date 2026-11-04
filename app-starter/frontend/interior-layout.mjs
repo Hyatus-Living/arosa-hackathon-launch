@@ -107,6 +107,8 @@ export function interiorLayout(plan,authoredRooms=new Set()) {
       const item=place(room,type,width,depth,openingsFor(plan,levelId),occupied);
       if(item)occupied.push({...item,roomId:room.id,levelId,elevation:level.elevation});
     }
-    return {roomId:room.id,name:room.name,levelId,elevation:level.elevation,height:level.height||2.7,polygon:room.polygon,use,items:occupied};
+    // Match the IFC room volume: the storey height includes its overhead slab.
+    const height=(level.height||2.7)-(level.slabThickness??.2);
+    return {roomId:room.id,name:room.name,levelId,elevation:level.elevation,height,polygon:room.polygon,use,items:occupied};
   }).filter(Boolean);
 }

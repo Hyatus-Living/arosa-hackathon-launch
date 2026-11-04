@@ -638,7 +638,9 @@ async function handle(req,res,enteredAt){
     // nothing while ACRES_DEAL_STORE_ENABLED is off and only admins can sync.
     if(parts[0]==='market-store') {
       const access=dealStoreAccess(isMarketAdmin(email));
-      if(!access.read)return respond(res,404,{error:'Not found.'});
+      // An account's own cost profile is needed by Underwriting even when listing feeds are off.
+      const ownSettings=parts.length===2&&parts[1]==='user-settings';
+      if(!access.read&&!ownSettings)return respond(res,404,{error:'Not found.'});
       const mStore=marketStoreFactory();
       if(!mStore)return respond(res,503,{error:'Market store is unavailable.'});
       try {
@@ -1013,6 +1015,8 @@ if(process.argv[1]===fileURLToPath(import.meta.url)) {
   const runtime=researchRuntimeOptions();
   // Planning tools resolve their revision files beside the same chat database.
   process.env.RESEARCH_STATE_PATH=runtime.statePath;
+  process.env.ACRES_MARKET_DB ||= join(runtime.stateDir,'market.sqlite');
+  process.env.ACRES_KNOWLEDGE_DB ||= join(runtime.stateDir,'knowledge.sqlite');
   const secrets=JSON.parse(readFileSync(process.env.ACRES_SECRETS_JSON||'/etc/acres-research/secrets.json','utf8'));
   const evidence=secrets.MCP_SERVICE_TOKEN?new EvidenceStore(process.env.ACRES_MCP_EVIDENCE_DB||join(runtime.stateDir,'mcp-evidence.sqlite')):null;
   const sessions=new SessionStore(join(runtime.stateDir,'composio.sqlite'),secrets);

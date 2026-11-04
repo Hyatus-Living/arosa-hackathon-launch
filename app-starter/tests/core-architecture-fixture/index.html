@@ -10,12 +10,17 @@
     <link rel="stylesheet" href="/core.css" />
     <link rel="stylesheet" href="/activity.css" />
     <style>
-      body { margin: 0; background: var(--bg); color: var(--ink); }
+      body.core-mode { display: block; margin: 0; background: var(--bg); color: var(--ink); }
       #core-page { height: 100dvh; overflow-y: auto; }
     </style>
     <script>if (new URLSearchParams(location.search).get('theme') === 'light') document.documentElement.classList.remove('dark');</script>
   </head>
   <body class="core-mode">
+    <button id="theme" type="button" style="position:fixed;bottom:8px;left:8px;z-index:10">
+      <span class="sun" aria-hidden="true">☀</span><span class="moon" aria-hidden="true">☾</span>
+      <span class="rail-label">Switch theme</span>
+    </button>
+    <script src="/theme.js"></script>
     <main id="core-page" class="core-page"></main>
     <script type="module">
       import { createCorePage } from '/core.js';

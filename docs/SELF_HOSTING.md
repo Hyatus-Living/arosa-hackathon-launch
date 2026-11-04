@@ -42,7 +42,7 @@ Create the secrets JSON with your own values:
 
 `MODEL_API_KEY` enables the Meta agent, image, selection, feedback and review calls available to that key. `COMPOSIO_API_KEY` enables the public research tool router; connect Exa in your Composio project for its search tools. These providers may charge for use. Keep keys on the service, never in browser code.
 
-Additional integrations are separate: `TYPESAFE_API_KEY` enables Jev selection/routing, `GOOGLE_MAPS_API_KEY` enables Maps lookups, and `SERPER_API_KEY` enables Serper search. Local knowledge needs its own corpus and embedding configuration; market feeds need their own ingestion and `ACRES_MARKET_DB`. Missing integrations do not supply fabricated data. Existing historical Gemini investigations also need `GEMINI_RESEARCH_API_KEY` to resume; new Meta investigations do not.
+Additional integrations are separate: `TYPESAFE_API_KEY` enables Jev selection/routing, `GOOGLE_MAPS_API_KEY` enables Maps lookups, and `SERPER_API_KEY` enables Serper search. Local knowledge needs its own corpus and embedding configuration; market feeds need their own ingestion and `ACRES_DEAL_STORE_ENABLED=true`. Their databases default to the private state directory; `ACRES_KNOWLEDGE_DB` and `ACRES_MARKET_DB` can name explicit locations. Missing integrations do not supply fabricated data. Existing historical Gemini investigations also need `GEMINI_RESEARCH_API_KEY` to resume; new Meta investigations do not.
 
 Start research:
 
@@ -54,7 +54,7 @@ The service prints its bound address. In another terminal, `curl http://127.0.0.
 
 | Setting | Meaning |
 |---|---|
-| `ACRES_STATE_DIR` | Directory for chat, Composio sessions, optional MCP evidence, traces and architecture revisions/jobs |
+| `ACRES_STATE_DIR` | Directory for chat, account cost profiles, optional market/knowledge data, Composio sessions, optional MCP evidence, traces and architecture revisions/jobs |
 | `RESEARCH_STATE_PATH` | Existing explicit chat-database override; when set, its parent directory also determines the other service stores |
 | `RESEARCH_HOST`, `RESEARCH_PORT` | Listener outside systemd socket activation; defaults remain `10.42.0.2:18800` for the deployed service |
 | `ACRES_MCP_EVIDENCE_DB` | Optional explicit MCP evidence database override |
