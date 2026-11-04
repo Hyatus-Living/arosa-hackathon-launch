@@ -1,0 +1,12 @@
+{
+  "name": "arosa-site-proxy",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "22"
+  },
+  "scripts": {
+    "start": "node index.mjs"
+  },
+  "license": "MIT"
+}

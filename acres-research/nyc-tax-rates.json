@@ -1,0 +1,10 @@
+{
+  "source": "NYC Department of Finance, Property tax rates",
+  "sourceUrl": "https://www.nyc.gov/site/finance/property/property-tax-rates.page",
+  "retrievedAt": "2026-10-16",
+  "note": "Rates are fractions of billable assessed value, keyed by fiscal year (FY2026 is tax year July 2025 to June 2026). DOF had not yet published FY2027 rates on this page when retrieved; add each year when DOF publishes it.",
+  "fiscalYears": {
+    "2026": {"label": "tax year 2025/26", "rates": {"1": 0.19843, "2": 0.12439, "3": 0.11108, "4": 0.10848}},
+    "2025": {"label": "tax year 2024/25", "rates": {"1": 0.20085, "2": 0.12500, "3": 0.11181, "4": 0.10762}}
+  }
+}

@@ -1,0 +1,396 @@
+{
+ "schema": "acres.architecture.plan/1",
+ "id": "sample",
+ "revision": 1,
+ "parentRevision": null,
+ "name": "Two-bedroom workflow test",
+ "units": "m",
+ "levels": [
+  {
+   "id": "level-1",
+   "name": "Level 1",
+   "elevation": 0.0,
+   "height": 2.8,
+   "slabThickness": 0.2
+  }
+ ],
+ "walls": [
+  {
+   "id": "wall-south",
+   "levelId": "level-1",
+   "start": [
+    0.0,
+    0.0
+   ],
+   "end": [
+    10.0,
+    0.0
+   ],
+   "thickness": 0.18,
+   "height": 2.8,
+   "material": "generic",
+   "roomIds": [
+    "room-kitchen",
+    "room-living"
+   ]
+  },
+  {
+   "id": "wall-east",
+   "levelId": "level-1",
+   "start": [
+    10.0,
+    0.0
+   ],
+   "end": [
+    10.0,
+    8.0
+   ],
+   "thickness": 0.18,
+   "height": 2.8,
+   "material": "generic",
+   "roomIds": [
+    "room-bathroom",
+    "room-kitchen"
+   ]
+  },
+  {
+   "id": "wall-north",
+   "levelId": "level-1",
+   "start": [
+    10.0,
+    8.0
+   ],
+   "end": [
+    0.0,
+    8.0
+   ],
+   "thickness": 0.18,
+   "height": 2.8,
+   "material": "generic",
+   "roomIds": [
+    "room-bathroom",
+    "room-bedroom-a",
+    "room-bedroom-b"
+   ]
+  },
+  {
+   "id": "wall-west",
+   "levelId": "level-1",
+   "start": [
+    0.0,
+    8.0
+   ],
+   "end": [
+    0.0,
+    0.0
+   ],
+   "thickness": 0.18,
+   "height": 2.8,
+   "material": "generic",
+   "roomIds": [
+    "room-bedroom-a",
+    "room-living"
+   ]
+  },
+  {
+   "id": "wall-rooms",
+   "levelId": "level-1",
+   "start": [
+    0.0,
+    4.0
+   ],
+   "end": [
+    10.0,
+    4.0
+   ],
+   "thickness": 0.18,
+   "height": 2.8,
+   "material": "generic",
+   "roomIds": [
+    "room-bathroom",
+    "room-bedroom-a",
+    "room-bedroom-b",
+    "room-kitchen",
+    "room-living"
+   ]
+  },
+  {
+   "id": "wall-bedrooms",
+   "levelId": "level-1",
+   "start": [
+    4.0,
+    4.0
+   ],
+   "end": [
+    4.0,
+    8.0
+   ],
+   "thickness": 0.18,
+   "height": 2.8,
+   "material": "generic",
+   "roomIds": [
+    "room-bedroom-a",
+    "room-bedroom-b"
+   ]
+  },
+  {
+   "id": "wall-bathroom",
+   "levelId": "level-1",
+   "start": [
+    7.0,
+    4.0
+   ],
+   "end": [
+    7.0,
+    8.0
+   ],
+   "thickness": 0.18,
+   "height": 2.8,
+   "material": "generic",
+   "roomIds": [
+    "room-bathroom",
+    "room-bedroom-b"
+   ]
+  },
+  {
+   "id": "wall-kitchen",
+   "levelId": "level-1",
+   "start": [
+    7.0,
+    0.0
+   ],
+   "end": [
+    7.0,
+    4.0
+   ],
+   "thickness": 0.18,
+   "height": 2.8,
+   "material": "generic",
+   "roomIds": [
+    "room-kitchen",
+    "room-living"
+   ]
+  }
+ ],
+ "openings": [
+  {
+   "id": "opening-entry",
+   "wallId": "wall-south",
+   "kind": "door",
+   "offset": 4.55,
+   "width": 0.9,
+   "sill": 0.0,
+   "height": 2.1,
+   "swing": null
+  },
+  {
+   "id": "opening-bedroom-a-door",
+   "wallId": "wall-rooms",
+   "kind": "door",
+   "offset": 1.55,
+   "width": 0.9,
+   "sill": 0.0,
+   "height": 2.1,
+   "swing": null
+  },
+  {
+   "id": "opening-bedroom-b-door",
+   "wallId": "wall-rooms",
+   "kind": "door",
+   "offset": 4.85,
+   "width": 0.9,
+   "sill": 0.0,
+   "height": 2.1,
+   "swing": null
+  },
+  {
+   "id": "opening-bathroom-door",
+   "wallId": "wall-rooms",
+   "kind": "door",
+   "offset": 8.05,
+   "width": 0.8,
+   "sill": 0.0,
+   "height": 2.1,
+   "swing": null
+  },
+  {
+   "id": "opening-kitchen-door",
+   "wallId": "wall-kitchen",
+   "kind": "door",
+   "offset": 1.4,
+   "width": 1.2,
+   "sill": 0.0,
+   "height": 2.2,
+   "swing": null
+  },
+  {
+   "id": "opening-living-window",
+   "wallId": "wall-south",
+   "kind": "window",
+   "offset": 0.8,
+   "width": 2.4,
+   "sill": 0.9,
+   "height": 1.3,
+   "swing": null
+  },
+  {
+   "id": "opening-kitchen-window",
+   "wallId": "wall-east",
+   "kind": "window",
+   "offset": 1.0,
+   "width": 1.6,
+   "sill": 0.9,
+   "height": 1.3,
+   "swing": null
+  },
+  {
+   "id": "opening-bedroom-a-window",
+   "wallId": "wall-north",
+   "kind": "window",
+   "offset": 6.8,
+   "width": 2.0,
+   "sill": 0.9,
+   "height": 1.3,
+   "swing": null
+  },
+  {
+   "id": "opening-bedroom-b-window",
+   "wallId": "wall-north",
+   "kind": "window",
+   "offset": 3.8,
+   "width": 1.5,
+   "sill": 0.9,
+   "height": 1.3,
+   "swing": null
+  }
+ ],
+ "rooms": [
+  {
+   "id": "room-living",
+   "levelId": "level-1",
+   "name": "Living / dining",
+   "polygon": [
+    [
+     0.0,
+     0.0
+    ],
+    [
+     7.0,
+     0.0
+    ],
+    [
+     7.0,
+     4.0
+    ],
+    [
+     0.0,
+     4.0
+    ]
+   ],
+   "netAreaMethod": "inside-wall-faces"
+  },
+  {
+   "id": "room-kitchen",
+   "levelId": "level-1",
+   "name": "Kitchen",
+   "polygon": [
+    [
+     7.0,
+     0.0
+    ],
+    [
+     10.0,
+     0.0
+    ],
+    [
+     10.0,
+     4.0
+    ],
+    [
+     7.0,
+     4.0
+    ]
+   ],
+   "netAreaMethod": "inside-wall-faces"
+  },
+  {
+   "id": "room-bedroom-a",
+   "levelId": "level-1",
+   "name": "Bedroom A",
+   "polygon": [
+    [
+     0.0,
+     4.0
+    ],
+    [
+     4.0,
+     4.0
+    ],
+    [
+     4.0,
+     8.0
+    ],
+    [
+     0.0,
+     8.0
+    ]
+   ],
+   "netAreaMethod": "inside-wall-faces"
+  },
+  {
+   "id": "room-bedroom-b",
+   "levelId": "level-1",
+   "name": "Bedroom B",
+   "polygon": [
+    [
+     4.0,
+     4.0
+    ],
+    [
+     7.0,
+     4.0
+    ],
+    [
+     7.0,
+     8.0
+    ],
+    [
+     4.0,
+     8.0
+    ]
+   ],
+   "netAreaMethod": "inside-wall-faces"
+  },
+  {
+   "id": "room-bathroom",
+   "levelId": "level-1",
+   "name": "Bathroom",
+   "polygon": [
+    [
+     7.0,
+     4.0
+    ],
+    [
+     10.0,
+     4.0
+    ],
+    [
+     10.0,
+     8.0
+    ],
+    [
+     7.0,
+     8.0
+    ]
+   ],
+   "netAreaMethod": "inside-wall-faces"
+  }
+ ],
+ "objects": [],
+ "sources": [
+  {
+   "kind": "layout",
+   "ref": "Two-bedroom workflow test"
+  }
+ ]
+}

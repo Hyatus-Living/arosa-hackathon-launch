@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Helix ribbon hero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="../../public/stat-ticker.css" rel="stylesheet">
+<style>
+  /* Tokens as in site/public/site.css */
+  :root {
+    --bg: oklch(0.978 0 0); --surface: oklch(1 0 0); --surface-2: oklch(0.962 0 0);
+    --ink: oklch(0.17 0 0); --ink-muted: oklch(0.44 0 0); --ink-faint: oklch(0.62 0 0);
+    --line: oklch(0.895 0 0); --accent: oklch(0.205 0 0); --accent-ink: oklch(0.985 0 0);
+    --success: oklch(0.52 0.13 155);
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --font-sans: 'Geist', system-ui, sans-serif; --font-mono: 'Geist Mono', ui-monospace, Menlo, monospace;
+    color-scheme: light;
+  }
+  html.dark {
+    --bg: oklch(0.145 0 0); --surface: oklch(0.185 0 0); --surface-2: oklch(0.22 0 0);
+    --ink: oklch(0.96 0 0); --ink-muted: oklch(0.74 0 0); --ink-faint: oklch(0.56 0 0);
+    --line: oklch(0.27 0 0); --accent: oklch(0.97 0 0); --accent-ink: oklch(0.145 0 0);
+    --success: oklch(0.75 0.13 155);
+    color-scheme: dark;
+  }
+
+  /* Ribbon colors come straight from the theme tokens, so day and night follow automatically:
+     strands run from the hairline tone to muted ink, and only the streaks use the accent. */
+  .ribbon { --ribbon-from: var(--line); --ribbon-to: var(--ink-muted); --ribbon-spark: var(--accent); }
+  /* Reference palette, to compare motion against the original at a glance */
+  html[data-palette="reference"] { --bg: oklch(0.13 0.003 260); --line: oklch(0.22 0.004 260); }
+  html[data-palette="reference"] .ticker { --ticker-number: oklch(0.80 0.19 160); --ticker-pill: color-mix(in oklch, var(--ticker-number) 10%, transparent); --ticker-pill-line: transparent; }
+  html[data-palette="reference"] .ribbon {
+    --ribbon-from: oklch(0.80 0.19 160); --ribbon-to: oklch(0.93 0.22 128);
+    --ribbon-spark: oklch(0.72 0.19 315), oklch(0.80 0.17 70), oklch(0.72 0.15 245), oklch(0.82 0.11 350);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+  .hero { position: relative; min-height: 100svh; overflow: clip; display: grid; align-items: center; }
+  .ribbon { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
+  .copy { position: relative; isolation: isolate; padding: 6rem 1rem 8rem; max-width: 80rem; width: 100%; margin: 0 auto; }
+  /* keeps the strands from running through the copy, in the page color so it follows the theme */
+  .copy::before { content: ''; position: absolute; inset: 0 auto 0 -10%; width: 70%; z-index: -1; pointer-events: none;
+    background: radial-gradient(closest-side, var(--bg) 55%, transparent); }
+  @media (min-width: 768px) { .copy { padding-inline: 2.5rem; } }
+  @media (min-width: 1024px) { .copy { padding-inline: 4rem; } }
+  h1 { font-weight: 500; letter-spacing: -0.03em; font-size: clamp(2.4rem, 5.2vw, 4.25rem); line-height: 1.04; margin: 0; max-width: 12ch; text-wrap: balance; }
+  .lede { color: var(--ink-muted); font-size: 1.125rem; line-height: 1.55; max-width: 34rem; margin: 1.25rem 0 0; text-wrap: pretty; }
+  .actions { display: flex; gap: .75rem; flex-wrap: wrap; margin-top: 2rem; }
+  .btn { font: 500 .9375rem/1 var(--font-sans); padding: .8rem 1.1rem; border-radius: .6rem; text-decoration: none; border: 1px solid var(--line); color: var(--ink); background: var(--surface); }
+  .btn-primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+  .controls { position: fixed; right: 1rem; bottom: 1rem; display: flex; gap: .25rem; padding: .25rem; border-radius: .7rem;
+    background: var(--surface); border: 1px solid var(--line); font: 400 .75rem/1 var(--font-mono); z-index: 2; }
+  .controls button { font: inherit; color: var(--ink-muted); background: none; border: 0; padding: .55rem .7rem; border-radius: .5rem; cursor: pointer; }
+  .controls button[aria-pressed="true"] { color: var(--ink); background: color-mix(in oklch, var(--ink) 9%, transparent); }
+  .controls button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  html.clean .copy, html.clean .controls { visibility: hidden; }
+  .band { border-block: 1px solid var(--line); }
+  .band > .ticker { max-width: 80rem; margin: 0 auto; padding-inline: 1rem; }
+  @media (min-width: 768px) { .band > .ticker { padding-inline: 2.5rem; } }
+  @media (min-width: 1024px) { .band > .ticker { padding-inline: 4rem; } }
+  .after { min-height: 40vh; }
+</style>
+</head>
+<body>
+<section class="hero">
+  <canvas class="ribbon" aria-hidden="true"></canvas>
+  <div class="copy">
+    <h1>Know what a site could become.</h1>
+    <p class="lede">Arosa is an AI research partner for development in any US city. Name an address and it reads the jurisdiction's current zoning sources, with citations.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="https://build.witharosa.ai">Open Arosa</a>
+      <a class="btn" href="#">See how it works</a>
+    </div>
+  </div>
+</section>
+
+<section class="band"><div id="ticker"></div></section>
+<div class="after"></div>
+
+<div class="controls" role="group" aria-label="Preview">
+  <button type="button" data-theme="dark" aria-pressed="true">Night</button>
+  <button type="button" data-theme="light" aria-pressed="false">Day</button>
+  <button type="button" data-palette="reference" aria-pressed="false">Reference colors</button>
+  <button type="button" data-replay>Replay</button>
+</div>
+
+<script type="module">
+  import { mountHelixRibbon } from '../../public/helix-ribbon.js';
+  import { mountStatTicker } from '../../public/stat-ticker.js';
+
+  const html = document.documentElement;
+  const params = new URLSearchParams(location.search);
+  if (params.get('theme') === 'light') html.classList.remove('dark');
+  if (params.has('reference')) html.dataset.palette = 'reference';
+  if (params.has('clean')) html.classList.add('clean');
+
+  const ribbon = mountHelixRibbon(document.querySelector('.ribbon'));
+  window.ribbon = ribbon;
+  // Fixed sample counts for the preview; the live page reads real totals (site/public/motion.js).
+  window.ticker = mountStatTicker(document.getElementById('ticker'), {
+    title: 'Arosa at work today',
+    stats: [
+      { label: 'Listings screened', value: 48210 },
+      { label: 'Lots matched', value: 6384 },
+      { label: 'Sites underwritten', value: 1127 },
+      { label: 'Sources cited', value: 92456 },
+      { label: 'Zoning codes read', value: 3190 },
+    ],
+  });
+  if (params.has('ticker')) document.querySelector('.band').scrollIntoView({ block: 'center' });
+  const buttons = document.querySelectorAll('.controls button');
+  const sync = () => {
+    for (const b of buttons) {
+      if (b.dataset.theme) b.setAttribute('aria-pressed', String(html.classList.contains('dark') === (b.dataset.theme === 'dark')));
+      if (b.dataset.palette) b.setAttribute('aria-pressed', String(html.dataset.palette === 'reference'));
+    }
+    ribbon.refreshColors();
+  };
+  for (const b of buttons) {
+    b.addEventListener('click', () => {
+      if (b.dataset.theme) html.classList.toggle('dark', b.dataset.theme === 'dark');
+      if (b.dataset.palette) html.dataset.palette = html.dataset.palette === 'reference' ? '' : 'reference';
+      if (b.hasAttribute('data-replay')) ribbon.replay();
+      sync();
+    });
+  }
+  sync();
+</script>
+</body>
+</html>

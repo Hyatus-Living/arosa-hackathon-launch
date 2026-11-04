@@ -1,0 +1,58 @@
+# One architecture job per instance; the instance is the systemd-escaped job directory
+# (%I unescapes it without the leading slash, hence /%I):
+#   systemctl start --wait "acres-architecture-worker@$(systemd-escape --path /path/to/job).service"
+# bin/architecture-worker-unit does exactly that. See docs/architecture-worker.md.
+[Unit]
+Description=Acres architecture worker job /%I (Blender/Bonsai IFC to GLB)
+
+[Service]
+Type=oneshot
+# acres-deploy-research overrides User and Group with the research service's user in a drop-in
+# (acres-architecture-worker@.service.d/user.conf): that user creates the job directory and starts
+# the unit, and infra/acres-architecture-worker.rules lets only it do so.
+User=openclaw
+Group=openclaw
+ExecStart=/opt/acres-architecture-worker/current/bin/architecture-worker --job /%I
+WorkingDirectory=/
+
+# Only the job directory is visible under /home; input and job.json stay read-only.
+ProtectSystem=strict
+ProtectHome=tmpfs
+BindPaths=/%I
+ReadOnlyPaths=/%I/input /%I/job.json
+PrivateTmp=true
+UMask=0027
+
+# No credentials, network, devices or privilege.
+NoNewPrivileges=true
+PrivateNetwork=true
+RestrictAddressFamilies=AF_UNIX
+PrivateDevices=true
+PrivateIPC=true
+CapabilityBoundingSet=
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+ProtectProc=invisible
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+SystemCallArchitectures=native
+
+# One job on a 2 vCPU / 4 GiB slice.
+CPUQuota=200%
+MemoryMax=4G
+MemorySwapMax=0
+TasksMax=128
+LimitCORE=0
+Nice=10
+
+# The worker enforces deadlineSeconds itself; this is the backstop. On stop or timeout,
+# SIGTERM reaches the supervisor (which kills Blender's group), then the rest is killed.
+TimeoutStartSec=330
+KillMode=mixed
+TimeoutStopSec=15

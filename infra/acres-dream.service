@@ -1,0 +1,20 @@
+[Unit]
+Description=Acres research scheduled judge and memory consolidation (dreaming)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=openclaw
+Group=openclaw
+WorkingDirectory=/opt/acres-research
+Environment=HOME=/home/openclaw
+Environment=DREAM_JUDGE=codex
+ExecStart=/usr/local/bin/node /opt/acres-research/dream.mjs
+TimeoutStartSec=30min
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/openclaw/.openclaw/acres-state /tmp
+UMask=0077

@@ -1,0 +1,925 @@
+{
+  "nodes": {
+    "site_f435ce06a8f831c4": {
+      "object": "node",
+      "id": "site_f435ce06a8f831c4",
+      "type": "site",
+      "name": "Site",
+      "parentId": null,
+      "visible": true,
+      "metadata": {
+        "acresId": "site",
+        "planId": "floor-regions",
+        "revision": 1
+      },
+      "polygon": {
+        "type": "polygon",
+        "points": [
+          [
+            -2.09,
+            2.09
+          ],
+          [
+            12.09,
+            2.09
+          ],
+          [
+            12.09,
+            -12.09
+          ],
+          [
+            -2.09,
+            -12.09
+          ]
+        ]
+      },
+      "children": [
+        "building_d3487f44d0faa07e"
+      ]
+    },
+    "building_d3487f44d0faa07e": {
+      "object": "node",
+      "id": "building_d3487f44d0faa07e",
+      "type": "building",
+      "name": "Floor regions",
+      "parentId": "site_f435ce06a8f831c4",
+      "visible": true,
+      "metadata": {
+        "acresId": "building",
+        "planId": "floor-regions",
+        "revision": 1
+      },
+      "children": [
+        "level_734c0964d9fd6848"
+      ],
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    "level_734c0964d9fd6848": {
+      "object": "node",
+      "id": "level_734c0964d9fd6848",
+      "type": "level",
+      "name": "Floor",
+      "parentId": "building_d3487f44d0faa07e",
+      "visible": true,
+      "metadata": {
+        "acresId": "floor",
+        "planId": "floor-regions",
+        "revision": 1
+      },
+      "children": [
+        "slab_c4efa8351bdb9a50",
+        "zone_4c35fa9c8994b5a6",
+        "floor-opening_4c35fa9c8994b5a6",
+        "wall_6f8bab46281129fe",
+        "wall_bae1a87dea153b62",
+        "wall_675fb56f07c0fce9",
+        "wall_65d28697c34c992f",
+        "wall_76c413187cd63629",
+        "wall_7d7738780048f3a6",
+        "wall_350252ddf10186df",
+        "wall_8a7b41911404c5cc",
+        "wall_9401f1543809d95d",
+        "wall_495d0fcf0028969a",
+        "wall_18e006f7c7fe1050",
+        "wall_09ae0a03a496f15a",
+        "wall_94889e3f49dc0605",
+        "wall_f86ab6d66517adbb",
+        "wall_d94994f6ad417b9e",
+        "wall_6c781e6da9e4ad6d",
+        "wall_97b06ac0badd1148",
+        "wall_136fc62d4020d566",
+        "wall_d8d9433624cb66d2",
+        "wall_5a986d8754a49a91",
+        "zone_b6b7ad5b571f2dbe",
+        "zone_3107f4450b5bb3fe",
+        "zone_5ef56a33d14480ac",
+        "zone_4a268b4861b85fc3"
+      ],
+      "level": 0,
+      "baseElevation": 0,
+      "height": 2.8
+    },
+    "slab_c4efa8351bdb9a50": {
+      "object": "node",
+      "id": "slab_c4efa8351bdb9a50",
+      "type": "slab",
+      "name": "Floor slab",
+      "parentId": "level_734c0964d9fd6848",
+      "visible": true,
+      "metadata": {
+        "acresId": "floor:slab",
+        "planId": "floor-regions",
+        "revision": 1
+      },
+      "polygon": [
+        [
+          -0.09,
+          -10.09
+        ],
+        [
+          10.09,
+          -10.09
+        ],
+        [
+          10.09,
+          0.09
+        ],
+        [
+          -0.09,
+          0.09
+        ]
+      ],
+      "holes": [
+        [
+          [
+            3.09,
+            -3.09
+          ],
+          [
+            3.09,
+            -6.91
+          ],
+          [
+            6.91,
+            -6.91
+          ],
+          [
+            6.91,
+            -3.09
+          ]
+        ]
+      ],
+      "holeMetadata": [
+        {
+          "source": "floor-opening",
+          "openingId": "floor-opening_4c35fa9c8994b5a6"
+        }
+      ],
+      "elevation": 0,
+      "thickness": 0.2
+    },
+    "zone_4c35fa9c8994b5a6": {
+      "object": "node",
+      "id": "zone_4c35fa9c8994b5a6",
+      "type": "zone",
+      "name": "Floor void 1",
+      "parentId": "level_734c0964d9fd6848",
+      "visible": true,
+      "polygon": [
+        [
+          3.09,
+          -3.09
+        ],
+        [
+          3.09,
+          -6.91
+        ],
+        [
+          6.91,
+          -6.91
+        ],
+        [
+          6.91,
+          -3.09
+        ]
+      ],
+      "spaceRole": "room",
+      "enclosureStatus": "open",
+      "hasFloor": false,
+      "hasCeiling": false,
+      "metadata": {
+        "floorVoid": true,
+        "floorRegionId": "floor:slab",
+        "planId": "floor-regions",
+        "revision": 1
+      }
+    },
+    "floor-opening_4c35fa9c8994b5a6": {
+      "object": "node",
+      "id": "floor-opening_4c35fa9c8994b5a6",
+      "type": "floor-opening",
+      "name": "Floor void opening 1",
+      "parentId": "level_734c0964d9fd6848",
+      "visible": true,
+      "polygon": [
+        [
+          3.09,
+          -3.09
+        ],
+        [
+          3.09,
+          -6.91
+        ],
+        [
+          6.91,
+          -6.91
+        ],
+        [
+          6.91,
+          -3.09
+        ]
+      ],
+      "source": "manual",
+      "drawnOn": "floor",
+      "cutsAdjacent": false,
+      "metadata": {
+        "floorVoid": true,
+        "floorRegionId": "floor:slab"
+      }
+    },
+    "wall_6f8bab46281129fe": {
+      "object": "node",
+      "id": "wall_6f8bab46281129fe",
+      "type": "wall",
+      "name": "wall-1",
+      "parentId": "level_734c0964d9fd6848",
+      "visible": true,
+      "metadata": {
+        "acresId": "wall-1",
+        "planId": "floor-regions",
+        "revision": 1,
+        "material": "generic"
+      },
+      "children": [],
+      "start": [
+        0,
+        0
+      ],
+      "end": [
+        0,
+        -3
+      ],
+      "thickness": 0.18,
+      "height": 2.8
+    },
+    "wall_bae1a87dea153b62": {
+      "object": "node",
+      "id": "wall_bae1a87dea153b62",
+      "type": "wall",
+      "name": "wall-2",
+      "parentId": "level_734c0964d9fd6848",
+      "visible": true,
+      "metadata": {
+        "acresId": "wall-2",
+        "planId": "floor-regions",
+        "revision": 1,
+        "material": "generic"
+      },
+      "children": [],
+      "start": [
+        0,
+        0
+      ],
+      "end": [
+        3,
+        0
+      ],
+      "thickness": 0.18,
+      "height": 2.8
+    },
+    "wall_675fb56f07c0fce9": {
+      "object": "node",
+      "id": "wall_675fb56f07c0fce9",
+      "type": "wall",
+      "name": "wall-3",
+      "parentId": "level_734c0964d9fd6848",
+      "visible": true,
+      "metadata": {
+        "acresId": "wall-3",
+        "planId": "floor-regions",
+        "revision": 1,
+        "material": "generic"
+      },
+      "children": [],
+      "start": [
+        0,
+        -3
+      ],
+      "end": [
+        0,
+        -7
+      ],
+      "thickness": 0.18,
+      "height": 2.8
+    },
+    "wall_65d28697c34c992f": {
+      "object": "node",
+      "id": "wall_65d28697c34c992f",
+      "type": "wall",
+      "name": "wall-4",
+      "parentId": "level_734c0964d9fd6848",
+      "visible": true,
+      "metadata": {
+        "acresId": "wall-4",
+        "planId": "floor-regions",
+        "revision": 1,
+        "material": "generic"
+      },
+      "children": [],
+      "start": [
+        0,
+        -3
+      ],
+      "end": [
+        3,
+        -3
+      ],
+      "thickness": 0.18,
+      "height": 2.8
+    },
+    "wall_76c413187cd63629": {
+      "object": "node",
+      "id": "wall_76c413187cd63629",
+      "type": "wall",
+      "name": "wall-5",
+      "parentId": "level_734c0964d9fd6848",
+      "visible": true,
+      "metadata": {
+        "acresId": "wall-5",
+        "planId": "floor-regions",
+        "revision": 1,
+        "material": "generic"
+      },
+      "children": [],
+      "start": [
+        0,
+        -7
+      ],
+      "end": [
+        0,
+        -10
+      ],
+      "thickness": 0.18,
+      "height": 2.8
+    },
+    "wall_7d7738780048f3a6": {
+      "object": "node",
+      "id": "wall_7d7738780048f3a6",
+      "type": "wall",
+      "name": "wall-6",
+      "parentId": "level_734c0964d9fd6848",
+      "visible": true,
+      "metadata": {
+        "acresId": "wall-6",
+        "planId": "floor-regions",
+        "revision": 1,
+        "material": "generic"
+      },
+      "children": [],
+      "start": [
+        0,
+        -7
+      ],
+      "end": [
+        3,
+        -7
+      ],
+      "thickness": 0.18,
+      "height": 2.8
+    },
+    "wall_350252ddf10186df": {
+      "object": "node",
+      "id": "wall_350252ddf10186df",
+      "type": "wall",
+      "name": "wall-7",
+      "parentId": "level_734c0964d9fd6848",
+      "visible": true,
+      "metadata": {
+        "acresId": "wall-7",
+        "planId": "floor-regions",
+        "revision": 1,
+        "material": "generic"
+      },
+      "children": [],
+      "start": [
+        0,
+        -10
+      ],
+      "end": [
+        3,
+        -10
+      ],
+      "thickness": 0.18,
+      "height": 2.8
+    },
+    "wall_8a7b41911404c5cc": {
+      "object": "node",
+      "id": "wall_8a7b41911404c5cc",
+      "type": "wall",
+      "name": "wall-8",
+      "parentId": "level_734c0964d9fd6848",
+      "visible": true,
+      "metadata": {
+        "acresId": "wall-8",
+        "planId": "floor-regions",
+        "revision": 1,
+        "material": "generic"
+      },
+      "children": [],
+      "start": [
+        3,
+        0
+      ],
+      "end": [
+        7,
+        0
+      ],
+      "thickness": 0.18,
+      "height": 2.8
+    },
+    "wall_9401f1543809d95d": {
+      "object": "node",
+      "id": "wall_9401f1543809d95d",
+      "type": "wall",
+      "name": "wall-9",
+      "parentId": "level_734c0964d9fd6848",
+      "visible": true,
+      "metadata": {
+        "acresId": "wall-9",
+        "planId": "floor-regions",
+        "revision": 1,
+        "material": "generic"
+      },
+      "children": [],
+      "start": [
+        3,
+        -3
+      ],
+      "end": [
+        3,
+        -7
+      ],
+      "thickness": 0.18,
+      "height": 2.8
+    },
+    "wall_495d0fcf0028969a": {
+      "object": "node",
+      "id": "wall_495d0fcf0028969a",
+      "type": "wall",
+      "name": "wall-10",
+      "parentId": "level_734c0964d9fd6848",
+      "visible": true,
+      "metadata": {
+        "acresId": "wall-10",
+        "planId": "floor-regions",
+        "revision": 1,
+        "material": "generic"
+      },
+      "children": [],
+      "start": [
+        3,
+        -3
+      ],
+      "end": [
+        7,
+        -3
+      ],
+      "thickness": 0.18,
+      "height": 2.8
+    },
+    "wall_18e006f7c7fe1050": {
+      "object": "node",
+      "id": "wall_18e006f7c7fe1050",
+      "type": "wall",
+      "name": "wall-11",
+      "parentId": "level_734c0964d9fd6848",
+      "visible": true,
+      "metadata": {
+        "acresId": "wall-11",
+        "planId": "floor-regions",
+        "revision": 1,
+        "material": "generic"
+      },
+      "children": [],
+      "start": [
+        3,
+        -7
+      ],
+      "end": [
+        7,
+        -7
+      ],
+      "thickness": 0.18,
+      "height": 2.8
+    },
+    "wall_09ae0a03a496f15a": {
+      "object": "node",
+      "id": "wall_09ae0a03a496f15a",
+      "type": "wall",
+      "name": "wall-12",
+      "parentId": "level_734c0964d9fd6848",
+      "visible": true,
+      "metadata": {
+        "acresId": "wall-12",
+        "planId": "floor-regions",
+        "revision": 1,
+        "material": "generic"
+      },
+      "children": [],
+      "start": [
+        3,
+        -10
+      ],
+      "end": [
+        7,
+        -10
+      ],
+      "thickness": 0.18,
+      "height": 2.8
+    },
+    "wall_94889e3f49dc0605": {
+      "object": "node",
+      "id": "wall_94889e3f49dc0605",
+      "type": "wall",
+      "name": "wall-13",
+      "parentId": "level_734c0964d9fd6848",
+      "visible": true,
+      "metadata": {
+        "acresId": "wall-13",
+        "planId": "floor-regions",
+        "revision": 1,
+        "material": "generic"
+      },
+      "children": [],
+      "start": [
+        7,
+        0
+      ],
+      "end": [
+        10,
+        0
+      ],
+      "thickness": 0.18,
+      "height": 2.8
+    },
+    "wall_f86ab6d66517adbb": {
+      "object": "node",
+      "id": "wall_f86ab6d66517adbb",
+      "type": "wall",
+      "name": "wall-14",
+      "parentId": "level_734c0964d9fd6848",
+      "visible": true,
+      "metadata": {
+        "acresId": "wall-14",
+        "planId": "floor-regions",
+        "revision": 1,
+        "material": "generic"
+      },
+      "children": [],
+      "start": [
+        7,
+        -3
+      ],
+      "end": [
+        7,
+        -7
+      ],
+      "thickness": 0.18,
+      "height": 2.8
+    },
+    "wall_d94994f6ad417b9e": {
+      "object": "node",
+      "id": "wall_d94994f6ad417b9e",
+      "type": "wall",
+      "name": "wall-15",
+      "parentId": "level_734c0964d9fd6848",
+      "visible": true,
+      "metadata": {
+        "acresId": "wall-15",
+        "planId": "floor-regions",
+        "revision": 1,
+        "material": "generic"
+      },
+      "children": [],
+      "start": [
+        7,
+        -3
+      ],
+      "end": [
+        10,
+        -3
+      ],
+      "thickness": 0.18,
+      "height": 2.8
+    },
+    "wall_6c781e6da9e4ad6d": {
+      "object": "node",
+      "id": "wall_6c781e6da9e4ad6d",
+      "type": "wall",
+      "name": "wall-16",
+      "parentId": "level_734c0964d9fd6848",
+      "visible": true,
+      "metadata": {
+        "acresId": "wall-16",
+        "planId": "floor-regions",
+        "revision": 1,
+        "material": "generic"
+      },
+      "children": [],
+      "start": [
+        7,
+        -7
+      ],
+      "end": [
+        10,
+        -7
+      ],
+      "thickness": 0.18,
+      "height": 2.8
+    },
+    "wall_97b06ac0badd1148": {
+      "object": "node",
+      "id": "wall_97b06ac0badd1148",
+      "type": "wall",
+      "name": "wall-17",
+      "parentId": "level_734c0964d9fd6848",
+      "visible": true,
+      "metadata": {
+        "acresId": "wall-17",
+        "planId": "floor-regions",
+        "revision": 1,
+        "material": "generic"
+      },
+      "children": [],
+      "start": [
+        7,
+        -10
+      ],
+      "end": [
+        10,
+        -10
+      ],
+      "thickness": 0.18,
+      "height": 2.8
+    },
+    "wall_136fc62d4020d566": {
+      "object": "node",
+      "id": "wall_136fc62d4020d566",
+      "type": "wall",
+      "name": "wall-18",
+      "parentId": "level_734c0964d9fd6848",
+      "visible": true,
+      "metadata": {
+        "acresId": "wall-18",
+        "planId": "floor-regions",
+        "revision": 1,
+        "material": "generic"
+      },
+      "children": [],
+      "start": [
+        10,
+        0
+      ],
+      "end": [
+        10,
+        -3
+      ],
+      "thickness": 0.18,
+      "height": 2.8
+    },
+    "wall_d8d9433624cb66d2": {
+      "object": "node",
+      "id": "wall_d8d9433624cb66d2",
+      "type": "wall",
+      "name": "wall-19",
+      "parentId": "level_734c0964d9fd6848",
+      "visible": true,
+      "metadata": {
+        "acresId": "wall-19",
+        "planId": "floor-regions",
+        "revision": 1,
+        "material": "generic"
+      },
+      "children": [],
+      "start": [
+        10,
+        -3
+      ],
+      "end": [
+        10,
+        -7
+      ],
+      "thickness": 0.18,
+      "height": 2.8
+    },
+    "wall_5a986d8754a49a91": {
+      "object": "node",
+      "id": "wall_5a986d8754a49a91",
+      "type": "wall",
+      "name": "wall-20",
+      "parentId": "level_734c0964d9fd6848",
+      "visible": true,
+      "metadata": {
+        "acresId": "wall-20",
+        "planId": "floor-regions",
+        "revision": 1,
+        "material": "generic"
+      },
+      "children": [],
+      "start": [
+        10,
+        -7
+      ],
+      "end": [
+        10,
+        -10
+      ],
+      "thickness": 0.18,
+      "height": 2.8
+    },
+    "zone_b6b7ad5b571f2dbe": {
+      "object": "node",
+      "id": "zone_b6b7ad5b571f2dbe",
+      "type": "zone",
+      "name": "Room 1",
+      "parentId": "level_734c0964d9fd6848",
+      "visible": true,
+      "metadata": {
+        "acresId": "room-1",
+        "planId": "floor-regions",
+        "revision": 1,
+        "netArea": 27.6924,
+        "netAreaMethod": "centerline"
+      },
+      "polygon": [
+        [
+          0.09,
+          -2.91
+        ],
+        [
+          0.09,
+          -0.09
+        ],
+        [
+          9.91,
+          -0.09
+        ],
+        [
+          9.91,
+          -2.91
+        ]
+      ],
+      "spaceRole": "room",
+      "enclosureStatus": "enclosed",
+      "boundaryWallIds": [
+        "wall_6f8bab46281129fe",
+        "wall_bae1a87dea153b62",
+        "wall_65d28697c34c992f",
+        "wall_8a7b41911404c5cc",
+        "wall_495d0fcf0028969a",
+        "wall_94889e3f49dc0605",
+        "wall_d94994f6ad417b9e",
+        "wall_136fc62d4020d566"
+      ],
+      "ceilingHeight": 2.8,
+      "color": "#3b82f6"
+    },
+    "zone_3107f4450b5bb3fe": {
+      "object": "node",
+      "id": "zone_3107f4450b5bb3fe",
+      "type": "zone",
+      "name": "Room 2",
+      "parentId": "level_734c0964d9fd6848",
+      "visible": true,
+      "metadata": {
+        "acresId": "room-2",
+        "planId": "floor-regions",
+        "revision": 1,
+        "netArea": 27.6924,
+        "netAreaMethod": "centerline"
+      },
+      "polygon": [
+        [
+          0.09,
+          -9.91
+        ],
+        [
+          0.09,
+          -7.09
+        ],
+        [
+          9.91,
+          -7.09
+        ],
+        [
+          9.91,
+          -9.91
+        ]
+      ],
+      "spaceRole": "room",
+      "enclosureStatus": "enclosed",
+      "boundaryWallIds": [
+        "wall_76c413187cd63629",
+        "wall_7d7738780048f3a6",
+        "wall_350252ddf10186df",
+        "wall_18e006f7c7fe1050",
+        "wall_09ae0a03a496f15a",
+        "wall_6c781e6da9e4ad6d",
+        "wall_97b06ac0badd1148",
+        "wall_5a986d8754a49a91"
+      ],
+      "ceilingHeight": 2.8,
+      "color": "#3b82f6"
+    },
+    "zone_5ef56a33d14480ac": {
+      "object": "node",
+      "id": "zone_5ef56a33d14480ac",
+      "type": "zone",
+      "name": "Room 3",
+      "parentId": "level_734c0964d9fd6848",
+      "visible": true,
+      "metadata": {
+        "acresId": "room-3",
+        "planId": "floor-regions",
+        "revision": 1,
+        "netArea": 10.7724,
+        "netAreaMethod": "centerline"
+      },
+      "polygon": [
+        [
+          2.91,
+          -3.09
+        ],
+        [
+          2.91,
+          -6.91
+        ],
+        [
+          0.09,
+          -6.91
+        ],
+        [
+          0.09,
+          -3.09
+        ]
+      ],
+      "spaceRole": "room",
+      "enclosureStatus": "enclosed",
+      "boundaryWallIds": [
+        "wall_675fb56f07c0fce9",
+        "wall_65d28697c34c992f",
+        "wall_7d7738780048f3a6",
+        "wall_9401f1543809d95d"
+      ],
+      "ceilingHeight": 2.8,
+      "color": "#3b82f6"
+    },
+    "zone_4a268b4861b85fc3": {
+      "object": "node",
+      "id": "zone_4a268b4861b85fc3",
+      "type": "zone",
+      "name": "Room 4",
+      "parentId": "level_734c0964d9fd6848",
+      "visible": true,
+      "metadata": {
+        "acresId": "room-4",
+        "planId": "floor-regions",
+        "revision": 1,
+        "netArea": 10.7724,
+        "netAreaMethod": "centerline"
+      },
+      "polygon": [
+        [
+          7.09,
+          -3.09
+        ],
+        [
+          9.91,
+          -3.09
+        ],
+        [
+          9.91,
+          -6.91
+        ],
+        [
+          7.09,
+          -6.91
+        ]
+      ],
+      "spaceRole": "room",
+      "enclosureStatus": "enclosed",
+      "boundaryWallIds": [
+        "wall_f86ab6d66517adbb",
+        "wall_d94994f6ad417b9e",
+        "wall_6c781e6da9e4ad6d",
+        "wall_d8d9433624cb66d2"
+      ],
+      "ceilingHeight": 2.8,
+      "color": "#3b82f6"
+    }
+  },
+  "rootNodeIds": [
+    "site_f435ce06a8f831c4"
+  ],
+  "collections": {},
+  "materials": {}
+}

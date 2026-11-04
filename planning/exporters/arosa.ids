@@ -1,0 +1,380 @@
+<?xml version='1.0' encoding='utf-8'?>
+<ids xmlns="http://standards.buildingsmart.org/IDS" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://standards.buildingsmart.org/IDS http://standards.buildingsmart.org/IDS/1.0/ids.xsd">
+    <info>
+        <title>Arosa pre-filing model</title>
+        <version>1</version>
+        <description>What every Arosa option model carries before it is sent to an architect.</description>
+        <author>michael@witharosa.ai</author>
+        <date>2026-10-23</date>
+        <purpose>Pre-filing package</purpose>
+    </info>
+    <specifications>
+        <specification name="Storeys are named, at an elevation, with their areas" ifcVersion="IFC4" description="Each storey has a name, an elevation above curb and its gross, net and zoning floor area.">
+            <applicability minOccurs="0" maxOccurs="unbounded">
+                <entity>
+                    <name>
+                        <simpleValue>IFCBUILDINGSTOREY</simpleValue>
+                    </name>
+                </entity>
+            </applicability>
+            <requirements>
+                <attribute cardinality="required">
+                    <name>
+                        <simpleValue>Name</simpleValue>
+                    </name>
+                </attribute>
+                <attribute cardinality="required">
+                    <name>
+                        <simpleValue>Elevation</simpleValue>
+                    </name>
+                </attribute>
+                <property dataType="IFCLABEL" cardinality="required">
+                    <propertySet>
+                        <simpleValue>Arosa_StoreyArea</simpleValue>
+                    </propertySet>
+                    <baseName>
+                        <simpleValue>Use</simpleValue>
+                    </baseName>
+                </property>
+                <property dataType="IFCREAL" cardinality="required">
+                    <propertySet>
+                        <simpleValue>Arosa_StoreyArea</simpleValue>
+                    </propertySet>
+                    <baseName>
+                        <simpleValue>GrossFloorAreaSqft</simpleValue>
+                    </baseName>
+                </property>
+                <property dataType="IFCREAL" cardinality="optional">
+                    <propertySet>
+                        <simpleValue>Arosa_StoreyArea</simpleValue>
+                    </propertySet>
+                    <baseName>
+                        <simpleValue>ZoningFloorAreaSqft</simpleValue>
+                    </baseName>
+                </property>
+                <property dataType="IFCLENGTHMEASURE" cardinality="required">
+                    <propertySet>
+                        <simpleValue>Qto_BuildingStoreyBaseQuantities</simpleValue>
+                    </propertySet>
+                    <baseName>
+                        <simpleValue>GrossHeight</simpleValue>
+                    </baseName>
+                </property>
+            </requirements>
+        </specification>
+        <specification name="The building carries its storey count and zoning figures" ifcVersion="IFC4" description="Zoning figures are present whenever the plan was drawn in a zoning envelope.">
+            <applicability minOccurs="0" maxOccurs="unbounded">
+                <entity>
+                    <name>
+                        <simpleValue>IFCBUILDING</simpleValue>
+                    </name>
+                </entity>
+            </applicability>
+            <requirements>
+                <property dataType="IFCINTEGER" cardinality="required">
+                    <propertySet>
+                        <simpleValue>Pset_BuildingCommon</simpleValue>
+                    </propertySet>
+                    <baseName>
+                        <simpleValue>NumberOfStoreys</simpleValue>
+                    </baseName>
+                </property>
+                <property dataType="IFCLABEL" cardinality="optional">
+                    <propertySet>
+                        <simpleValue>Arosa_Zoning</simpleValue>
+                    </propertySet>
+                    <baseName>
+                        <simpleValue>District</simpleValue>
+                    </baseName>
+                </property>
+                <property dataType="IFCREAL" cardinality="optional">
+                    <propertySet>
+                        <simpleValue>Arosa_Zoning</simpleValue>
+                    </propertySet>
+                    <baseName>
+                        <simpleValue>ZoningFloorAreaSqft</simpleValue>
+                    </baseName>
+                </property>
+                <property dataType="IFCREAL" cardinality="optional">
+                    <propertySet>
+                        <simpleValue>Arosa_Zoning</simpleValue>
+                    </propertySet>
+                    <baseName>
+                        <simpleValue>FloorAreaRatio</simpleValue>
+                    </baseName>
+                </property>
+            </requirements>
+        </specification>
+        <specification name="Walls are in a storey, with a material and exposure" ifcVersion="IFC4" description="Every wall belongs to one storey and says whether it is exterior.">
+            <applicability minOccurs="0" maxOccurs="unbounded">
+                <entity>
+                    <name>
+                        <simpleValue>IFCWALL</simpleValue>
+                    </name>
+                </entity>
+            </applicability>
+            <requirements>
+                <partOf relation="IFCRELCONTAINEDINSPATIALSTRUCTURE" cardinality="required">
+                    <entity>
+                        <name>
+                            <simpleValue>IFCBUILDINGSTOREY</simpleValue>
+                        </name>
+                    </entity>
+                </partOf>
+                <property dataType="IFCBOOLEAN" cardinality="required">
+                    <propertySet>
+                        <simpleValue>Pset_WallCommon</simpleValue>
+                    </propertySet>
+                    <baseName>
+                        <simpleValue>IsExternal</simpleValue>
+                    </baseName>
+                </property>
+                <material cardinality="required" />
+            </requirements>
+        </specification>
+        <specification name="Doors fill an opening and carry their size and mark" ifcVersion="IFC4" description="Doors sit in a voided wall opening and carry the schedule mark.">
+            <applicability minOccurs="0" maxOccurs="unbounded">
+                <entity>
+                    <name>
+                        <simpleValue>IFCDOOR</simpleValue>
+                    </name>
+                </entity>
+            </applicability>
+            <requirements>
+                <partOf relation="IFCRELCONTAINEDINSPATIALSTRUCTURE" cardinality="required">
+                    <entity>
+                        <name>
+                            <simpleValue>IFCBUILDINGSTOREY</simpleValue>
+                        </name>
+                    </entity>
+                </partOf>
+                <partOf relation="IFCRELVOIDSELEMENT IFCRELFILLSELEMENT" cardinality="required">
+                    <entity>
+                        <name>
+                            <simpleValue>IFCWALL</simpleValue>
+                        </name>
+                    </entity>
+                </partOf>
+                <attribute cardinality="required">
+                    <name>
+                        <simpleValue>OverallWidth</simpleValue>
+                    </name>
+                </attribute>
+                <attribute cardinality="required">
+                    <name>
+                        <simpleValue>OverallHeight</simpleValue>
+                    </name>
+                </attribute>
+                <property dataType="IFCIDENTIFIER" cardinality="required">
+                    <propertySet>
+                        <simpleValue>Pset_DoorCommon</simpleValue>
+                    </propertySet>
+                    <baseName>
+                        <simpleValue>Reference</simpleValue>
+                    </baseName>
+                </property>
+            </requirements>
+        </specification>
+        <specification name="Windows fill an opening and carry their size and mark" ifcVersion="IFC4" description="Windows sit in a voided wall opening and carry the schedule mark.">
+            <applicability minOccurs="0" maxOccurs="unbounded">
+                <entity>
+                    <name>
+                        <simpleValue>IFCWINDOW</simpleValue>
+                    </name>
+                </entity>
+            </applicability>
+            <requirements>
+                <partOf relation="IFCRELCONTAINEDINSPATIALSTRUCTURE" cardinality="required">
+                    <entity>
+                        <name>
+                            <simpleValue>IFCBUILDINGSTOREY</simpleValue>
+                        </name>
+                    </entity>
+                </partOf>
+                <partOf relation="IFCRELVOIDSELEMENT IFCRELFILLSELEMENT" cardinality="required">
+                    <entity>
+                        <name>
+                            <simpleValue>IFCWALL</simpleValue>
+                        </name>
+                    </entity>
+                </partOf>
+                <attribute cardinality="required">
+                    <name>
+                        <simpleValue>OverallWidth</simpleValue>
+                    </name>
+                </attribute>
+                <attribute cardinality="required">
+                    <name>
+                        <simpleValue>OverallHeight</simpleValue>
+                    </name>
+                </attribute>
+                <property dataType="IFCIDENTIFIER" cardinality="required">
+                    <propertySet>
+                        <simpleValue>Pset_WindowCommon</simpleValue>
+                    </propertySet>
+                    <baseName>
+                        <simpleValue>Reference</simpleValue>
+                    </baseName>
+                </property>
+            </requirements>
+        </specification>
+        <specification name="Rooms are spaces of a storey with their areas" ifcVersion="IFC4" description="Each room is a space with its plan id and net area.">
+            <applicability minOccurs="0" maxOccurs="unbounded">
+                <entity>
+                    <name>
+                        <simpleValue>IFCSPACE</simpleValue>
+                    </name>
+                </entity>
+            </applicability>
+            <requirements>
+                <partOf relation="IFCRELAGGREGATES" cardinality="required">
+                    <entity>
+                        <name>
+                            <simpleValue>IFCBUILDINGSTOREY</simpleValue>
+                        </name>
+                    </entity>
+                </partOf>
+                <attribute cardinality="required">
+                    <name>
+                        <simpleValue>Name</simpleValue>
+                    </name>
+                </attribute>
+                <property dataType="IFCIDENTIFIER" cardinality="required">
+                    <propertySet>
+                        <simpleValue>Pset_SpaceCommon</simpleValue>
+                    </propertySet>
+                    <baseName>
+                        <simpleValue>Reference</simpleValue>
+                    </baseName>
+                </property>
+                <property dataType="IFCAREAMEASURE" cardinality="required">
+                    <propertySet>
+                        <simpleValue>Qto_SpaceBaseQuantities</simpleValue>
+                    </propertySet>
+                    <baseName>
+                        <simpleValue>NetFloorArea</simpleValue>
+                    </baseName>
+                </property>
+            </requirements>
+        </specification>
+        <specification name="Slabs are floors or roofs in a storey" ifcVersion="IFC4" description="Floor and roof slabs belong to a storey.">
+            <applicability minOccurs="0" maxOccurs="unbounded">
+                <entity>
+                    <name>
+                        <simpleValue>IFCSLAB</simpleValue>
+                    </name>
+                </entity>
+            </applicability>
+            <requirements>
+                <partOf relation="IFCRELCONTAINEDINSPATIALSTRUCTURE" cardinality="required">
+                    <entity>
+                        <name>
+                            <simpleValue>IFCBUILDINGSTOREY</simpleValue>
+                        </name>
+                    </entity>
+                </partOf>
+                <attribute cardinality="required">
+                    <name>
+                        <simpleValue>PredefinedType</simpleValue>
+                    </name>
+                    <value>
+                        <xs:restriction base="xs:string">
+                            <xs:enumeration value="FLOOR" />
+                            <xs:enumeration value="ROOF" />
+                        </xs:restriction>
+                    </value>
+                </attribute>
+            </requirements>
+        </specification>
+        <specification name="Stairs carry their risers and treads" ifcVersion="IFC4" description="Risers at most 7 in and treads 11 in (NYC BC 2022 1011.5.2).">
+            <applicability minOccurs="0" maxOccurs="unbounded">
+                <entity>
+                    <name>
+                        <simpleValue>IFCSTAIR</simpleValue>
+                    </name>
+                </entity>
+            </applicability>
+            <requirements>
+                <partOf relation="IFCRELCONTAINEDINSPATIALSTRUCTURE" cardinality="required">
+                    <entity>
+                        <name>
+                            <simpleValue>IFCBUILDINGSTOREY</simpleValue>
+                        </name>
+                    </entity>
+                </partOf>
+                <property dataType="IFCCOUNTMEASURE" cardinality="required">
+                    <propertySet>
+                        <simpleValue>Pset_StairCommon</simpleValue>
+                    </propertySet>
+                    <baseName>
+                        <simpleValue>NumberOfRiser</simpleValue>
+                    </baseName>
+                </property>
+                <property dataType="IFCPOSITIVELENGTHMEASURE" cardinality="required">
+                    <propertySet>
+                        <simpleValue>Pset_StairCommon</simpleValue>
+                    </propertySet>
+                    <baseName>
+                        <simpleValue>RiserHeight</simpleValue>
+                    </baseName>
+                </property>
+                <property dataType="IFCPOSITIVELENGTHMEASURE" cardinality="required">
+                    <propertySet>
+                        <simpleValue>Pset_StairCommon</simpleValue>
+                    </propertySet>
+                    <baseName>
+                        <simpleValue>TreadLength</simpleValue>
+                    </baseName>
+                </property>
+            </requirements>
+        </specification>
+        <specification name="Elevators are in a storey" ifcVersion="IFC4" description="Each elevator stack is one element in its lowest storey.">
+            <applicability minOccurs="0" maxOccurs="unbounded">
+                <entity>
+                    <name>
+                        <simpleValue>IFCTRANSPORTELEMENT</simpleValue>
+                    </name>
+                    <predefinedType>
+                        <simpleValue>ELEVATOR</simpleValue>
+                    </predefinedType>
+                </entity>
+            </applicability>
+            <requirements>
+                <partOf relation="IFCRELCONTAINEDINSPATIALSTRUCTURE" cardinality="required">
+                    <entity>
+                        <name>
+                            <simpleValue>IFCBUILDINGSTOREY</simpleValue>
+                        </name>
+                    </entity>
+                </partOf>
+            </requirements>
+        </specification>
+        <specification name="Dwelling units are named zones" ifcVersion="IFC4" description="Each unit groups its rooms and carries its number and net area.">
+            <applicability minOccurs="0" maxOccurs="unbounded">
+                <entity>
+                    <name>
+                        <simpleValue>IFCZONE</simpleValue>
+                    </name>
+                </entity>
+            </applicability>
+            <requirements>
+                <property dataType="IFCLABEL" cardinality="required">
+                    <propertySet>
+                        <simpleValue>Arosa_Unit</simpleValue>
+                    </propertySet>
+                    <baseName>
+                        <simpleValue>Unit</simpleValue>
+                    </baseName>
+                </property>
+                <property dataType="IFCREAL" cardinality="required">
+                    <propertySet>
+                        <simpleValue>Arosa_Unit</simpleValue>
+                    </propertySet>
+                    <baseName>
+                        <simpleValue>NetAreaSqft</simpleValue>
+                    </baseName>
+                </property>
+            </requirements>
+        </specification>
+    </specifications>
+</ids>

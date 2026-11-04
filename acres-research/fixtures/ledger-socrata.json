@@ -1,0 +1,59 @@
+{
+  "views": {
+    "bnx9-e6tj": {"rowsUpdatedAt": 1791489000},
+    "8h5j-fqxa": {"rowsUpdatedAt": 1791489000},
+    "ic3t-wcy2": {"rowsUpdatedAt": 1792100000},
+    "w9ak-ipjd": {"rowsUpdatedAt": 1792100000},
+    "8y4t-faws": {"rowsUpdatedAt": 1789420000},
+    "64uk-42ks": {"rowsUpdatedAt": 1789420000},
+    "hg8x-zxpr": {"rowsUpdatedAt": 1790796111}
+  },
+  "bnx9-e6tj": [
+    {"document_id": "2026100100000001", "doc_type": "DEED", "document_amt": "12000000", "recorded_datetime": "2026-10-01T00:00:00.000", "percent_trans": "100", "recorded_borough": "1"},
+    {"document_id": "2026100100000002", "doc_type": "DEED", "document_amt": "10", "recorded_datetime": "2026-10-02T00:00:00.000", "percent_trans": "100", "recorded_borough": "1"},
+    {"document_id": "2026100100000003", "doc_type": "DEED", "document_amt": "30000000", "recorded_datetime": "2026-10-03T00:00:00.000", "percent_trans": "100", "recorded_borough": "1"},
+    {"document_id": "2026100100000004", "doc_type": "DEED", "document_amt": "5000000", "recorded_datetime": "2026-10-04T00:00:00.000", "percent_trans": "100", "recorded_borough": "1"},
+    {"document_id": "2026100100000005", "doc_type": "ZONE", "document_amt": "0", "recorded_datetime": "2026-10-05T00:00:00.000", "percent_trans": "0", "recorded_borough": "1"},
+    {"document_id": "2026100100000006", "doc_type": "DEED", "document_amt": "4000000", "recorded_datetime": "2026-10-06T00:00:00.000", "percent_trans": "50", "recorded_borough": "1"},
+    {"document_id": "2026100100000007", "doc_type": "DEED", "document_amt": "2100000", "recorded_datetime": "2026-10-07T00:00:00.000", "percent_trans": "100", "recorded_borough": "1"}
+  ],
+  "8h5j-fqxa": [
+    {"document_id": "2026100100000001", "borough": "1", "block": "15", "lot": "1", "unit": ""},
+    {"document_id": "2026100100000002", "borough": "1", "block": "15", "lot": "2"},
+    {"document_id": "2026100100000003", "borough": "1", "block": "15", "lot": "3"},
+    {"document_id": "2026100100000003", "borough": "1", "block": "15", "lot": "4"},
+    {"document_id": "2026100100000003", "borough": "1", "block": "15", "lot": "4"},
+    {"document_id": "2026100100000004", "borough": "1", "block": "16", "lot": "10"},
+    {"document_id": "2026100100000005", "borough": "1", "block": "15", "lot": "1"},
+    {"document_id": "2026100100000006", "borough": "1", "block": "15", "lot": "5"},
+    {"document_id": "2026100100000007", "borough": "1", "block": "15", "lot": "1101", "unit": "7B"}
+  ],
+  "64uk-42ks": [
+    {"bbl": "1000150001.00000000", "lotarea": "10000", "zonedist1": "C6-4", "zipcode": "10013"},
+    {"bbl": "1000150002.00000000", "lotarea": "2000", "zonedist1": "C6-4", "zipcode": "10013"},
+    {"bbl": "1000150003.00000000", "lotarea": "5000", "zonedist1": "R6", "zipcode": "10013"},
+    {"bbl": "1000150004.00000000", "lotarea": "5000", "zonedist1": "R6", "zipcode": "10013"},
+    {"bbl": "1000150005.00000000", "lotarea": "3000", "zonedist1": "C6-4", "zipcode": "10013"},
+    {"bbl": "1000160010.00000000", "lotarea": "4000", "zonedist1": "M3-1", "zipcode": "10013"}
+  ],
+  "ic3t-wcy2": [
+    {"job__": "121000001", "doc__": "01", "job_type": "NB", "job_status_descrp": "APPROVED", "borough": "MANHATTAN", "block": "00015", "lot": "00001", "bbl": "1000150001", "proposed_zoning_sqft": "95000", "proposed_dwelling_units": "120", "proposed_no_of_stories": "30", "initial_cost": "$45,000,000.00", "pre__filing_date": "09/10/2026", "latest_action_date": "10/02/2026", "gis_latitude": "40.7200", "gis_longitude": "-74.0050", "total_construction_floor_area": "110000", "house__": "10", "street_name": "WEST BROADWAY", "bin__": "1000888", "zip": "07030"}
+  ],
+  "w9ak-ipjd": [
+    {"job_filing_number": "M00000001-I1", "job_type": "New Building", "filing_status": "Permit Entire", "bbl": "1000160010", "borough": "Manhattan", "block": "16", "lot": "10", "postcode": "10013", "proposed_dwelling_units": "40", "proposed_no_of_stories": "12", "initial_cost": "9000000", "filing_date": "2026-09-20T00:00:00.000", "current_status_date": "2026-10-05T11:12:13.000", "latitude": "40.7210", "longitude": "-74.0060", "total_construction_floor_area": "52000", "house_no": "20", "street_name": "WEST BROADWAY", "bin": "1000999"},
+    {"job_filing_number": "M00000001-P1", "job_type": "New Building", "filing_status": "Approved", "bbl": "1000160010", "borough": "Manhattan", "block": "16", "lot": "10", "postcode": "10013", "proposed_dwelling_units": "40", "proposed_no_of_stories": "12", "initial_cost": "9000000", "filing_date": "2026-10-01T00:00:00.000", "current_status_date": "2026-10-06T00:00:00.000", "latitude": "40.7210", "longitude": "-74.0060", "total_construction_floor_area": "52000", "house_no": "20", "street_name": "WEST BROADWAY", "bin": "1000999"},
+    {"job_filing_number": "M00000001-A1", "job_type": "New Building", "filing_status": "Approved", "bbl": "1000160010", "borough": "MANHATTAN", "block": "16", "lot": "10", "postcode": "10013", "proposed_dwelling_units": "40", "proposed_no_of_stories": "12", "initial_cost": "9000000", "filing_date": "2026-10-09T00:00:00.000", "current_status_date": "2026-10-09T00:00:00.000", "latitude": "40.7210", "longitude": "-74.0060", "total_construction_floor_area": "52000", "house_no": "20", "street_name": "WEST BROADWAY", "bin": "1000999"},
+    {"job_filing_number": "M00000002-I1", "job_type": "New Building", "filing_status": "Filing Withdrawn", "bbl": "1000990001", "borough": "Manhattan", "block": "99", "lot": "1", "postcode": "10013", "proposed_dwelling_units": "99", "proposed_no_of_stories": "20", "initial_cost": "1", "filing_date": "2026-09-25T00:00:00.000", "current_status_date": "2026-10-07T00:00:00.000", "latitude": "40.7215", "longitude": "-74.0055"},
+    {"job_filing_number": "S00000003-I1", "job_type": "New Building", "filing_status": "Plan Examiner Review", "borough": "Staten Island", "block": "5256", "lot": "9", "bin": "5099999", "postcode": "10307", "proposed_dwelling_units": "2", "proposed_no_of_stories": "2", "initial_cost": "800000", "filing_date": "2026-10-08T00:00:00.000", "current_status_date": "2026-10-08T00:00:00.000", "latitude": "40.5100", "longitude": "-74.2400"},
+    {"job_filing_number": "M00000004-I1", "job_type": "New Building", "filing_status": "Pre-Filing", "borough": "Manhattan", "postcode": "10013", "proposed_dwelling_units": "7", "filing_date": "2026-10-08T00:00:00.000", "current_status_date": "2026-10-08T00:00:00.000"}
+  ],
+  "8y4t-faws": [
+    {"parid": "1000150001", "year": "2027", "period": "1", "curacttot": "4000000", "curmkttot": "9000000", "curtaxclass": "4", "zip_code": "10013"},
+    {"parid": "1000150001", "year": "2027", "period": "3", "curacttot": "4100000", "curmkttot": "9100000", "curtaxclass": "4", "zip_code": "10013"},
+    {"parid": "1000150001", "year": "2026", "period": "3", "curacttot": "3900000", "curmkttot": "8700000", "curtaxclass": "4", "zip_code": "10013"}
+  ],
+  "hg8x-zxpr": [
+    {"project_id": "70001", "building_id": "900001", "project_start_date": "2025-03-01T00:00:00.000", "house_number": "20", "street_name": "WEST BROADWAY", "bbl": "1000160010", "bin": "1000999", "counted_rental_units": "12"},
+    {"project_id": "70002", "building_id": "900002", "project_start_date": "2024-06-01T00:00:00.000", "house_number": "1", "street_name": "NOWHERE PLACE", "counted_rental_units": "4"}
+  ]
+}

@@ -1,0 +1,26 @@
+[Unit]
+Description=Refresh Acres HomeHarvest, broker and LoopNet market, trade-press feeds and NYC PLUTO deal store
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=openclaw
+Group=openclaw
+WorkingDirectory=/opt/acres-research
+Environment=HOME=/home/openclaw
+# The Socrata app token is pulled with the gateway secrets at boot (infra/acres-pull-secrets).
+EnvironmentFile=-/run/acres-secrets/gateway-secrets.env
+# The LoopNet API key is read from the research secrets file (LOOPNET_API_KEY); without it the LoopNet feed is skipped.
+Environment=ACRES_SECRETS_JSON=/run/acres-secrets/secrets.json
+# Internal-only: the run skips unless a drop-in sets Environment=ACRES_DEAL_STORE_ENABLED=true,
+# and --scheduled makes the admin pause (autoSyncEnabled=false) gate it as well.
+ExecStart=/usr/local/bin/node /opt/acres-research/market-refresh.mjs --scheduled --limit=300
+# The first fill of a store matches and values every lot in the city; later runs are incremental.
+TimeoutStartSec=4h
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/openclaw/.openclaw/acres-state /tmp
+UMask=0077

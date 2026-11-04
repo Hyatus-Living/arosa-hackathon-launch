@@ -1,0 +1,12 @@
+[Unit]
+Description=Create the NVIDIA device nodes at boot, so sandboxed render jobs can use the GPU
+After=systemd-modules-load.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+ExecStart=/usr/bin/nvidia-modprobe -u -c=0
+ExecStart=/usr/bin/nvidia-smi -pm 1
+
+[Install]
+WantedBy=multi-user.target

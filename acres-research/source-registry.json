@@ -1,0 +1,797 @@
+[
+  {
+    "id": "nyc-pluto",
+    "name": "Primary Land Use Tax Lot Output (PLUTO)",
+    "publisher": "NYC Department of City Planning / NYC Open Data",
+    "jurisdiction": "US-NY-NYC",
+    "authority": "official_derived_parcel_data",
+    "method": "api",
+    "status": "verified",
+    "lastVerifiedAt": "2026-10-11",
+    "categories": ["parcels", "zoning", "development_capacity"],
+    "questions": ["Which zoning district is reported for this tax lot?", "What are the lot area, built FAR and reported residential FAR?", "Find a property by address or BBL."],
+    "keywords": ["PLUTO", "MapPLUTO", "parcel", "tax lot", "building", "floor area ratio", "FAR", "zoning district", "address", "land use"],
+    "accessPoints": [
+      {"label": "Dataset catalog and field schema", "url": "https://data.cityofnewyork.us/api/views/64uk-42ks.json"},
+      {"label": "Socrata JSON records", "url": "https://data.cityofnewyork.us/resource/64uk-42ks.json"},
+      {"label": "Dataset page", "url": "https://data.cityofnewyork.us/dataset/Primary-Land-Use-Tax-Lot-Output-PLUTO-/64uk-42ks"}
+    ],
+    "outline": ["One row per tax lot in the published PLUTO release.", "Address and borough identify candidates; BBL links to the selected parcel.", "zonedist1 through zonedist4, overlays and special districts describe reported zoning.", "lotarea, bldgarea, builtfar, residfar, commfar and facilfar are parcel attributes; version identifies the source release."],
+    "identifiers": ["bbl", "borough", "block", "lot", "address", "version", "zonedist1", "zonedist2", "spdist1", "lotarea", "residfar"],
+    "templates": [
+      {"purpose": "Existing bounded property lookup", "tool": "acres_find_property", "arguments": {"bbl": "{10-digit BBL}"}},
+      {"purpose": "Documented API query pattern", "endpointLabel": "Socrata JSON records", "parameters": {"bbl": "{10-digit BBL}", "$select": "bbl,address,zonedist1,zonedist2,spdist1,lotarea,residfar,version", "$limit": "8"}}
+    ],
+    "instructions": ["Prefer acres_find_property, which already records retrieved rows as cited evidence.", "Resolve ambiguous addresses before selecting a parcel. Preserve BBL for follow-up queries.", "Read the release version returned by the API. Cross-check legal conclusions against operative zoning text, maps and applicable approvals."],
+    "prerequisites": ["BBL or address, with borough if ambiguous."],
+    "restrictions": ["Public anonymous small API reads worked at verification. Respect provider throttling; no bulk mirror is required."],
+    "limitations": ["Live API means current published release, not necessarily today's legal status.", "Reported FAR does not prove buildable or transferable rights; tax lots and zoning lots are not interchangeable."],
+    "verification": ["2026-10-11: catalog HTTP 200, name and bbl/address/zonedist1/version fields checked.", "2026-10-11: bounded JSON query HTTP 200 returned a parcel with release version 26v2."]
+  },
+  {
+    "id": "nyc-mih-areas",
+    "name": "Mandatory Inclusionary Housing areas",
+    "publisher": "NYC Department of City Planning / NYC Open Data",
+    "jurisdiction": "US-NY-NYC",
+    "authority": "official_map_data",
+    "method": "api",
+    "status": "verified",
+    "lastVerifiedAt": "2026-10-18",
+    "categories": [
+      "zoning",
+      "affordable_housing",
+      "development_capacity"
+    ],
+    "questions": [
+      "Is this site inside a Mandatory Inclusionary Housing area?",
+      "Which MIH options apply to this rezoning area?",
+      "Does the Universal Affordability Preference or MIH govern this lot?"
+    ],
+    "keywords": [
+      "MIH",
+      "Mandatory Inclusionary Housing",
+      "Appendix F",
+      "inclusionary",
+      "affordable set-aside",
+      "UAP",
+      "rezoning",
+      "Option 1",
+      "Option 2",
+      "Option 3",
+      "Workforce Option",
+      "affordable housing"
+    ],
+    "accessPoints": [
+      {
+        "label": "Dataset catalog and field schema",
+        "url": "https://data.cityofnewyork.us/api/views/m79g-k9r4.json"
+      },
+      {
+        "label": "Socrata JSON records",
+        "url": "https://data.cityofnewyork.us/resource/m79g-k9r4.json"
+      },
+      {
+        "label": "DCP dataset page and archive",
+        "url": "https://www.nyc.gov/content/planning/pages/resources/datasets/mandatory-inclusionary-housing"
+      }
+    ],
+    "outline": [
+      "One multipolygon per adopted MIH area, as mapped in ZR Appendix F.",
+      "project_nam, zr_ulurpno and date_adopte identify the rezoning; boro and cd give the community district.",
+      "mih_option names the options mapped there (Option 1, 2, 3 and the Workforce Option, which ZR 27-131 calls Option 4)."
+    ],
+    "identifiers": [
+      "project_nam",
+      "project_id",
+      "zr_ulurpno",
+      "date_adopte",
+      "boro",
+      "cd",
+      "mih_option"
+    ],
+    "templates": [
+      {
+        "purpose": "Areas containing a point",
+        "endpointLabel": "Socrata JSON records",
+        "parameters": {
+          "$select": "project_nam,mih_option,date_adopte,zr_ulurpno",
+          "$where": "intersects(the_geom,'POINT({longitude} {latitude})')"
+        }
+      }
+    ],
+    "instructions": [
+      "Test the parcel's own point (PLUTO latitude and longitude), not a listing geocode.",
+      "Read the options mapped for the area, then apply ZR 27-131 for the set-aside, income bands and exemptions; outside every area, the UAP of ZR 27-111 may apply instead."
+    ],
+    "prerequisites": [
+      "Parcel latitude and longitude, or a BBL to look them up in PLUTO."
+    ],
+    "restrictions": [
+      "Public anonymous reads. The whole layer is about 300 KB, so a client may load it once and test points locally."
+    ],
+    "limitations": [
+      "A zoning lot split by an area boundary needs the operative map; a lot point is one test.",
+      "Special purpose districts can impose MIH outside these polygons; check the special district text.",
+      "DCP updates the layer monthly; a recent rezoning may not appear yet."
+    ],
+    "verification": [
+      "2026-10-18: catalog HTTP 200, current version 20260331, 275 adopted areas with mih_option values.",
+      "2026-10-18: intersects query at the Caton Flats site returned that area with Option 2."
+    ]
+  },
+  {
+    "id": "nyc-zoning-map-layers",
+    "name": "NYC zoning map layers (districts, commercial overlays, special districts)",
+    "publisher": "NYC Department of City Planning",
+    "jurisdiction": "US-NY-NYC",
+    "authority": "official_map_data",
+    "method": "api",
+    "status": "verified",
+    "lastVerifiedAt": "2026-10-18",
+    "categories": ["zoning", "development_capacity"],
+    "questions": ["Which zoning districts, overlays and special districts cover this lot today?", "How much of a split lot lies in each district?", "Has the lot been rezoned since the PLUTO release?"],
+    "keywords": ["zoning map", "nyzd", "nyco", "nysp", "zoning district boundary", "split lot", "split zoning lot", "ZR 77-22", "commercial overlay", "special purpose district", "rezoning"],
+    "accessPoints": [{"label": "Zoning districts (nyzd) feature layer", "url": "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/nyzd/FeatureServer/0"}, {"label": "Commercial overlays (nyco) feature layer", "url": "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/nyco/FeatureServer/0"}, {"label": "Special purpose districts (nysp) feature layer", "url": "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/nysp/FeatureServer/0"}, {"label": "MapPLUTO lot outlines", "url": "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/MAPPLUTO/FeatureServer/0"}],
+    "outline": ["nyzd has one polygon per mapped district with ZONEDIST (PARK marks mapped parkland); nyco has OVERLAY; nysp has SDNAME and SDLBL.", "Polygons tile the city, so intersecting them with the MapPLUTO lot outline gives each district's share of the lot."],
+    "identifiers": ["ZONEDIST", "OVERLAY", "SDLBL", "SDNAME"],
+    "templates": [{"purpose": "Districts intersecting a lot's bounding box", "endpointLabel": "Zoning districts (nyzd) feature layer", "parameters": {"where": "1=1", "geometry": "{west},{south},{east},{north}", "geometryType": "esriGeometryEnvelope", "inSR": "4326", "spatialRel": "esriSpatialRelIntersects", "outFields": "ZONEDIST", "outSR": "4326", "f": "geojson"}}],
+    "instructions": ["Intersect the returned polygons with the lot outline; do not treat a bounding-box hit as coverage.", "Ignore shares under about 1 percent: districts and tax lots are digitized separately, so lots show slivers of the districts across their lot lines.", "For a split lot, sum each portion's area times its district's FAR (ZR 77-22) and apply use and bulk rules by portion, subject to ZR 77-11 and 77-02."],
+    "prerequisites": ["The lot's BBL for its MapPLUTO outline."],
+    "restrictions": ["Public anonymous reads; 2,000 features per query."],
+    "limitations": ["The layers show the map as DCP maintains it; an amendment adopted days ago may not be drawn yet.", "A zoning lot can span several tax lots; the share is of the tax lot only."],
+    "verification": ["2026-10-18: nyzd, nyco and nysp layers last edited 2026-09-30, newer than PLUTO 26v2 and the Open Data Zoning Tax Lot Database (last updated 2026-04-05).", "2026-10-18: 237 17 Street, Brooklyn (PLUTO R6A/R6B split) returned R6A 54.7%, R6B 32.7%, PARK 12.6% and C2-4 overlay 62.6%."]
+  },
+  {
+    "id": "nyc-dcm-street-centerlines",
+    "name": "Digital City Map street centerlines with mapped widths",
+    "publisher": "NYC Department of City Planning",
+    "jurisdiction": "US-NY-NYC",
+    "authority": "official_map_data",
+    "method": "api",
+    "status": "verified",
+    "lastVerifiedAt": "2026-10-18",
+    "categories": ["zoning", "development_capacity"],
+    "questions": ["Is the street this lot fronts a wide street (75 ft or more)?", "Which mapped streets does the lot front, and how wide are they?"],
+    "keywords": ["Digital City Map", "DCM", "street width", "wide street", "narrow street", "ZR 12-10", "mapped street", "centerline", "corner lot", "through lot"],
+    "accessPoints": [{"label": "DCM street centerline feature layer", "url": "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/DCM_Street_Center_Line/FeatureServer/0"}, {"label": "NYC Open Data copy", "url": "https://data.cityofnewyork.us/resource/g6zj-tzgn.json"}],
+    "outline": ["One line per street segment with Street_NM, Streetwidth, Feat_Type (Mapped_St, Former_St, Not_mapped) and Feat_status.", "Streetwidth is a number, an approximation (~60), a bound (<60, >100) or a range (60-100)."],
+    "identifiers": ["Street_NM", "Streetwidth", "Feat_Type", "Feat_status"],
+    "templates": [{"purpose": "Mapped streets near a lot", "endpointLabel": "DCM street centerline feature layer", "parameters": {"where": "Feat_Type='Mapped_St'", "geometry": "{west},{south},{east},{north}", "geometryType": "esriGeometryEnvelope", "inSR": "4326", "spatialRel": "esriSpatialRelIntersects", "outFields": "Street_NM,Streetwidth", "outSR": "4326", "f": "geojson"}}],
+    "instructions": ["A street fronts the lot when its centerline lies within about half its width of the lot line.", "A wide street is 75 ft or more (ZR 12-10); a bound or range settles it only when it is wholly on one side of 75 ft."],
+    "prerequisites": ["The lot outline from MapPLUTO."],
+    "restrictions": ["Public anonymous reads."],
+    "limitations": ["Widths are mapped widths, not built roadway widths; ZR 12-10 also treats some narrower streets as wide (for example along a park), which the map does not show."],
+    "verification": ["2026-10-18: 120 Broadway returned Broadway 77 ft (wide), Nassau Street 49 ft, Pine Street 34.6-35.9 ft and Cedar Street 33-34.5 ft.", "2026-10-18: 1176 Ocean Avenue, Brooklyn returned Ocean Avenue 100 ft as its front street."]
+  },
+  {
+    "id": "nyc-zap-applications",
+    "name": "Zoning Application Portal (ZAP) projects and their lots",
+    "publisher": "NYC Department of City Planning / NYC Open Data",
+    "jurisdiction": "US-NY-NYC",
+    "authority": "official_land_use_records",
+    "method": "api",
+    "status": "verified",
+    "lastVerifiedAt": "2026-10-18",
+    "categories": ["zoning", "entitlements", "development_capacity"],
+    "questions": ["Has City Planning acted on this lot (special permit, authorization, certification, rezoning)?", "How did a nearby project get more floor area than the base district allows?"],
+    "keywords": ["ZAP", "Zoning Application Portal", "ULURP", "special permit", "authorization", "certification", "rezoning", "ZS", "ZA", "ZC", "ZM", "ZR", "CPC", "precedent"],
+    "accessPoints": [{"label": "ZAP project data", "url": "https://data.cityofnewyork.us/resource/hgx4-8ukb.json"}, {"label": "ZAP project BBLs", "url": "https://data.cityofnewyork.us/resource/2iga-a6mk.json"}],
+    "outline": ["2iga-a6mk maps each project_id to the BBLs it covers.", "hgx4-8ukb has one row per project: project_name, project_brief, public_status, actions (ZS special permit, ZA authorization, ZC certification, ZM map change, ZR text change and others), ulurp_numbers and milestone dates."],
+    "identifiers": ["project_id", "bbl", "ulurp_numbers"],
+    "templates": [{"purpose": "Projects on a lot", "endpointLabel": "ZAP project BBLs", "parameters": {"$select": "project_id", "$where": "bbl='{bbl}'"}}],
+    "instructions": ["Look up project ids by BBL, then read the projects; area-wide rezonings list every lot they cover, so separate a lot-specific action from a neighborhood plan."],
+    "prerequisites": ["The lot's BBL; for a condominium, also its original lot."],
+    "restrictions": ["Public anonymous reads."],
+    "limitations": ["BSA variances and special permits are not in ZAP.", "Older projects may lack BBL validation or full action lists."],
+    "verification": ["2026-10-18: both datasets updated 2026-08-12; 69-02 Queens Boulevard returned its rezoning and large-scale development special permit (ZM; ZR; ZS)."]
+  },
+  {
+    "id": "nyc-rent-stabilized-unit-counts",
+    "name": "Rent-stabilized unit counts from DOF statements of account (JustFix nyc-doffer)",
+    "publisher": "JustFix (nyc-doffer), from NYC Department of Finance statements of account; redistributed by nycdb as rentstab_v2",
+    "jurisdiction": "US-NY-NYC",
+    "authority": "compiled_from_official_records",
+    "method": "download",
+    "status": "verified",
+    "lastVerifiedAt": "2026-10-19",
+    "categories": ["housing", "tenants", "due_diligence"],
+    "questions": ["How many rent-stabilized units did the owner register for this building?", "Is this building likely to have rent-regulated tenants?"],
+    "keywords": ["rent stabilized", "rent stabilization", "HCR registration", "DHCR", "statement of account", "Housing-Rent Stabilization", "regulated tenants", "CONH", "rentstab_v2", "nyc-doffer", "Who Owns What"],
+    "accessPoints": [{"label": "Counts CSV (one row per BBL, uc2018 to uc2024 with the statement of account PDF per year)", "url": "https://s3.amazonaws.com/justfix-data/rentstab_counts_from_doffer_2024.csv"}, {"label": "nyc-doffer (source code and method)", "url": "https://github.com/JustFixNYC/nyc-doffer"}, {"label": "nycdb dataset definition", "url": "https://github.com/nycdb/nycdb/blob/main/src/nycdb/datasets/rentstab_v2.yml"}],
+    "outline": ["One row per tax lot (ucbbl) with the number of units the owner registered with NYS HCR, as stated on the Housing-Rent Stabilization fee line of each tax year's DOF statement of account, for 2018 to 2024, plus the statement PDF per year.", "About 25 MB; the file was last updated 2026-02-10 and covers tax year 2024."],
+    "identifiers": ["ucbbl", "uc2024", "pdfsoa2024"],
+    "templates": [{"purpose": "Monthly copy into the deal store", "endpointLabel": "Counts CSV (one row per BBL, uc2018 to uc2024 with the statement of account PDF per year)", "parameters": {}}],
+    "instructions": ["Report the count as the owner's registration for the year, with the statement of account cited; a lot absent from the file is not proof that no unit is regulated, since the line follows the owner's filing.", "Use the count to raise the tenant screen, never to conclude that a building can be delivered vacant."],
+    "prerequisites": ["The lot's BBL."],
+    "restrictions": ["JustFix publishes the file openly and nycdb redistributes it; no licence is stated on the file or the nyc-doffer repository, so attribute JustFix and the DOF statements of account. The older talos/taxbills.nyc counts (2007 to 2017) are CC BY-SA 4.0."],
+    "limitations": ["Owner-reported: buildings with registered units can be missing, and counts can lag a year.", "No agency publishes a per-building count; HCR publishes only building lists.", "Tax year 2024 is the latest; the file is refreshed by JustFix, not on a fixed schedule."],
+    "verification": ["2026-10-19: HEAD 200, 24,718,961 bytes, Last-Modified 2026-02-10; first row BBL 1000297501 with 2 units each year 2018 to 2024 and a statement PDF per year.", "2026-10-19: nycdb rentstab_v2.yml points at the same URL."]
+  },
+  {
+    "id": "nyc-geosearch",
+    "name": "NYC Planning GeoSearch",
+    "publisher": "NYC Department of City Planning",
+    "jurisdiction": "US-NY-NYC",
+    "authority": "official_address_lookup",
+    "method": "api",
+    "status": "verified",
+    "lastVerifiedAt": "2026-10-11",
+    "categories": ["addresses", "parcels"],
+    "questions": ["Which NYC address or BBL does an approximate address mean?"],
+    "keywords": ["geocoding", "normalize", "approximate address", "street", "building", "BBL"],
+    "accessPoints": [{"label": "Search endpoint", "url": "https://geosearch.planninglabs.nyc/v2/search"}],
+    "outline": ["GeoJSON FeatureCollection; features[].properties contains labels, borough and confidence.", "features[].properties.addendum.pad.bbl links address candidates to PLUTO where available."],
+    "identifiers": ["text", "size", "features", "label", "borough", "addendum.pad.bbl"],
+    "templates": [{"purpose": "Resolve address through existing tool", "tool": "acres_find_property", "arguments": {"address": "{street address}", "borough": "{borough name}"}}],
+    "instructions": ["Use acres_find_property to try parcel matching and bounded GeoSearch candidates.", "Treat confidence as ranking only; confirm the intended BBL before zoning analysis."],
+    "prerequisites": ["Approximate NYC address."],
+    "restrictions": ["Anonymous query worked at verification; service availability and throttling can change."],
+    "limitations": ["Some candidates lack BBL or can match a different building; geocoding is not legal evidence."],
+    "verification": ["2026-10-11: GET with text=120 Broadway Manhattan and size=1 returned HTTP 200, label 120 BROADWAY and BBL 1000477501."]
+  },
+  {
+    "id": "nyc-zoning-resolution",
+    "name": "NYC Zoning Resolution",
+    "publisher": "NYC Department of City Planning / City Planning Commission",
+    "jurisdiction": "US-NY-NYC",
+    "authority": "official_primary_zoning_text",
+    "method": "website_navigation",
+    "status": "partial",
+    "lastVerifiedAt": "2026-10-11",
+    "categories": ["zoning", "permitted_uses", "development_capacity", "air_rights"],
+    "questions": ["What use, floor area, height or setback rules apply in this zoning district?", "What special district rules or development-right provisions apply?"],
+    "keywords": ["zoning resolution", "regulations", "law", "bulk", "height", "FAR", "setback", "air rights", "development rights", "residence", "commercial", "manufacturing", "special district"],
+    "accessPoints": [{"label": "Text and contents", "url": "https://zr.planning.nyc.gov/", "staticHtml": true}, {"label": "Text and contents, alternate address", "url": "https://zoningresolution.planning.nyc.gov/", "staticHtml": true}, {"label": "Dated complete releases", "url": "https://zr.planning.nyc.gov/zr-downloads"}],
+    "outline": ["Articles I-VII contain general, use, bulk, parking and other district rules; II covers residence, III commercial, IV manufacturing.", "Articles VIII-XIV contain special purpose district rules. Chapters and numbered sections provide precise citations.", "Appendices, referenced maps and amendments may qualify an individual section."],
+    "identifiers": ["article", "chapter", "section", "zoning district", "special purpose district", "amendment date"],
+    "templates": [{"purpose": "Locate specific provisions", "search": "site:zr.planning.nyc.gov {district or section} {topic}"}],
+    "instructions": ["Use acres_discover_tools to obtain current read-only search/content tools, then acres_execute_tool to retrieve relevant sections and referenced exceptions.", "Start with the parcel's district and special district; follow the site's actual section links instead of guessing URL slugs.", "Record section identifiers and the page's amendment information. Consult historical releases for an as-of question."],
+    "prerequisites": ["District, special district or precise zoning topic; often a confirmed parcel."],
+    "restrictions": ["Public pages; no supported general-purpose API was verified."],
+    "limitations": ["Homepage and release index verified, but an end-to-end section search/content tool run was not tested for this registry.", "A successful page fetch does not establish applicability or legal effective date; referenced maps and approvals can change the result."],
+    "verification": ["2026-10-11: homepage HTTP 200 and article organization read.", "2026-10-11: dated downloads page read; no full PDF mirrored."]
+  },
+  {
+    "id": "nyc-zola",
+    "name": "ZoLa: NYC Zoning and Land Use Map",
+    "publisher": "NYC Department of City Planning",
+    "jurisdiction": "US-NY-NYC",
+    "authority": "official_mapping_application",
+    "method": "website_navigation",
+    "status": "partial",
+    "lastVerifiedAt": "2026-10-11",
+    "categories": ["zoning", "parcels", "maps"],
+    "questions": ["Where is this parcel on the zoning map?", "Which special district, overlay or mapped constraint should I investigate?"],
+    "keywords": ["ZoLa", "zoning map", "district boundaries", "overlay", "special district", "parcel", "BBL"],
+    "accessPoints": [{"label": "Interactive map", "url": "https://zola.planning.nyc.gov/"}, {"label": "Publisher source and usage", "url": "https://github.com/NYCPlanning/labs-zola"}],
+    "outline": ["Interactive zoning and land-use map with address/lot search and map layers.", "Use selected parcel information and relevant mapped layers as leads to operative maps and text."],
+    "identifiers": ["BBL", "borough", "block", "lot", "zoning district", "map layer"],
+    "templates": [{"purpose": "Interactive lookup", "navigation": "Open the map, search {address or BBL}, select the intended lot and relevant zoning layers."}],
+    "instructions": ["Map interaction requires a browser-capable tool or user. Arosa has no dedicated ZoLa browser adapter; do not claim to have inspected map layers via a homepage fetch.", "Use acres_find_property for available parcel data, then retrieve relevant official map/text evidence through read-only tools."],
+    "prerequisites": ["Confirmed NYC parcel or address; interactive browser for map inspection."],
+    "restrictions": ["JavaScript application. No stable production map API contract was verified."],
+    "limitations": ["HTTP 200 for app shell is not proof of layer availability or successful interactive lookup.", "Tax-lot display does not establish a legal zoning lot or development entitlement."],
+    "verification": ["2026-10-11: application shell HTTP 200; publisher repository describes ZoLa and lot links. Interactive map retrieval not tested."]
+  },
+  {
+    "id": "nyc-bsa-decisions",
+    "name": "BSA Applications 1998-Present",
+    "publisher": "NYC Board of Standards and Appeals",
+    "jurisdiction": "US-NY-NYC",
+    "authority": "official_administrative_decisions",
+    "method": "website_search",
+    "status": "partial",
+    "lastVerifiedAt": "2026-10-11",
+    "categories": ["variances", "administrative_decisions", "zoning"],
+    "questions": ["Has the BSA granted a variance or special permit at this address?", "Are there administrative decisions applying this zoning section?"],
+    "keywords": ["BSA", "variance", "special permit", "precedent", "appeal", "resolution", "72-21", "calendar number", "decisions"],
+    "accessPoints": [{"label": "Application search", "url": "https://www.nyc.gov/site/bsa/applications/bsa-applications.page"}],
+    "outline": ["Official page describes resolutions filed since January 1, 1998 and active application status.", "Search inputs: borough, community district, calendar number or keyword such as address, zoning section or application type."],
+    "identifiers": ["calendar number", "borough", "community district", "address", "zoning section", "application type"],
+    "templates": [{"purpose": "Application search", "navigation": "Search {calendar number}, or combine {borough} with {address, zoning section or application type}."}, {"purpose": "Find indexed official leads", "search": "site:nyc.gov BSA {address or calendar number} resolution"}],
+    "instructions": ["Retrieve the actual resolution, including conditions, dates, amendments and extensions. Administrative decisions are not court holdings.", "If the search form fails, use read-only search for indexed official resolutions or the Board's records-request route. Report the gap rather than treating it as no decisions."],
+    "prerequisites": ["Address or application identifier; borough improves disambiguation."],
+    "restrictions": ["Search form may require interactive access; no API verified. Do not submit records requests automatically."],
+    "limitations": ["Page currently includes an error banner. Search submission and document retrieval were not verified.", "Online resolutions do not cover all decisions since 1916. The Board notes a delay of weeks after votes before upload."],
+    "verification": ["2026-10-11: page HTTP 200; coverage and search instructions read. Error banner observed, so search functionality remains unverified."]
+  },
+  {
+    "id": "nyc-dob-job-filings",
+    "name": "NYC DOB BIS & DOB NOW Job Application Filings and Certificates of Occupancy (nycdb)",
+    "publisher": "NYC Department of Buildings / NYC Open Data (nycdb schema)",
+    "jurisdiction": "US-NY-NYC",
+    "authority": "official_administrative_filings",
+    "method": "api",
+    "status": "verified",
+    "lastVerifiedAt": "2026-10-15",
+    "categories": ["permits", "plan_submittals", "certificates_of_occupancy", "zoning", "development_capacity"],
+    "questions": [
+      "Were there any previous building applications or plan submittals for this site, and did they pass or get disapproved?",
+      "What New Building (NB), Alteration (A1/A2), or demolition filings exist on this BBL?",
+      "What Certificates of Occupancy exist on this property?"
+    ],
+    "keywords": ["DOB", "DOB NOW", "BIS", "nycdb", "job filings", "plan submittal", "disapproved", "objections", "approved", "permit", "certificate of occupancy", "NB", "A1", "zoning floor area"],
+    "accessPoints": [
+      {"label": "DOB Job Application Filings (BIS)", "url": "https://data.cityofnewyork.us/resource/ic3t-wcy2.json"},
+      {"label": "DOB NOW: Build – Job Application Filings", "url": "https://data.cityofnewyork.us/resource/w9ak-ipjd.json"},
+      {"label": "DOB Certificate of Occupancy", "url": "https://data.cityofnewyork.us/resource/bs8b-p36w.json"}
+    ],
+    "outline": [
+      "ic3t-wcy2 holds legacy BIS job applications with job_type (NB, A1, A2, A3, DM), job_status_descrp, proposed_no_of_stories, proposed_dwelling_units, and total_est__fee.",
+      "w9ak-ipjd holds DOB NOW Build job filings with filing_status, job_type, proposed_no_of_stories, proposed_dwelling_units, and proposed_zoning_sqft.",
+      "bs8b-p36w holds Certificates of Occupancy with job_number, c_o_issue_date, and issue_type."
+    ],
+    "identifiers": ["bbl", "job__", "job_filing_number", "job_type", "job_status", "filing_status", "c_o_issue_date"],
+    "templates": [
+      {"purpose": "Fetch DOB BIS + DOB NOW job filings and submittal pass/fail forensics via specialist tool", "tool": "acres_nyc_public_records", "arguments": {"bbl": "{10-digit BBL}"}}
+    ],
+    "instructions": [
+      "Use acres_nyc_public_records with the parcel's 10-digit BBL to retrieve DOB BIS filings, DOB NOW Build filings, submittal pass/fail forensics, and Certificates of Occupancy as cited sources.",
+      "Inspect submittalForensics.disapprovedOrWithdrawn to identify prior NB or A1 filings that stalled or were disapproved."
+    ],
+    "prerequisites": ["10-digit NYC BBL (resolve via acres_find_property first if starting from an address)."],
+    "restrictions": ["Public NYC Open Data Socrata API; respect anonymous rate limits."],
+    "limitations": ["Socrata job rows summarize filing status and proposed parameters; detailed plan examiner objection sheets in BIS/DOB NOW may require portal inspection."],
+    "verification": ["2026-10-15: HTTP 200 verified against ic3t-wcy2, w9ak-ipjd, and bs8b-p36w for BBL 1000477501."]
+  },
+  {
+    "id": "nyc-acris-records",
+    "name": "NYC ACRIS Real Property Legals & Master + HPD Projects & Violations (nycdb)",
+    "publisher": "NYC Department of Finance / NYC HPD / NYC Open Data (nycdb schema)",
+    "jurisdiction": "US-NY-NYC",
+    "authority": "official_recorded_land_records",
+    "method": "api",
+    "status": "verified",
+    "lastVerifiedAt": "2026-10-15",
+    "categories": ["air_rights", "deeds", "easements", "affordable_housing", "violations", "parcels"],
+    "questions": [
+      "Have air rights, ZLDAs, or easements been recorded on this tax lot or block in ACRIS?",
+      "What recent deeds, mortgages, or regulatory agreements are recorded on this BBL?",
+      "Are there HPD affordable housing building records or open HPD violations on this site?"
+    ],
+    "keywords": ["ACRIS", "nycdb", "air rights", "ZLDA", "zoning lot development agreement", "easement", "deed", "mortgage", "HPD", "affordable housing", "violations", "421-a", "MIH"],
+    "accessPoints": [
+      {"label": "ACRIS Real Property Legals", "url": "https://data.cityofnewyork.us/resource/8h5j-fqxa.json"},
+      {"label": "ACRIS Real Property Master", "url": "https://data.cityofnewyork.us/resource/bnx9-e6tj.json"},
+      {"label": "HPD Affordable Housing Production by Building", "url": "https://data.cityofnewyork.us/resource/hg8x-zxpr.json"},
+      {"label": "HPD Housing Maintenance Code Violations", "url": "https://data.cityofnewyork.us/resource/wvxf-dwi5.json"}
+    ],
+    "outline": [
+      "8h5j-fqxa maps borough, block, lot, easement, and air_rights flags to document_id.",
+      "bnx9-e6tj provides doc_type (DEED, MTGE, ZONE, AIRRIGHT, DEVR, EASE, AGMT), document_date, recorded_datetime, and document_amt.",
+      "hg8x-zxpr and wvxf-dwi5 report HPD affordable housing unit counts by AMI band and open Class A/B/C maintenance violations."
+    ],
+    "identifiers": ["bbl", "document_id", "doc_type", "air_rights", "easement", "document_amt", "project_id", "violationid"],
+    "templates": [
+      {"purpose": "Fetch ACRIS deeds/ZLDAs/air-rights and HPD records via specialist tool", "tool": "acres_nyc_public_records", "arguments": {"bbl": "{10-digit BBL}", "includeBlockAirRights": true}}
+    ],
+    "instructions": [
+      "Use acres_nyc_public_records with the 10-digit BBL to retrieve parcel ACRIS documents, block-wide air-rights/easement transfers, HPD affordable housing projects, and HPD violations."
+    ],
+    "prerequisites": ["10-digit NYC BBL."],
+    "restrictions": ["Public NYC Open Data Socrata API; respect anonymous rate limits."],
+    "limitations": ["ACRIS Socrata tables index recorded metadata and flags (air_rights='Y', doc_type='ZONE'); reading the full text of a recorded ZLDA schedule still requires pulling the ACRIS document image."],
+    "verification": ["2026-10-15: HTTP 200 verified against 8h5j-fqxa, bnx9-e6tj, hg8x-zxpr, and wvxf-dwi5 for BBL 1000477501."]
+  },
+  {
+    "id": "nyc-dob-ecb-violations",
+    "name": "NYC DOB Violations & DOB ECB/OATH Violations (nycdb)",
+    "publisher": "NYC Department of Buildings / NYC Open Data (nycdb schema)",
+    "jurisdiction": "US-NY-NYC",
+    "authority": "official_enforcement_records",
+    "method": "api",
+    "status": "verified",
+    "lastVerifiedAt": "2026-10-18",
+    "categories": ["violations", "enforcement", "penalties", "parcels"],
+    "questions": [
+      "Does this lot carry open DOB violations or ECB/OATH violations?",
+      "How much in ECB penalties is still due on this property?",
+      "What are the most recent violations issued on this building and are they hazardous?"
+    ],
+    "keywords": ["DOB violations", "ECB", "OATH", "environmental control board", "violation", "penalty", "balance due", "hazardous", "class 1", "work without permit", "nycdb"],
+    "accessPoints": [
+      {"label": "DOB Violations", "url": "https://data.cityofnewyork.us/resource/3h2n-5cm9.json"},
+      {"label": "DOB ECB Violations", "url": "https://data.cityofnewyork.us/resource/6bgk-3dad.json"}
+    ],
+    "outline": [
+      "3h2n-5cm9 lists DOB violations by boro, zero-padded block and lot, issue_date (YYYYMMDD), violation_type, violation_category (an asterisk marks dismissed or resolved; ACTIVE is open), disposition_date and description.",
+      "6bgk-3dad lists ECB/OATH violations by boro, block and lot with ecb_violation_status (ACTIVE or RESOLVE), severity (Class 1 to 3, Hazardous, Non-Hazardous), violation_type, issue_date, hearing_date, penality_imposed, amount_paid, balance_due and violation_description."
+    ],
+    "identifiers": ["bbl", "bin", "number", "ecb_violation_number", "violation_category", "ecb_violation_status", "severity", "balance_due"],
+    "templates": [
+      {"purpose": "Fetch open DOB and ECB/OATH violations with penalties due via specialist tool", "tool": "acres_nyc_public_records", "arguments": {"bbl": "{10-digit BBL}"}}
+    ],
+    "instructions": [
+      "Use acres_nyc_public_records with the 10-digit BBL; read dobViolationSummary and ecbViolationSummary for open counts, severity mix, penalties due and the five most recent items.",
+      "Report open violations and outstanding ECB penalties as obligations that run with the property; DOB does not sign off work or issue a Certificate of Occupancy while they stand."
+    ],
+    "prerequisites": ["10-digit NYC BBL."],
+    "restrictions": ["Public NYC Open Data Socrata API; send the app token and respect rate limits."],
+    "limitations": ["Rows are read up to 1,000 per dataset per lot (complete=false past that). Violation text is the inspector's abbreviated narrative; the full record and hearing docket live in DOB BIS and OATH."],
+    "verification": ["2026-10-18: HTTP 200 verified against 3h2n-5cm9 and 6bgk-3dad for BBL 3021860001 (block 02186, lot 00001/0001), which returned DOB and active ECB violations with balances due."]
+  },
+  {
+    "id": "nyc-hpd-registrations",
+    "name": "NYC HPD Multiple Dwelling Registrations",
+    "publisher": "NYC Department of Housing Preservation and Development / NYC Open Data",
+    "jurisdiction": "US-NY-NYC",
+    "authority": "official_registration_records",
+    "method": "api",
+    "status": "verified",
+    "lastVerifiedAt": "2026-10-18",
+    "categories": ["registrations", "occupancy", "tenants", "parcels"],
+    "questions": [
+      "Is this building a registered multiple dwelling with HPD, and is the registration current?",
+      "When was the building last registered with HPD?"
+    ],
+    "keywords": ["HPD", "multiple dwelling registration", "MDR", "registration", "registered", "occupied", "tenants", "landlord registration", "three or more units"],
+    "accessPoints": [
+      {"label": "HPD Multiple Dwelling Registrations", "url": "https://data.cityofnewyork.us/resource/tesw-yqqr.json"}
+    ],
+    "outline": [
+      "tesw-yqqr lists one row per registered building: registrationid, buildingid, boroid, bare block and lot, bin, address, lastregistrationdate and registrationenddate (the registration year ends on this date; an earlier date is a lapsed registration).",
+      "Owners of buildings with three or more residential units, and of one- or two-unit buildings not owner-occupied, must register annually."
+    ],
+    "identifiers": ["bbl", "bin", "registrationid", "buildingid", "lastregistrationdate", "registrationenddate"],
+    "templates": [
+      {"purpose": "Read the lot's HPD registration status via specialist tool", "tool": "acres_nyc_public_records", "arguments": {"bbl": "{10-digit BBL}"}}
+    ],
+    "instructions": [
+      "Use acres_nyc_public_records with the 10-digit BBL and read hpdRegistration (status current, expired or none, last registration date, registration end date, buildings).",
+      "The deal store reads the same feed in batches for every matched lot; a current registration raises the tenant screen's confidence that a 3+ unit pre-1974 building is an occupied multiple dwelling."
+    ],
+    "prerequisites": ["10-digit NYC BBL."],
+    "restrictions": ["Public NYC Open Data Socrata API; send the app token and respect rate limits."],
+    "limitations": ["Registration records occupancy class and owner contacts, not a rent-stabilized unit count or tenancy roster. A missing registration may mean a one- or two-family owner-occupied building, or non-compliance."],
+    "verification": ["2026-10-18: HTTP 200 verified against tesw-yqqr for BBL 3021860001 (boroid 3, block 2186, lot 1), which returned several registered buildings with registrationenddate 2026-09-01."]
+  },
+  {
+    "id": "us-homeharvest-mls-comps",
+    "name": "HomeHarvest Nationwide MLS / Realtor.com Comps & Absorption Velocity",
+    "publisher": "Realtor.com / MLS via HomeHarvest",
+    "jurisdiction": "US",
+    "authority": "market_listing_and_transaction_comparables",
+    "method": "api",
+    "status": "verified",
+    "lastVerifiedAt": "2026-10-15",
+    "categories": ["market_comps", "sales", "rentals", "absorption_velocity"],
+    "questions": [
+      "What are recent residential condo sales, active listings, or rental comparables near this address or ZIP code?",
+      "What is the median price per square foot, monthly rent, and days-on-market absorption velocity by bedroom count (studio, 1BR, 2BR, 3BR+)?"
+    ],
+    "keywords": ["HomeHarvest", "MLS", "Realtor", "comps", "comparables", "sold", "for_sale", "for_rent", "price per sqft", "days on market", "DOM", "absorption velocity", "unit mix"],
+    "accessPoints": [
+      {"label": "Realtor.com property listings", "url": "https://www.realtor.com/"},
+      {"label": "HomeHarvest repository", "url": "https://github.com/ZacharyHampton/HomeHarvest"}
+    ],
+    "outline": [
+      "Harvests property-level sold, for_sale, and for_rent records for any US address, neighborhood, city/state, or ZIP code.",
+      "Aggregates median $/sqft, median price/rent, median unit sqft, and median days_on_mls by bedroom bucket (0BR, 1BR, 2BR, 3BR+).",
+      "Computes absorption-velocity-weighted unit mix recommendations and populates acres_market_inputs."
+    ],
+    "identifiers": ["location", "listingTypes", "radiusMiles", "pastDays", "beds", "sqft", "pricePerSqft", "daysOnMls"],
+    "templates": [
+      {"purpose": "Harvest live sold, for-sale, and rental comps + absorption velocity", "tool": "acres_market_comps", "arguments": {"location": "{address, ZIP, or City, ST}", "listingTypes": ["sold", "for_sale", "for_rent"]}}
+    ],
+    "instructions": [
+      "Call acres_market_comps (via acres_execute_capability) with the target address, ZIP code, or City, ST before running acres_recommend_unit_mix or acres_pro_forma.",
+      "Use the returned byBedrooms median $/sqft and days-on-MLS velocity to justify unit mix and pricing assumptions with real comparable listings."
+    ],
+    "prerequisites": ["US location string (street address, ZIP code, or City, ST)."],
+    "restrictions": ["Subject to upstream Realtor.com availability and rate limits."],
+    "limitations": ["Listing and sold prices reflect residential MLS/portal records and may exclude off-market institutional bulk transfers."],
+    "verification": ["2026-10-15: HomeHarvest bridge verified with structured comp aggregation and citable source recording."]
+  },
+  {
+    "id": "nyc-broker-listings",
+    "name": "NYC Investment-Sales Broker Listings",
+    "publisher": "NYC brokerages (RIPCO Real Estate, Besen Partners, Rosewood Realty Group, Ariel Property Advisors, BKREA, Lee & Associates)",
+    "jurisdiction": "US-NY-NYC",
+    "authority": "broker_published_offerings",
+    "method": "website_search",
+    "status": "verified",
+    "lastVerifiedAt": "2026-10-18",
+    "categories": ["market_listings", "development_sites", "investment_sales"],
+    "questions": [
+      "Which NYC buildings and development sites are brokers currently offering for sale?",
+      "Is this lot listed by an investment-sales broker, and at what asking price?"
+    ],
+    "keywords": ["broker listings", "investment sales", "development site", "exclusive", "offering", "asking price", "multifamily", "mixed use", "LoopNet", "Crexi"],
+    "accessPoints": [
+      {"label": "RIPCO sale listings (public site search index)", "url": "https://www.ripcony.com/property-listings/?leaseOrSale=sale"},
+      {"label": "Besen Partners active properties (WordPress REST)", "url": "https://besenpartners.com/wp-json/wp/v2/properties"},
+      {"label": "Rosewood Realty Group active listings", "url": "https://www.rosewoodrg.com/active-listings"},
+      {"label": "Ariel Property Advisors on-market listings (public site data file)", "url": "https://arielpa.nyc/assets/pages/list-on-market.json"},
+      {"label": "BKREA sale listings (Buildout inventory embedded on the broker site)", "url": "https://bkrea.com/listings"},
+      {"label": "Lee & Associates New York sale listings (Buildout inventory embedded on the broker site)", "url": "https://www.lee-associates.com/properties"}
+    ],
+    "outline": [
+      "Each broker's own published sale listings, read from its public site search or CMS output: the offerings it also syndicates to LoopNet and Crexi.",
+      "Addresses are confirmed with NYC Planning GeoSearch and matched to the PLUTO lot before they enter the deal store; unconfirmed addresses are dropped.",
+      "A lot already listed through HomeHarvest keeps the MLS row; listings a broker withdraws are marked off market."
+    ],
+    "identifiers": ["bbl", "address", "listingSource", "url"],
+    "templates": [
+      {"purpose": "Screen broker-listed development candidates", "tool": "acres_search_deal_store", "arguments": {"borough": "{borough}"}}
+    ],
+    "instructions": ["Search through acres_search_deal_store; each deal names its listingSource and links the broker's page."],
+    "prerequisites": ["The deal store is enabled and the market refresh has run."],
+    "restrictions": ["Facts only: no photos, marketing copy or agent contact details are stored. Link to the broker page for the offering itself."],
+    "limitations": ["Covers only the brokers configured in broker-listings.mjs, not the whole market.", "Many offerings are price on request; asking prices are the broker's figures, not sale evidence."],
+    "verification": ["2026-10-18: live ingest of all three feeds with GeoSearch address confirmation and PLUTO matching."]
+  },
+  {
+    "id": "nyc-loopnet-listings",
+    "name": "LoopNet NYC Sale Listings",
+    "publisher": "LoopNet (CoStar Group), read through the Hyatus LoopNet search API",
+    "jurisdiction": "US-NY-NYC",
+    "authority": "marketplace_published_offerings",
+    "method": "api",
+    "status": "verified",
+    "lastVerifiedAt": "2026-10-18",
+    "categories": ["market_listings", "development_sites", "investment_sales"],
+    "questions": [
+      "Which NYC buildings, development sites, industrial, retail and office properties are offered for sale on LoopNet?",
+      "Is this lot listed on LoopNet, and at what asking price per buildable square foot?"
+    ],
+    "keywords": ["LoopNet", "CoStar", "investment sales", "for sale", "commercial listings", "development site", "multifamily", "land", "industrial", "retail", "office", "asking price"],
+    "accessPoints": [
+      {"label": "LoopNet New York City commercial real estate for sale", "url": "https://www.loopnet.com/search/commercial-real-estate/new-york-ny/for-sale/"}
+    ],
+    "outline": [
+      "The five boroughs are searched as overlapping boxes, split in four whenever a box reaches LoopNet's 750-result cap, and paged; each listing is read once by its LoopNet ID.",
+      "Whole-lot sale listings only: multifamily, land, industrial and flex, retail, office and mixed use. Condo and co-op units, portfolios, hotels, special-purpose property and leases are skipped.",
+      "Listings are matched to their PLUTO lot by pin coordinates and address (GeoSearch confirms the house number) and priced per buildable square foot like every other deal.",
+      "A lot already listed through HomeHarvest or a broker site keeps that row; a listing LoopNet no longer returns is marked off market."
+    ],
+    "identifiers": ["bbl", "address", "listingSource", "url"],
+    "templates": [
+      {"purpose": "Screen LoopNet-listed development candidates", "tool": "acres_search_deal_store", "arguments": {"borough": "{borough}"}}
+    ],
+    "instructions": ["Search through acres_search_deal_store; a LoopNet deal names listingSource loopnet and links the LoopNet listing page."],
+    "prerequisites": ["The deal store is enabled, the LoopNet API key is in the research secrets, and the market refresh has run."],
+    "restrictions": ["Facts and the listing link only: no descriptions, photos or agent contacts are stored (CoStar v. Crexi, 2025). Link to the LoopNet page for the offering itself."],
+    "limitations": ["LoopNet does not claim an exhaustive inventory and the search API depends on a renewed LoopNet session; a pass during an outage keeps the previous rows.", "Asking prices are the listing broker's figures, not sale evidence; many offerings are price on request."],
+    "verification": ["2026-10-18: live Brooklyn-box search through the LoopNet API (24 searches, 852 cards) ingested into a copy of the production deal store: 632 whole-lot listings, 533 matched to PLUTO lots, 406 with 500+ sq ft of unused floor area, 90 deferred to MLS or broker rows on the same lot."]
+  },
+  {
+    "id": "nyc-trade-press-the-real-deal",
+    "name": "The Real Deal RSS feed",
+    "publisher": "The Real Deal",
+    "jurisdiction": "US-NY-NYC",
+    "authority": "trade_press_reporting",
+    "method": "api",
+    "status": "verified",
+    "lastVerifiedAt": "2026-10-21",
+    "categories": [
+      "trade_press",
+      "transactions",
+      "financing",
+      "development_pipeline"
+    ],
+    "questions": [
+      "Has the trade press reported a sale, filing, financing, lease or construction on this lot or its block?",
+      "What has The Real Deal reported recently about this address?"
+    ],
+    "keywords": [
+      "The Real Deal",
+      "trade press",
+      "news",
+      "reported deal",
+      "sale",
+      "financing",
+      "refinancing",
+      "construction loan",
+      "permits filed",
+      "lease",
+      "development"
+    ],
+    "accessPoints": [
+      {
+        "label": "The Real Deal New York RSS feed",
+        "url": "https://therealdeal.com/new-york/feed/"
+      },
+      {
+        "label": "The Real Deal",
+        "url": "https://therealdeal.com/new-york/"
+      }
+    ],
+    "outline": [
+      "The public RSS feed is read on the deal store's scheduled market refresh, newest page first, with archive pages (?paged=N) walked once for the backfill. robots.txt is honored, requests identify as ArosaBot and wait two seconds apart.",
+      "Each story keeps only what the feed carries: headline, link, publish date and the feed's short summary.",
+      "Street addresses in the headline, summary and the feed's own tags are resolved with NYC Planning GeoSearch. A story is linked to a lot only when one lot carries the house number and street, in the borough or neighborhood the address's sentence names, or the only such lot in the city when the sentence names none."
+    ],
+    "identifiers": [
+      "bbl",
+      "address",
+      "url",
+      "publishedDate"
+    ],
+    "templates": [
+      {
+        "purpose": "Read trade-press stories about the subject lot and its block",
+        "tool": "acres_trade_press",
+        "arguments": {
+          "bbl": "{bbl}"
+        }
+      }
+    ],
+    "instructions": [
+      "Call acres_trade_press for the subject lot; cite each story by publisher and date. The site page and the underwriting report show the same stories under In the news."
+    ],
+    "prerequisites": [
+      "The market refresh has run at least once with the trade-press step."
+    ],
+    "restrictions": [
+      "Headline, link, date and the feed summary only: no article bodies and nothing behind a paywall are stored. Link to the publisher for the article itself."
+    ],
+    "limitations": [
+      "Trade-press reports are secondary reporting, not official records; confirm figures against ACRIS, DOB or the deal parties.",
+      "Stories that name a building only by its name, or an address that exists in more than one borough with no borough in the same sentence, are not linked to a lot.",
+      "Roundups and profiles naming more than five addresses are not linked to any lot."
+    ],
+    "verification": [
+      "2026-10-21: three pages of the live New York feed (30 stories) parsed; 7 stories linked to lots, including 2185 Coyle Street in Sheepshead Bay and 45 Broad Street."
+    ]
+  },
+  {
+    "id": "nyc-trade-press-new-york-yimby",
+    "name": "New York YIMBY RSS feed",
+    "publisher": "New York YIMBY",
+    "jurisdiction": "US-NY-NYC",
+    "authority": "trade_press_reporting",
+    "method": "api",
+    "status": "verified",
+    "lastVerifiedAt": "2026-10-21",
+    "categories": [
+      "trade_press",
+      "transactions",
+      "financing",
+      "development_pipeline"
+    ],
+    "questions": [
+      "Has the trade press reported a sale, filing, financing, lease or construction on this lot or its block?",
+      "What has New York YIMBY reported recently about this address?"
+    ],
+    "keywords": [
+      "New York YIMBY",
+      "trade press",
+      "news",
+      "reported deal",
+      "sale",
+      "financing",
+      "refinancing",
+      "construction loan",
+      "permits filed",
+      "lease",
+      "development"
+    ],
+    "accessPoints": [
+      {
+        "label": "New York YIMBY site RSS feed",
+        "url": "https://newyorkyimby.com/feed"
+      },
+      {
+        "label": "New York YIMBY",
+        "url": "https://newyorkyimby.com/"
+      }
+    ],
+    "outline": [
+      "The public RSS feed is read on the deal store's scheduled market refresh, newest page first, with archive pages (?paged=N) walked once for the backfill. robots.txt is honored, requests identify as ArosaBot and wait two seconds apart.",
+      "Each story keeps only what the feed carries: headline, link, publish date and the feed's short summary.",
+      "Street addresses in the headline, summary and the feed's own tags are resolved with NYC Planning GeoSearch. A story is linked to a lot only when one lot carries the house number and street, in the borough or neighborhood the address's sentence names, or the only such lot in the city when the sentence names none."
+    ],
+    "identifiers": [
+      "bbl",
+      "address",
+      "url",
+      "publishedDate"
+    ],
+    "templates": [
+      {
+        "purpose": "Read trade-press stories about the subject lot and its block",
+        "tool": "acres_trade_press",
+        "arguments": {
+          "bbl": "{bbl}"
+        }
+      }
+    ],
+    "instructions": [
+      "Call acres_trade_press for the subject lot; cite each story by publisher and date. The site page and the underwriting report show the same stories under In the news."
+    ],
+    "prerequisites": [
+      "The market refresh has run at least once with the trade-press step."
+    ],
+    "restrictions": [
+      "Headline, link, date and the feed summary only: no article bodies and nothing behind a paywall are stored. Link to the publisher for the article itself."
+    ],
+    "limitations": [
+      "Trade-press reports are secondary reporting, not official records; confirm figures against ACRIS, DOB or the deal parties.",
+      "Stories that name a building only by its name, or an address that exists in more than one borough with no borough in the same sentence, are not linked to a lot.",
+      "Roundups and profiles naming more than five addresses are not linked to any lot."
+    ],
+    "verification": [
+      "2026-10-21: three pages of the live feed (15 stories) parsed; 11 linked to lots, including 142 West 21st Street in Chelsea and 70-02 34th Avenue in Jackson Heights. Jersey City stories were not linked."
+    ]
+  },
+  {
+    "id": "nyc-trade-press-commercial-observer",
+    "name": "Commercial Observer RSS feed",
+    "publisher": "Commercial Observer",
+    "jurisdiction": "US-NY-NYC",
+    "authority": "trade_press_reporting",
+    "method": "api",
+    "status": "verified",
+    "lastVerifiedAt": "2026-10-21",
+    "categories": [
+      "trade_press",
+      "transactions",
+      "financing",
+      "development_pipeline"
+    ],
+    "questions": [
+      "Has the trade press reported a sale, filing, financing, lease or construction on this lot or its block?",
+      "What has Commercial Observer reported recently about this address?"
+    ],
+    "keywords": [
+      "Commercial Observer",
+      "trade press",
+      "news",
+      "reported deal",
+      "sale",
+      "financing",
+      "refinancing",
+      "construction loan",
+      "permits filed",
+      "lease",
+      "development"
+    ],
+    "accessPoints": [
+      {
+        "label": "Commercial Observer site RSS feed",
+        "url": "https://commercialobserver.com/feed/"
+      },
+      {
+        "label": "Commercial Observer",
+        "url": "https://commercialobserver.com/"
+      }
+    ],
+    "outline": [
+      "The public RSS feed is read on the deal store's scheduled market refresh, newest page first, with archive pages (?paged=N) walked once for the backfill. robots.txt is honored, requests identify as ArosaBot and wait two seconds apart.",
+      "Each story keeps only what the feed carries: headline, link, publish date and the feed's short summary.",
+      "Street addresses in the headline, summary and the feed's own tags are resolved with NYC Planning GeoSearch. A story is linked to a lot only when one lot carries the house number and street, in the borough or neighborhood the address's sentence names, or the only such lot in the city when the sentence names none."
+    ],
+    "identifiers": [
+      "bbl",
+      "address",
+      "url",
+      "publishedDate"
+    ],
+    "templates": [
+      {
+        "purpose": "Read trade-press stories about the subject lot and its block",
+        "tool": "acres_trade_press",
+        "arguments": {
+          "bbl": "{bbl}"
+        }
+      }
+    ],
+    "instructions": [
+      "Call acres_trade_press for the subject lot; cite each story by publisher and date. The site page and the underwriting report show the same stories under In the news."
+    ],
+    "prerequisites": [
+      "The market refresh has run at least once with the trade-press step."
+    ],
+    "restrictions": [
+      "Headline, link, date and the feed summary only: no article bodies and nothing behind a paywall are stored. Link to the publisher for the article itself."
+    ],
+    "limitations": [
+      "Trade-press reports are secondary reporting, not official records; confirm figures against ACRIS, DOB or the deal parties.",
+      "Stories that name a building only by its name, or an address that exists in more than one borough with no borough in the same sentence, are not linked to a lot.",
+      "Roundups and profiles naming more than five addresses are not linked to any lot."
+    ],
+    "verification": [
+      "2026-10-21: three pages of the live national feed (51 stories) parsed; 15 linked to NYC lots, including 2 Gansevoort Street and 511 Fifth Avenue. Out-of-city stories were not linked."
+    ]
+  }
+]

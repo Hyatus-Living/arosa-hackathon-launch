@@ -1,0 +1,262 @@
+#!/bin/bash
+set -euo pipefail
+# Deploy script revision: 2026-10-26.1 (self-update proof marker; bump on any edit here).
+# Self-update: the installed copy of this script is what systemd runs, but the file lists it
+# deploys live in the workspace checkout. If the two differ, the stale copy would install an
+# incomplete release (that crash-looped the service on 2026-10-18). Reinstall and re-exec
+# the workspace copy once, before doing anything else.
+if [[ -z "${ACRES_DEPLOY_SELF_UPDATED:-}" ]]; then
+  SELF_SRC=/home/openclaw/.openclaw/workspace/acres/infra/acres-deploy-research
+  if [[ -f "$SELF_SRC" && ! -L "$SELF_SRC" ]] && ! cmp -s "$SELF_SRC" "$0"; then
+    install -m 755 "$SELF_SRC" "$0"
+    export ACRES_DEPLOY_SELF_UPDATED=1
+    exec "$0" "$@"
+  fi
+fi
+ROOT=/home/openclaw/.openclaw/workspace/acres
+RESULT=$ROOT/.deploy-research-result
+REQUEST=$ROOT/.deploy-research
+# The release is staged as a tree mirroring / under a root-only directory, then handed to
+# acres-research-apply, which installs it before the next process starts (ExecStartPre).
+RELEASES=/var/lib/acres-research-release
+install -d -m 700 "$RELEASES"
+STAGE=$(mktemp -d "$RELEASES/stage.XXXXXX")
+REL=$STAGE/release
+# Draining can take minutes, and a newer request may replace this one meanwhile: remove the request
+# only while it is still the one handled here, so the path unit then starts the newer deploy.
+REQUESTED=$(runuser -u openclaw -- cat "$REQUEST" 2>/dev/null || true)
+trap 'rm -rf "$STAGE"; if [[ "$(runuser -u openclaw -- cat "$REQUEST" 2>/dev/null || true)" == "$REQUESTED" ]]; then rm -f "$REQUEST"; fi' EXIT
+[[ -f "$REQUEST" && ! -L "$REQUEST" ]]
+COMMIT=$(head -c 41 <<<"$REQUESTED")
+[[ "$COMMIT" =~ ^[0-9a-f]{40}$ ]]
+[[ "$(runuser -u openclaw -- git -C "$ROOT" branch --show-current)" == main ]]
+[[ "$(runuser -u openclaw -- git -C "$ROOT" rev-parse HEAD)" == "$COMMIT" ]]
+runuser -u openclaw -- git -C "$ROOT" diff-index --quiet "$COMMIT" --
+install -d -m 755 "$REL/opt/acres-research" "$REL/opt/app-starter/public"
+bash "$ROOT/infra/acres-stage-planning" "$ROOT" "$REL" /opt/acres-planning-envs
+SHARED=""
+for FILE in plans.mjs crm.mjs crm-enrichment.mjs beta.mjs feedback.mjs feedback-instructions.mjs listing-investigations.mjs listing-investigation-provider.mjs listing-investigation-prompt.mjs artifact-io.mjs scheme-plans.mjs scheme-outlines.mjs admission.mjs execution-context.mjs prompt-context.mjs citation-numbers.mjs event-stream.mjs listing-filter-jev.mjs listing-filter-schema.mjs listing-page-context.mjs plan-intake.mjs research.mjs service.mjs codex.mjs meta.mjs meta-visual.mjs tools.mjs composio.mjs trace.mjs store.mjs project-state.mjs schemes.mjs manager.mjs generated-ui.mjs knowledge.mjs knowledge-tools.mjs knowledge-providers.mjs knowledge-refresh.mjs knowledge-query.mjs parcels.mjs public-http.mjs public-url.mjs mcp-store.mjs mcp-domain.mjs mcp-admin.mjs source-registry.mjs zoning-facts.mjs wallet.mjs concepts.mjs concept-plan-svg.mjs context.mjs places.mjs zoning.mjs envelope.mjs market.mjs market-store.mjs mih-areas.mjs rent-stabilized-units.mjs nyc-zoning-lookups.mjs tax-485x.mjs construction-costs.mjs market-refresh.mjs broker-listings.mjs loopnet-listings.mjs news-feeds.mjs proforma.mjs budget-lines.mjs fanout.mjs fetch-url.mjs pdf-pages.mjs lanes.mjs jurisdiction.mjs planning.mjs instructions.mjs entitlements.mjs feasibility.mjs keep.mjs capabilities.mjs assembly.mjs dream.mjs nycdb.mjs precedents.mjs municipal-records.mjs floorplan-audit.mjs deliverable.mjs ledger.mjs architecture-artifacts.mjs architecture-jobs.mjs render-scene.mjs scheme-renders.mjs architecture-drawings.mjs architecture-tools.mjs pascal-import.mjs model-intake.mjs alerts.mjs alert-mailer.mjs alert-sources.mjs alert-runner.mjs alert-tools.mjs; do
+  [[ -f "$ROOT/acres-research/$FILE" && ! -L "$ROOT/acres-research/$FILE" ]]
+  runuser -u openclaw -- cat "$ROOT/acres-research/$FILE" > "$REL/opt/acres-research/$FILE"
+  /usr/local/bin/node --check "$REL/opt/acres-research/$FILE"
+  SHARED="$SHARED $(grep -o "'\.\./app-starter/public/[a-z0-9-]*\.js'" "$REL/opt/acres-research/$FILE" | tr -d "'" || true)"
+done
+# Shared browser modules: the staged research modules above re-export files from app-starter/public
+# by relative path (SHARED), so the checkout layout is mirrored under /opt and nothing is rewritten.
+# Stage each target and, transitively, the sibling modules it imports.
+SHARED=${SHARED//..\/app-starter\/public\//}
+STAGED=" "
+while [[ -n "${SHARED// /}" ]]; do
+  NEXT=""
+  for FILE in $SHARED; do
+    [[ "$STAGED" == *" $FILE "* ]] && continue
+    [[ -f "$ROOT/app-starter/public/$FILE" && ! -L "$ROOT/app-starter/public/$FILE" ]]
+    runuser -u openclaw -- cat "$ROOT/app-starter/public/$FILE" > "$REL/opt/app-starter/public/$FILE"
+    /usr/local/bin/node --check "$REL/opt/app-starter/public/$FILE"
+    STAGED="$STAGED$FILE "
+    IMPORTS=$(grep -oE "from ['\"]\./[a-z0-9-]+\.js['\"]" "$REL/opt/app-starter/public/$FILE" | tr -d "'\"" || true)
+    NEXT="$NEXT ${IMPORTS//from .\//}"
+  done
+  SHARED=$NEXT
+done
+[[ -f "$ROOT/app-starter/package.json" && ! -L "$ROOT/app-starter/package.json" ]]
+runuser -u openclaw -- cat "$ROOT/app-starter/package.json" > "$REL/opt/app-starter/package.json"
+if [[ -f "$ROOT/acres-research/homeharvest-bridge.py" && ! -L "$ROOT/acres-research/homeharvest-bridge.py" ]]; then
+  runuser -u openclaw -- cat "$ROOT/acres-research/homeharvest-bridge.py" > "$REL/opt/acres-research/homeharvest-bridge.py"
+  chmod 755 "$REL/opt/acres-research/homeharvest-bridge.py"
+fi
+for SKILL_NAME in creative-zoning nyc-statutory-playbooks case-law entitlement-paths massing-and-plans market-and-proforma keep-building floor-plans non-nyc-research; do
+  SKILL="skills/$SKILL_NAME/SKILL.md"
+  [[ -f "$ROOT/acres-research/$SKILL" && ! -L "$ROOT/acres-research/$SKILL" ]]
+  install -d -m 755 "$REL/opt/acres-research/skills/$SKILL_NAME"
+  runuser -u openclaw -- cat "$ROOT/acres-research/$SKILL" > "$REL/opt/acres-research/skills/$SKILL_NAME/SKILL.md"
+done
+[[ -f "$ROOT/acres-research/source-registry.json" && ! -L "$ROOT/acres-research/source-registry.json" ]]
+runuser -u openclaw -- cat "$ROOT/acres-research/source-registry.json" > "$REL/opt/acres-research/source-registry.json"
+/usr/local/bin/node --input-type=module -e 'import {readFileSync} from "node:fs"; if (!Array.isArray(JSON.parse(readFileSync(process.argv[1],"utf8")))) throw new Error("Registry manifest must be an array.");' "$REL/opt/acres-research/source-registry.json"
+if [[ -f "$ROOT/infra/acres-secrets.service" && ! -L "$ROOT/infra/acres-secrets.service" ]]; then
+  install -m 644 "$ROOT/infra/acres-secrets.service" /etc/systemd/system/acres-secrets.service
+  install -m 644 "$ROOT/infra/acres-research.service" /etc/systemd/system/acres-research.service
+  install -m 644 "$ROOT/infra/acres-research.socket" /etc/systemd/system/acres-research.socket
+  install -m 644 "$ROOT/infra/acres-knowledge.service" /etc/systemd/system/acres-knowledge.service
+  install -m 644 "$ROOT/infra/acres-knowledge-queued.service" /etc/systemd/system/acres-knowledge-queued.service
+  # Secrets are pulled at boot only (the hourly timer retired 2026-10-18): rotating a key
+  # is update Secret Manager, then restart acres-secrets.service and the consuming services.
+  systemctl disable --now acres-secrets.timer 2>/dev/null || true
+  rm -f /etc/systemd/system/acres-secrets.timer
+  systemctl daemon-reload
+  systemctl enable acres-secrets.service acres-research.socket
+fi
+[[ -f "$ROOT/infra/acres-research-apply" && ! -L "$ROOT/infra/acres-research-apply" ]]
+install -m 755 "$ROOT/infra/acres-research-apply" /usr/local/sbin/acres-research-apply
+[[ -f "$ROOT/acres-research/knowledge-sources.json" && ! -L "$ROOT/acres-research/knowledge-sources.json" ]]
+runuser -u openclaw -- cat "$ROOT/acres-research/knowledge-sources.json" > "$REL/opt/acres-research/knowledge-sources.json"
+[[ -f "$ROOT/acres-research/budget-splits.json" && ! -L "$ROOT/acres-research/budget-splits.json" ]]
+runuser -u openclaw -- cat "$ROOT/acres-research/budget-splits.json" > "$REL/opt/acres-research/budget-splits.json"
+[[ -f "$ROOT/acres-research/zoning-facts.json" && ! -L "$ROOT/acres-research/zoning-facts.json" ]]
+runuser -u openclaw -- cat "$ROOT/acres-research/zoning-facts.json" > "$REL/opt/acres-research/zoning-facts.json"
+/usr/local/bin/node --input-type=module -e 'import {readFileSync} from "node:fs"; if (!Array.isArray(JSON.parse(readFileSync(process.argv[1],"utf8")))) throw new Error("Zoning facts manifest must be an array.");' "$REL/opt/acres-research/zoning-facts.json"
+[[ -f "$ROOT/acres-research/zoning-rules.json" && ! -L "$ROOT/acres-research/zoning-rules.json" ]]
+runuser -u openclaw -- cat "$ROOT/acres-research/zoning-rules.json" > "$REL/opt/acres-research/zoning-rules.json"
+/usr/local/bin/node --input-type=module -e 'import {readFileSync} from "node:fs"; const r=JSON.parse(readFileSync(process.argv[1],"utf8")); if (!r.districts || typeof r.districts !== "object") throw new Error("Zoning rules must list districts.");' "$REL/opt/acres-research/zoning-rules.json"
+[[ -f "$ROOT/acres-research/nyc-tax-rates.json" && ! -L "$ROOT/acres-research/nyc-tax-rates.json" ]]
+runuser -u openclaw -- cat "$ROOT/acres-research/nyc-tax-rates.json" > "$REL/opt/acres-research/nyc-tax-rates.json"
+/usr/local/bin/node --input-type=module -e 'import {readFileSync} from "node:fs"; const r=JSON.parse(readFileSync(process.argv[1],"utf8")); if (!r.sourceUrl || !r.fiscalYears || typeof r.fiscalYears !== "object") throw new Error("Tax rates must carry a source URL and fiscal years.");' "$REL/opt/acres-research/nyc-tax-rates.json"
+# The state directory is shared by openclaw (the sync and ledger units) and the research service's
+# user through ACLs set on the host. It is created once; resetting its mode on every deploy collapsed
+# the ACL mask and locked the research service out of every store (2026-10-19).
+STATE_DIR=/home/openclaw/.openclaw/acres-state
+[[ -d "$STATE_DIR" ]] || install -d -o openclaw -g openclaw -m 700 "$STATE_DIR"
+RESEARCH_USER=$(systemctl show acres-research -p User --value 2>/dev/null || true)
+if [[ -n "$RESEARCH_USER" && "$RESEARCH_USER" != openclaw && "$RESEARCH_USER" != root ]] && id "$RESEARCH_USER" >/dev/null 2>&1; then
+  for DIR in /home/openclaw/.openclaw "$STATE_DIR"; do
+    runuser -u "$RESEARCH_USER" -- test -x "$DIR" || setfacl -m "u:$RESEARCH_USER:rwx,m::rwx" "$DIR"
+  done
+  runuser -u "$RESEARCH_USER" -- test -w "$STATE_DIR" || setfacl -m "u:$RESEARCH_USER:rwx,m::rwx" "$STATE_DIR"
+fi
+# Architecture jobs run in acres-architecture-worker@ units that the research service starts through
+# bin/architecture-worker-unit, so the units and the polkit rule letting it start them follow the user
+# research runs as. When research moved to acres-runtime both still named openclaw, and every job
+# failed with "Interactive authentication required" (2026-10-21).
+if [[ -d /opt/acres-architecture-worker && -n "$RESEARCH_USER" ]] && id "$RESEARCH_USER" >/dev/null 2>&1; then
+  [[ -f "$ROOT/infra/acres-architecture-worker@.service" && ! -L "$ROOT/infra/acres-architecture-worker@.service" && -f "$ROOT/infra/acres-architecture-worker.rules" && ! -L "$ROOT/infra/acres-architecture-worker.rules" ]]
+  RESEARCH_GROUP=$(systemctl show acres-research -p Group --value)
+  install -m 644 "$ROOT/infra/acres-architecture-worker@.service" /etc/systemd/system/acres-architecture-worker@.service
+  install -d -m 755 /etc/systemd/system/acres-architecture-worker@.service.d
+  printf '[Service]\nUser=%s\nGroup=%s\n' "$RESEARCH_USER" "${RESEARCH_GROUP:-$RESEARCH_USER}" > /etc/systemd/system/acres-architecture-worker@.service.d/user.conf
+  RULE=$(<"$ROOT/infra/acres-architecture-worker.rules")
+  printf '%s\n' "${RULE//RESEARCH_USER/$RESEARCH_USER}" > /etc/polkit-1/rules.d/50-acres-architecture-worker.rules
+  chmod 644 /etc/systemd/system/acres-architecture-worker@.service.d/user.conf /etc/polkit-1/rules.d/50-acres-architecture-worker.rules
+  systemctl daemon-reload
+fi
+if [[ -f "$ROOT/infra/acres-dream.service" && ! -L "$ROOT/infra/acres-dream.service" && -f "$ROOT/infra/acres-dream.timer" && ! -L "$ROOT/infra/acres-dream.timer" ]]; then
+  install -m 644 "$ROOT/infra/acres-dream.service" /etc/systemd/system/acres-dream.service
+  install -m 644 "$ROOT/infra/acres-dream.timer" /etc/systemd/system/acres-dream.timer
+  systemctl daemon-reload
+  systemctl enable --now acres-dream.timer
+fi
+if [[ -f "$ROOT/infra/acres-ledger.service" && ! -L "$ROOT/infra/acres-ledger.service" && -f "$ROOT/infra/acres-ledger.timer" && ! -L "$ROOT/infra/acres-ledger.timer" ]]; then
+  # The sync reads ACRES_SOCRATA_APP_TOKEN from /home/openclaw/.openclaw/gateway.env (EnvironmentFile).
+  install -m 644 "$ROOT/infra/acres-ledger.service" /etc/systemd/system/acres-ledger.service
+  install -m 644 "$ROOT/infra/acres-ledger.timer" /etc/systemd/system/acres-ledger.timer
+  systemctl daemon-reload
+  systemctl enable --now acres-ledger.timer
+fi
+if [[ -f "$ROOT/infra/acres-market.service" && ! -L "$ROOT/infra/acres-market.service" && -f "$ROOT/infra/acres-market.timer" && ! -L "$ROOT/infra/acres-market.timer" ]]; then
+  install -m 644 "$ROOT/infra/acres-market.service" /etc/systemd/system/acres-market.service
+  install -m 644 "$ROOT/infra/acres-market.timer" /etc/systemd/system/acres-market.timer
+  systemctl daemon-reload
+  systemctl enable --now acres-market.timer
+fi
+if [[ -f "$ROOT/infra/acres-pull-secrets" && ! -L "$ROOT/infra/acres-pull-secrets" ]]; then
+  install -m 755 "$ROOT/infra/acres-pull-secrets" /usr/local/sbin/acres-pull-secrets
+fi
+if [[ -f "$ROOT/infra/acres-pull-oauth" && ! -L "$ROOT/infra/acres-pull-oauth" && -f "$ROOT/infra/acres-oauth.timer" && ! -L "$ROOT/infra/acres-oauth.timer" ]]; then
+  # The services run as acres-runtime and read the subscription token this exports.
+  install -m 755 "$ROOT/infra/acres-pull-oauth" /usr/local/sbin/acres-pull-oauth
+  install -m 644 "$ROOT/infra/acres-oauth.service" /etc/systemd/system/acres-oauth.service
+  install -m 644 "$ROOT/infra/acres-oauth.timer" /etc/systemd/system/acres-oauth.timer
+  systemctl daemon-reload
+  systemctl enable acres-oauth.service
+  systemctl enable --now acres-oauth.timer
+  systemctl start acres-oauth.service
+fi
+if [[ -f "$ROOT/infra/openclaw-gsm-resolver.mjs" && ! -L "$ROOT/infra/openclaw-gsm-resolver.mjs" ]]; then
+  # OpenClaw's exec SecretRef provider (gateway password, Typesafe key) resolves through this file.
+  /usr/local/bin/node --check "$ROOT/infra/openclaw-gsm-resolver.mjs"
+  install -o openclaw -g openclaw -m 755 "$ROOT/infra/openclaw-gsm-resolver.mjs" /usr/local/bin/openclaw-gsm-resolver.mjs
+fi
+[[ -x /opt/acres-research/bin/codex && -x /opt/acres-research/bin/codex-code-mode-host && -x /opt/acres-research/bin/bwrap ]]
+# The service resolves npm packages from /opt/acres-research/node_modules, which this installer
+# otherwise never touches: a dependency added upstream (Pascal 1.0.4's polygon-clipping) once
+# crash-looped the service after a clean module deploy. Copy every package the checkout has that
+# /opt lacks. Existing packages are left alone; version upgrades of installed packages stay a
+# deliberate operator action with the old tree kept for rollback.
+if [[ -d "$ROOT/node_modules" && -d /opt/acres-research/node_modules ]]; then
+  for entry in "$ROOT"/node_modules/* "$ROOT"/node_modules/@*/*; do
+    [[ -d "$entry" ]] || continue
+    rel="${entry#"$ROOT"/node_modules/}"
+    [[ "$rel" == .bin ]] && continue
+    if [[ ! -e "/opt/acres-research/node_modules/$rel" ]]; then
+      mkdir -p "$(dirname "/opt/acres-research/node_modules/$rel")"
+      cp -a "$entry" "/opt/acres-research/node_modules/$rel"
+    fi
+  done
+  chown -R openclaw:openclaw /opt/acres-research/node_modules
+fi
+# Web blue/green units (docs/arosa-deployment.md). Kept current only once the host runs them, which
+# the one-time switch-over marks with /etc/arosa-acres/web-target; nothing here restarts the web
+# app or its front, so an edit to arosa-web-front.mjs takes effect on the next restart of the front.
+if [[ -f /etc/arosa-acres/web-target ]]; then
+  for UNIT in arosa-acres.service arosa-acres@.service arosa-web-front.service; do
+    [[ -f "$ROOT/infra/$UNIT" && ! -L "$ROOT/infra/$UNIT" ]]
+    install -m 644 "$ROOT/infra/$UNIT" "/etc/systemd/system/$UNIT"
+  done
+  [[ -f "$ROOT/infra/arosa-web-switch" && ! -L "$ROOT/infra/arosa-web-switch" && -f "$ROOT/infra/arosa-web-front.mjs" && ! -L "$ROOT/infra/arosa-web-front.mjs" ]]
+  /usr/local/bin/node --check "$ROOT/infra/arosa-web-front.mjs"
+  install -m 755 "$ROOT/infra/arosa-web-switch" /usr/local/sbin/arosa-web-switch
+  install -m 644 "$ROOT/infra/arosa-web-front.mjs" /usr/local/lib/arosa-web-front.mjs
+  systemctl daemon-reload
+fi
+printf '%s\n' "$COMMIT" > "$REL/opt/acres-research/.deployed-commit"
+chown openclaw:openclaw "$REL/opt/acres-research/.deployed-commit"
+rm -rf "$RELEASES/next"
+mv -T "$REL" "$RELEASES/next"
+report() {
+  printf '%s\n' "$1" > "$STAGE/result"
+  chown openclaw:openclaw "$STAGE/result"
+  chmod 644 "$STAGE/result"
+  mv -fT "$STAGE/result" "$RESULT"
+}
+active() { curl -fsS --max-time 5 http://10.42.0.2:18800/healthz 2>/dev/null | python3 -c 'import json,sys;print(json.load(sys.stdin)["active"])' 2>/dev/null; }
+# The new release is serving when the health check names it and the process is not draining. A
+# process that exits is a failure at once: connections wait in the socket backlog meanwhile.
+serving() {
+  for _ in $(seq 1 30); do
+    systemctl is-active --quiet acres-research.service || return 1
+    if curl -fsS --max-time 3 http://10.42.0.2:18800/healthz 2>/dev/null |
+      python3 -c 'import json,sys;h=json.load(sys.stdin);sys.exit(0 if h["release"]==sys.argv[1] and not h["draining"] else 1)' "$1" 2>/dev/null; then
+      return 0
+    fi
+    sleep 1
+  done
+  return 1
+}
+# Hand over. The listening socket belongs to acres-research.socket, so connections made during the
+# handover wait in its backlog and nobody sees an error. SIGTERM drains the old process: it keeps
+# serving every request, holds new runs in the queue for the next process and lets in-flight runs
+# finish on their own deadline (TimeoutStopSec in acres-research.service). The next process starts
+# once it has exited, after acres-research-apply installs the staged release.
+# To keep that queue empty, wait first (up to 10 minutes) for a moment with no active work; a
+# service that stays busy drains anyway.
+# A second request line "urgent" (scripts/deploy-research.sh --urgent) skips both waits: active
+# runs end as stopped.
+if [[ "$REQUESTED" == *$'\n'urgent ]]; then
+  systemctl kill --kill-whom=main --signal=SIGINT acres-research.service || true
+else
+  for _ in $(seq 1 120); do
+    [[ "$(active || echo 0)" != 0 ]] || break
+    sleep 5
+  done
+fi
+if systemctl is-active --quiet acres-research.socket; then
+  systemctl restart acres-research.service
+else
+  # First deploy with the socket unit: the running process still holds the port itself.
+  systemctl stop acres-research.service
+  systemctl start acres-research.socket acres-research.service
+fi
+if serving "$COMMIT"; then
+  report "Installed $COMMIT"
+  exit 0
+fi
+# The new release did not come up: reinstall the files it replaced and start again.
+PRIOR=$(cat "$RELEASES/previous/opt/acres-research/.deployed-commit")
+mv -T "$RELEASES/previous" "$RELEASES/next"
+systemctl restart acres-research.service
+if serving "$PRIOR"; then
+  report "Rolled back $COMMIT: it failed its health check; $PRIOR is serving"
+else
+  report "Failed $COMMIT: it failed its health check and $PRIOR did not come back"
+fi
+exit 1

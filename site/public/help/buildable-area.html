@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How does Arosa work out how much I can build? | Arosa Help</title>
+<meta name="description" content="What buildable area is, how Arosa works it out from PLUTO and the Zoning Resolution, how it compares with filed buildings, and what it leaves out.">
+<meta name="theme-color" content="#f9f9f9">
+<link rel="canonical" href="https://witharosa.ai/help/buildable-area">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site.css">
+<link rel="stylesheet" href="/help/help.css">
+<script>try{if(localStorage.theme==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav" id="nav">
+  <div class="wrap">
+    <nav class="bar" aria-label="Site">
+      <a class="brand" href="/" aria-label="Arosa home">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="currentColor"/><path d="M8 24h4v-5h8v5h4V14h-4v-4h-4V6h-4v4H8z" fill="var(--bg)"/></svg>
+        <span>Arosa</span>
+      </a>
+      <div class="right">
+        <a class="help-link" href="/help">Help</a>
+        <a class="btn btn-primary cta" href="https://build.witharosa.ai">Open the app</a>
+      </div>
+    </nav>
+  </div>
+</header>
+<main id="main" class="help">
+<nav class="crumbs" aria-label="Breadcrumb"><a href="/help">Help</a><span aria-hidden="true">/</span><span aria-current="page">Buildable area</span></nav>
+<h1>How does Arosa work out how much I can build?</h1>
+<p class="lead">Buildable area is the floor area a new residential building could hold on your lot under current zoning. It is the lower of two numbers: what the district allows on paper, and what the lot and the height and setback rules can physically hold.</p>
+<h2>How it is worked out</h2>
+<ol>
+<li>Take the lot area, shape, zoning district and existing building from PLUTO, and the width of the streets the lot fronts.</li>
+<li>Look up the district&rsquo;s residential floor area ratio (FAR) in the Zoning Resolution, including the December 2024 City of Yes text. Where PLUTO still shows an older figure for a district Arosa has checked against the current text, the text wins.</li>
+<li>Multiply lot area by FAR for the paper maximum. With the affordability bonus, use the higher affordable FAR.</li>
+<li>Fit a building on the lot: yards, height, setbacks, lot coverage and corner or through-lot rules. Buildable area is the lower of the paper maximum and what fits.</li>
+<li>Add back the space zoning floor area leaves out, such as cellar, cores and exterior walls, to get gross building area. Those percentages are Arosa planning estimates, not Zoning Resolution figures.</li>
+</ol>
+<h2>Inputs and how fresh they are</h2>
+<table class="tbl"><thead><tr><th scope="col">Input</th><th scope="col">Source</th><th scope="col">Freshness</th></tr></thead><tbody><tr><th scope="row">Lot area, shape, district, existing building</th><td data-label="Source">PLUTO, NYC Department of City Planning</td><td data-label="Freshness">Read from NYC Open Data when a site is matched. The sources list shows the retrieved date.</td></tr><tr><th scope="row">Residential FAR, height and setback rules</th><td data-label="Source">Zoning Resolution including City of Yes</td><td data-label="Freshness">Each figure names its section of the Zoning Resolution.</td></tr></tbody></table>
+<p>Every dataset and its refresh time is in <a href="/help/sources-and-freshness">Where the data comes from</a>.</p>
+<h2>How it compares with filed buildings</h2>
+<p>Against 2,647 new buildings filed from 2014 to 2021 in R6 to R10 districts, the floor area on the filing equals Arosa&rsquo;s figure at the median (ratio 1.00), and Arosa&rsquo;s number was within 10% of the filing 57% of the time. Lot area times FAR was within 10% 45% of the time. R4 and R5 are left out because those filings predate City of Yes. Measured October 22, 2026; filed floor area is what was proposed, not always what was built. The full comparison is on the <a href="/accuracy">accuracy page</a>.</p>
+<h2>What it does not cover</h2>
+<ul>
+<li>Air rights bought or sold, and zoning lot mergers.</li>
+<li>Landmark and design review.</li>
+<li>Commercial or community facility programs. Only residential buildings are sized.</li>
+<li>Special district rules that Arosa has not checked. Those lots fall back on PLUTO&rsquo;s FAR.</li>
+</ul>
+<p>It is a research aid, not an entitlement determination.</p>
+<h2>How your own costs change it</h2>
+<p>They do not. Buildable area comes from zoning and the lot. Your costs change what that area is worth: see <a href="/help/land-value">land value</a> and <a href="/help/budget">the budget</a>.</p>
+<h2>Common questions</h2>
+<h3>Why is my number lower than lot area times FAR?</h3>
+<p>On narrow, shallow or irregular lots the yards and setbacks leave less room than the FAR allows. Arosa uses the lower figure. The same reason explains most differences from the district maximum shown in ZoLa.</p>
+<section class="more" aria-labelledby="more-h"><h2 id="more-h">Keep reading</h2><ul><li><a href="/help/three-options">What are the three ways to build my site?</a></li><li><a href="/help/sources-and-freshness">Where the data comes from</a></li></ul></section>
+<p class="ask">Something unclear or wrong? Email <a href="mailto:michael@witharosa.ai">michael@witharosa.ai</a>.</p>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="bottom">
+      <span>© 2026 Arosa</span>
+      <span><a href="/help">Help</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/support">Support</a></span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

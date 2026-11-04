@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Accuracy | Arosa</title>
+<meta name="description" content="How Arosa's buildable floor area compares with new buildings filed with the city, how its nearby land figure compares with what buyers paid, and exactly how each check was run.">
+<meta property="og:title" content="How accurate is Arosa?">
+<meta property="og:description" content="Buildable floor area compared with filed new buildings, and land value compared with recorded closings, with the method, data and limits in the open.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://witharosa.ai/accuracy">
+<meta property="og:image" content="https://witharosa.ai/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#f9f9f9">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site.css">
+<script>try{if(localStorage.theme==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
+<style>
+::selection { background: var(--ink); color: var(--bg); }
+html { scrollbar-color: var(--line) var(--bg); }
+body { overflow-x: clip; }
+.nav-links a[aria-current] { color: var(--ink); }
+.nav .apply-link { display: inline-flex; }
+
+/* Page */
+.page { padding: 8rem 0 6rem; }
+.page section { padding: 0; }
+.page section + section { border-top: 0; }
+.col { max-width: 46rem; }
+.page h1 { font-size: clamp(2.25rem, 5.2vw, 4rem); line-height: 1.04; letter-spacing: -0.03em; max-width: 18ch; }
+.page .intro { margin-top: 1.5rem; max-width: 40rem; color: var(--ink-muted); font-size: clamp(1.0625rem, 1.4vw, 1.25rem); line-height: 1.55; text-wrap: pretty; }
+.asof { margin-top: 1.75rem; font: 400 0.8125rem/1.5 var(--font-mono); color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+
+.band { margin-top: 5.5rem; }
+.band h2 { font-size: clamp(1.6rem, 3vw, 2.25rem); line-height: 1.1; letter-spacing: -0.03em; max-width: 24ch; }
+.band h3 { font-size: 1.0625rem; letter-spacing: -0.01em; }
+.band .col > p, .prose p { margin-top: 1.1rem; color: var(--ink-muted); font-size: 1.0625rem; line-height: 1.65; max-width: 44rem; text-wrap: pretty; }
+.band h2 + p { margin-top: 1.25rem; }
+.prose p strong, .band li strong { color: var(--ink); font-weight: 500; }
+.band a.inline, .prose a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--ink-faint); text-underline-offset: 3px; transition: text-decoration-color .2s var(--ease); }
+.band a.inline:hover, .prose a:hover { text-decoration-color: var(--ink); }
+
+/* Summary: two findings side by side, separated by hairlines */
+.verdicts { margin-top: 3rem; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.verdicts > div { padding: 1.75rem 2rem 2rem 0; display: grid; gap: 0.7rem; align-content: start; }
+.verdicts > div + div { padding-left: 2rem; border-left: 1px solid var(--line); }
+.state { display: inline-flex; align-items: center; gap: 0.55rem; font: 500 0.75rem/1.3 var(--font-mono); color: var(--ink-muted); }
+.state::before { content: ''; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--ink); }
+.state.pending::before { background: transparent; border: 1px solid var(--ink-muted); box-sizing: border-box; }
+.verdicts h3 { font-size: 1.25rem; font-weight: 500; letter-spacing: -0.02em; }
+.verdicts p { color: var(--ink-muted); font-size: 0.9875rem; line-height: 1.6; max-width: 36ch; }
+.verdicts p strong { color: var(--ink); font-weight: 500; }
+
+/* Distribution */
+.figure { margin: 3rem 0 0; border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); overflow: hidden; }
+.figure figcaption { padding: 1.5rem 1.75rem 1.25rem; display: grid; gap: 0.35rem; border-bottom: 1px solid var(--line); background: var(--surface-2); }
+.figure figcaption strong { font-weight: 500; font-size: 1.0625rem; letter-spacing: -0.01em; }
+.figure figcaption span { color: var(--ink-muted); font-size: 0.9rem; line-height: 1.55; max-width: 62ch; }
+.key { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; padding: 1rem 1.75rem 0; font-size: 0.875rem; color: var(--ink-muted); }
+.key span { display: inline-flex; align-items: center; gap: 0.55rem; }
+.key i { width: 1.5rem; height: 0.5rem; border-radius: 0.125rem; display: block; }
+.key .k-arosa, .bar .b-arosa { background: var(--accent); }
+.key .k-short, .bar .b-short { background: var(--ink-faint); }
+.dist { width: 100%; border-collapse: collapse; margin-top: 0.5rem; font-variant-numeric: tabular-nums; }
+.dist th, .dist td { text-align: left; font-weight: 400; vertical-align: middle; }
+.dist thead th { padding: 0.75rem 0.75rem 0.5rem; font: 500 0.75rem/1.3 var(--font-mono); color: var(--ink-muted); }
+.dist thead th:first-child, .dist tbody th { padding-left: 1.75rem; }
+.dist thead th:last-child, .dist tbody td:last-child { padding-right: 1.75rem; }
+.dist tbody th { width: 10.5rem; padding-top: 0.8rem; padding-bottom: 0.8rem; padding-right: 0.75rem; font-size: 0.9375rem; color: var(--ink); }
+.dist tbody th small { display: block; font-size: 0.8125rem; color: var(--ink-muted); line-height: 1.35; }
+.dist tbody td { padding: 0.8rem 0.75rem; }
+.dist tbody tr { border-top: 1px solid var(--line); }
+.dist tbody tr.centre { background: var(--surface-2); }
+.dist tbody tr.centre th { font-weight: 500; }
+.bar { display: grid; grid-template-columns: minmax(0, 1fr) 3.4rem; align-items: center; gap: 0.75rem; }
+.bar .track { display: block; height: 0.625rem; border-radius: 0.1875rem; background: color-mix(in oklch, var(--ink) 7%, transparent); overflow: hidden; }
+.bar .track i { display: block; height: 100%; border-radius: 0.1875rem; transform-origin: left; }
+.bar .pct { font-size: 0.9375rem; text-align: right; }
+.centre .bar .pct { font-weight: 500; }
+.figure .note { padding: 1rem 1.75rem 1.5rem; color: var(--ink-muted); font-size: 0.8125rem; line-height: 1.6; border-top: 1px solid var(--line); }
+.motion .dist .track i { transform: scaleX(0); }
+.motion .figure.in .track i { transform: none; transition: transform 1s var(--ease); transition-delay: calc(var(--i, 0) * 70ms); }
+
+/* Plain lists and tables */
+.defs { margin: 2.5rem 0 0; border-top: 1px solid var(--line); }
+.defs > div { display: grid; grid-template-columns: 13rem minmax(0, 1fr); gap: 1.5rem; padding: 1.15rem 0; border-bottom: 1px solid var(--line); }
+.defs dt { font-weight: 500; font-size: 0.9875rem; }
+.defs dd { margin: 0; color: var(--ink-muted); font-size: 0.9875rem; line-height: 1.6; max-width: 56ch; }
+.defs dd strong { color: var(--ink); font-weight: 500; }
+.defs .mono, .steps .mono { white-space: nowrap; font-size: 0.8125rem; color: var(--ink); }
+
+.steps { list-style: none; counter-reset: s; margin: 2.5rem 0 0; padding: 0; border-top: 1px solid var(--line); }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 2.5rem minmax(0, 1fr); gap: 1rem; padding: 1.25rem 0; border-bottom: 1px solid var(--line); color: var(--ink-muted); font-size: 1rem; line-height: 1.6; }
+.steps li::before { content: counter(s); font: 500 0.8125rem/1.9 var(--font-mono); color: var(--ink-muted); }
+.steps li div { max-width: 58ch; }
+.steps li strong { display: block; color: var(--ink); font-weight: 500; margin-bottom: 0.15rem; }
+
+.funnel { margin: 2.5rem 0 0; width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.funnel caption { text-align: left; padding-bottom: 0.9rem; font-weight: 500; font-size: 1.0625rem; letter-spacing: -0.01em; }
+.funnel th, .funnel td { text-align: left; padding: 0.85rem 0; border-top: 1px solid var(--line); font-weight: 400; font-size: 0.9875rem; vertical-align: top; }
+.funnel tbody tr:last-child th, .funnel tbody tr:last-child td { border-bottom: 1px solid var(--line); }
+.funnel td:first-child { width: 6rem; font-weight: 500; }
+.funnel td:first-child, .funnel td:nth-child(2) { padding-right: 1.25rem; }
+.funnel th { color: var(--ink-muted); }
+.funnel .gone { color: var(--ink-muted); white-space: nowrap; padding-left: 1rem; text-align: right; }
+.funnel tr.end td, .funnel tr.end th { color: var(--ink); }
+.funnel tr.end th { font-weight: 500; }
+
+.band h3.sub { margin-top: 4rem; font-size: 1.25rem; font-weight: 500; }
+.misses { margin: 1.25rem 0 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; border-top: 1px solid var(--line); }
+.misses > div { padding: 1.5rem 2rem 0 0; display: grid; gap: 0.6rem; align-content: start; }
+.misses > div + div { padding-left: 2rem; padding-right: 0; border-left: 1px solid var(--line); }
+.misses h3 { font-weight: 500; font-size: 1.0625rem; }
+.misses p { color: var(--ink-muted); font-size: 0.9875rem; line-height: 1.6; max-width: 40ch; }
+.misses .share { font-size: 0.9375rem; font-weight: 500; color: var(--ink); line-height: 1.4; }
+
+
+/* Closing */
+.closing { margin-top: 6rem; padding: 3rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); display: grid; grid-template-columns: minmax(0, 1.2fr) auto; gap: 2rem 3rem; align-items: center; }
+.closing h2 { font-size: clamp(1.5rem, 2.8vw, 2rem); line-height: 1.12; letter-spacing: -0.03em; max-width: 22ch; }
+.closing p { margin-top: 0.9rem; color: var(--ink-muted); font-size: 1rem; line-height: 1.6; max-width: 44ch; }
+.go { display: inline-flex; align-items: center; gap: 0.6rem; min-height: 3rem; padding: 0 1.4rem; border-radius: 0.5rem; background: var(--accent); color: var(--accent-ink); font: 500 0.9375rem/1 var(--font-sans); transition: background-color .2s var(--ease), transform .2s var(--ease); white-space: nowrap; }
+.go:hover { background: color-mix(in oklch, var(--accent) 86%, transparent); }
+.go:active { transform: translateY(1px); }
+.go svg { width: 1rem; height: 1rem; transition: transform .25s var(--ease); }
+.go:hover svg { transform: translateX(3px); }
+
+footer { padding: 2rem 0; }
+footer .bottom { margin-top: 0; padding-top: 0; border-top: 0; }
+
+@media (max-width: 860px) {
+  .verdicts { grid-template-columns: 1fr; }
+  .verdicts > div, .verdicts > div + div { padding: 1.5rem 0; border-left: 0; }
+  .verdicts > div + div { border-top: 1px solid var(--line); }
+  .verdicts p { max-width: 52ch; }
+  .misses { grid-template-columns: 1fr; }
+  .misses > div, .misses > div + div { padding: 1.4rem 0; border-left: 0; }
+  .misses > div + div { border-top: 1px solid var(--line); }
+  .closing { grid-template-columns: 1fr; padding: 2rem; }
+}
+@media (max-width: 639px) {
+  .page { padding-top: 6.5rem; }
+  .band { margin-top: 4.5rem; }
+  .defs > div { grid-template-columns: 1fr; gap: 0.3rem; padding: 1rem 0; }
+  .steps li { grid-template-columns: 1.75rem minmax(0, 1fr); gap: 0.6rem; }
+  .figure { border-radius: 0.75rem; }
+  .figure figcaption { padding: 1.25rem 1.25rem 1rem; }
+  .key { padding: 0.9rem 1.25rem 0; }
+  .figure .note { padding: 1rem 1.25rem 1.25rem; }
+  /* the table stacks: each ratio band becomes a label above its two bars */
+  .dist thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+  .dist, .dist tbody, .dist tr, .dist th, .dist td { display: block; }
+  .dist tbody tr { padding: 0.9rem 1.25rem 1rem; }
+  .dist tbody th, .dist tbody th:first-child { width: auto; padding: 0 0 0.45rem; }
+  .dist tbody th small { display: inline; margin-left: 0.5rem; }
+  .dist tbody td, .dist tbody td:last-child { padding: 0.2rem 0; }
+  .dist tbody td::before { content: attr(data-label); display: block; font: 400 0.75rem/1.4 var(--font-mono); color: var(--ink-muted); margin-bottom: 0.2rem; }
+  .closing { padding: 1.5rem 1.25rem; margin-top: 4.5rem; }
+  .funnel, .funnel tbody, .funnel tr, .funnel th, .funnel td, .funnel caption { display: block; }
+  .funnel tr { display: grid; grid-template-columns: 4.25rem minmax(0, 1fr); column-gap: 0.5rem; padding: 0.85rem 0; border-top: 1px solid var(--line); }
+  .funnel tbody tr:last-child { border-bottom: 1px solid var(--line); }
+  .funnel th, .funnel td, .funnel tbody tr:last-child th, .funnel tbody tr:last-child td { padding: 0; border: 0; }
+  .funnel td:first-child { width: auto; padding-right: 0; grid-row: 1; }
+  .funnel th { grid-column: 2; grid-row: 1; }
+  .funnel .gone { grid-column: 2; grid-row: 2; text-align: left; white-space: normal; padding: 0.2rem 0 0; font-size: 0.9rem; }
+  .funnel td:first-child, .funnel td:nth-child(2) { padding-right: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .motion .dist .track i { transform: none; transition: none; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav" id="nav">
+  <div class="wrap">
+    <nav class="bar" aria-label="Site">
+      <a class="brand" href="/" aria-label="Arosa home">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="currentColor"/><path d="M8 24h4v-5h8v5h4V14h-4v-4h-4V6h-4v4H8z" fill="var(--bg)"/></svg>
+        <span>Arosa</span>
+      </a>
+      <div class="nav-links">
+        <a href="/beta">Private beta</a>
+        <a href="/accuracy" aria-current="page">Accuracy</a>
+      </div>
+      <div class="right">
+        <button class="icon-btn" id="theme" type="button" aria-label="Switch to the night view" aria-pressed="false">
+          <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        </button>
+        <a class="btn btn-primary apply-link" href="/beta#apply">Apply</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="page" tabindex="-1">
+  <div class="wrap">
+    <section aria-labelledby="title">
+      <h1 id="title">Floor area matches city filings. Land value starts from what nearby sites sold for.</h1>
+      <p class="intro">We compared Arosa's numbers with what developers actually filed with the city and what buyers actually paid. This page shows the results, the data behind them, and where they fall short.</p>
+      <p class="asof">Last run October 23, 2026</p>
+
+      <div class="verdicts">
+        <div>
+          <span class="state">Holds up</span>
+          <h3>Buildable floor area</h3>
+          <p>For a typical new building in R6 to R10, the floor area filed with the city equals Arosa's figure at the median. Arosa lands within 10% of the filing <strong>57% of the time</strong>, against 45% for lot area times FAR. Judged by the rules in force when each was filed, on filings that describe the lot as recorded, it is 63%.</p>
+        </div>
+        <div>
+          <span class="state">Measured</span>
+          <h3>Land value</h3>
+          <p>Where five or more development sites within a mile have sold, Arosa's land value is what they paid per buildable square foot, adjusted to the lot. On sites set aside to test it, that figure was within half to double the price paid <strong>89% of the time</strong>, and 78% of the time where those sales lay up to two miles away. What a developer can pay at a target return carries no accuracy claim.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="band" id="area" aria-labelledby="area-h">
+      <div class="col">
+        <h2 id="area-h">Buildable floor area against filed new buildings</h2>
+        <p>The test asks a simple question. If a developer had bought each lot as an empty site and asked Arosa how much floor area zoning allows, how close would the answer be to the building that was actually filed?</p>
+      </div>
+
+      <div class="col prose">
+        <p>For each filing we divide the floor area on the filing by Arosa's as-of-right figure for the same lot. A ratio of 1.00 is a perfect match; 1.20 means the filing is 20% larger than Arosa's number. The comparison covers <strong>2,647 new buildings in R6 to R10</strong> districts, filed from 2014 to 2021.</p>
+        <p>The median ratio is <strong>1.00</strong>: half the filings are larger than Arosa's figure and half are smaller. <strong>57%</strong> are within 10% of it. The common shortcut, lot area times the residential FAR recorded for the lot, is within 10% for 45%.</p>
+      </div>
+
+      <figure class="figure" id="dist">
+        <figcaption>
+          <strong>How far filings sit from the estimate</strong>
+          <span>Share of 2,647 filed new buildings in R6 to R10, by filed floor area divided by the estimate. The shaded row is the band within 10%.</span>
+        </figcaption>
+        <div class="key" aria-hidden="true">
+          <span><i class="k-arosa"></i>Arosa's as-of-right floor area</span>
+          <span><i class="k-short"></i>Lot area times FAR</span>
+        </div>
+        <table class="dist">
+          <caption class="sr-only">Share of filed new buildings by ratio of filed floor area to each estimate</caption>
+          <thead>
+            <tr><th scope="col">Filed ÷ estimate</th><th scope="col">Arosa</th><th scope="col">Lot area × FAR</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Under 0.50<small>half or less</small></th>
+              <td data-label="Arosa"><div class="bar"><span class="track"><i class="b-arosa" style="width:3.3%;--i:0"></i></span><span class="pct">2.0%</span></div></td>
+              <td data-label="Lot area × FAR"><div class="bar"><span class="track"><i class="b-short" style="width:3.3%;--i:0"></i></span><span class="pct">2.0%</span></div></td></tr>
+            <tr><th scope="row">0.50 to 0.70</th>
+              <td data-label="Arosa"><div class="bar"><span class="track"><i class="b-arosa" style="width:6.2%;--i:1"></i></span><span class="pct">3.7%</span></div></td>
+              <td data-label="Lot area × FAR"><div class="bar"><span class="track"><i class="b-short" style="width:6%;--i:1"></i></span><span class="pct">3.6%</span></div></td></tr>
+            <tr><th scope="row">0.70 to 0.90</th>
+              <td data-label="Arosa"><div class="bar"><span class="track"><i class="b-arosa" style="width:21%;--i:2"></i></span><span class="pct">12.6%</span></div></td>
+              <td data-label="Lot area × FAR"><div class="bar"><span class="track"><i class="b-short" style="width:33%;--i:2"></i></span><span class="pct">19.8%</span></div></td></tr>
+            <tr class="centre"><th scope="row">0.90 to 1.10<small>within 10%</small></th>
+              <td data-label="Arosa"><div class="bar"><span class="track"><i class="b-arosa" style="width:95%;--i:3"></i></span><span class="pct">57.0%</span></div></td>
+              <td data-label="Lot area × FAR"><div class="bar"><span class="track"><i class="b-short" style="width:74.5%;--i:3"></i></span><span class="pct">44.7%</span></div></td></tr>
+            <tr><th scope="row">1.10 to 1.30</th>
+              <td data-label="Arosa"><div class="bar"><span class="track"><i class="b-arosa" style="width:16.2%;--i:4"></i></span><span class="pct">9.7%</span></div></td>
+              <td data-label="Lot area × FAR"><div class="bar"><span class="track"><i class="b-short" style="width:23.3%;--i:4"></i></span><span class="pct">14.0%</span></div></td></tr>
+            <tr><th scope="row">1.30 to 1.50</th>
+              <td data-label="Arosa"><div class="bar"><span class="track"><i class="b-arosa" style="width:7.5%;--i:5"></i></span><span class="pct">4.5%</span></div></td>
+              <td data-label="Lot area × FAR"><div class="bar"><span class="track"><i class="b-short" style="width:7.3%;--i:5"></i></span><span class="pct">4.4%</span></div></td></tr>
+            <tr><th scope="row">Over 1.50<small>filing far larger</small></th>
+              <td data-label="Arosa"><div class="bar"><span class="track"><i class="b-arosa" style="width:17.5%;--i:6"></i></span><span class="pct">10.5%</span></div></td>
+              <td data-label="Lot area × FAR"><div class="bar"><span class="track"><i class="b-short" style="width:19.2%;--i:6"></i></span><span class="pct">11.5%</span></div></td></tr>
+          </tbody>
+        </table>
+        <p class="note">October 23, 2026 run. Bars are scaled to 60%. Rows add to 100% within rounding. Median ratio: 1.00 for Arosa (0.997), 0.99 for lot area times FAR.</p>
+      </figure>
+
+      <div class="col prose">
+        <p>Within 20% the two are close, 72% for Arosa and 68% for lot area times FAR. Arosa's advantage is in the tight band around the filing.</p>
+      </div>
+
+      <h3 class="sub">Where it misses, and why</h3>
+      <div class="misses">
+        <div>
+          <h3>Filing smaller than Arosa's figure</h3>
+          <p class="share">About 1 in 5 filings, more than 10% under</p>
+          <p>Developers often build less than zoning allows, because of budget, financing, the market, or a design that leaves floor area unused. Arosa reports what the lot allows, not what a given owner chose to build.</p>
+        </div>
+        <div>
+          <h3>Filing larger than Arosa's figure</h3>
+          <p class="share">About 1 in 4 filings, more than 10% over</p>
+          <p>Community facility space can add floor area on top of housing in many districts. Projects built across merged zoning lots, or using transferred air rights, can also exceed what the single lot allows on its own.</p>
+        </div>
+      </div>
+      <div class="col prose">
+        <p>These are the usual reasons for a gap. This check does not break each filing down by cause, so the shares above are totals, not attributions. For how Arosa derives floor area and which rules it applies, see <a class="inline" href="/help/buildable-area">how buildable area is calculated</a>.</p>
+      </div>
+
+      <h3 class="sub" id="at-filing">Judged by the rules when each building was filed</h3>
+      <div class="col prose">
+        <p>The comparison above holds filings from 2014 to 2021 against today's rules. A second check judges each filing by the rules in force on its filing date, before the December 2024 City of Yes changes, including Inclusionary Housing and Mandatory Inclusionary Housing where the lot was in a mapped area, measured on Arosa's own reading of the lot's geometry.</p>
+        <p>Of the <strong>2,376</strong> new buildings whose filing describes the lot as recorded, <strong>1,497 (63%)</strong> were filed within 10% of the as-of-right floor area that zoning allowed on that lot when the building was filed.</p>
+      </div>
+      <dl class="defs">
+        <div><dt>Left out: 271 filings</dt><dd>166 state the floor area of a larger zoning lot than the one tax lot, with several buildings or tax lots filed together. 91 lots have a recorded zoning lot merger or a purchase of development rights. 7 have a City Planning Commission special permit and 7 a Board of Standards and Appeals variance or special permit. These do not describe the lot on record, so no lot-by-lot figure can be judged on them.</dd></div>
+        <div><dt>Why some filings can never match</dt><dd>Many owners build less than zoning allows: 419 of the 2,376, for example a three-storey building where five were allowed. Some buildings use floor area from merged lots or bought development rights that public records do not show, and variances and special permits change what a single lot may hold.</dd></div>
+        <div><dt>Sources</dt><dd>DOB new-building filings from 2014 to 2021; the Zoning Resolution as in force at each filing date (the Department of City Planning's archived text of October 2, 2024); City Planning's Inclusionary Housing and Mandatory Inclusionary Housing area maps with their adoption dates; ACRIS recorded documents; City Planning ZAP and BSA records.</dd></div>
+      </dl>
+    </section>
+
+    <section class="band" id="land" aria-labelledby="land-h">
+      <div class="col">
+        <h2 id="land-h">Land value against what buyers paid</h2>
+        <p>Arosa's land value leads with what development sites near the lot sold for: at least five such sales within a mile (a mile and a half where a mile holds fewer, then two miles), each priced per square foot of as-of-right buildable floor area and adjusted to the lot, then a distance-weighted median times the lot's own as-of-right buildable floor area. The test asks how close that figure comes to the price a buyer actually paid for the lot.</p>
+      </div>
+      <div class="col prose">
+        <p>The test covers <strong>430 development sites</strong> sold from January 2025, set aside and never used to shape the method. For each one, only sales recorded before its own sale count, so the figure is one a buyer could have seen on the day. <strong>360</strong> of the 430 had five or more such sales within a mile. For <strong>89%</strong> of those 360, Arosa's figure was within half to double the price paid, and the median buyer paid <strong>0.99 times</strong> it. Another <strong>65</strong> had five or more within two miles; for <strong>78%</strong> of those, the figure was within half to double, and the median buyer paid 0.98 times it. The other 5 had too few earlier sales within two miles, and Arosa shows no nearby figure in that case. The test sites lie in Manhattan, the Bronx, Brooklyn and Queens; none is on Staten Island, where development site sales are fewest, so this test says nothing about figures there.</p>
+      </div>
+      <dl class="defs">
+        <div><dt>Closings used</dt><dd>Single-lot deeds of $250,000 or more, recorded from January 2025 to September 2026, where the buyer then filed for a new building or a full demolition on the lot.</dd></div>
+        <div><dt>Arosa's figure</dt><dd>The nearest earlier development site sales within a mile (a mile and a half where a mile holds fewer than five, then two miles), up to 15 and at least five, each priced per as-of-right buildable square foot and adjusted to the lot for its standing building, floor area ratio, existing apartments and size. Their median, weighted toward nearer sales, raised 19% on a corner lot and lowered 12.5% where the sales reach past a mile, times the lot's own as-of-right buildable floor area.</dd></div>
+        <div><dt>Within half to double</dt><dd>The price paid is between half and twice Arosa's figure. It is a wide band: a single site can still sit well above or below it.</dd></div>
+        <div><dt>A developer can pay</dt><dd>Beside the land value, each site shows what a developer earning the target return at your costs could pay, the residual. It is a check on the price, not a forecast of it, and <strong>no accuracy claim is made for it</strong>.</dd></div>
+      </dl>
+      <div class="col prose">
+        <p>For how both figures are worked out and what feeds them, see <a class="inline" href="/help/land-value">how Arosa values the land</a>.</p>
+      </div>
+    </section>
+
+    <section class="band" id="method" aria-labelledby="method-h">
+      <div class="col">
+        <h2 id="method-h">How the floor area check was run</h2>
+        <p>Every step uses public records, so the check can be repeated.</p>
+      </div>
+      <ol class="steps">
+        <li><div><strong>Collect the filings</strong>New-building job filings from the Department of Buildings (NYC Open Data <span class="mono">ic3t-wcy2</span>), filed 2014 to 2021, with three or more proposed homes and a status of permit issued, plan exam approved or signed off. One filing per lot, the most recent. Filed floor area is the proposed zoning floor area on the filing.</div></li>
+        <li><div><strong>Match the lot</strong>Each filing is matched to its tax lot in PLUTO (<span class="mono">64uk-42ks</span>) for lot area and zoning district.</div></li>
+        <li><div><strong>Treat the lot as empty</strong>Arosa values the lot as the developer found it, with no building to keep, using the lot's mapped street widths from the Department of City Planning's Digital City Map where the district depends on them.</div></li>
+        <li><div><strong>Take the as-of-right figure</strong>Arosa's standard as-of-right zoning floor area, before any optional bonus.</div></li>
+        <li><div><strong>Compare</strong>Ratio is filed floor area divided by Arosa's figure. The shortcut is lot area times the residential FAR recorded for the lot in PLUTO, compared the same way.</div></li>
+      </ol>
+
+      <table class="funnel">
+        <caption>Which filings are in the comparison</caption>
+        <tbody>
+          <tr><td>5,748</td><th scope="row">Qualifying new-building filings</th><td class="gone"></td></tr>
+          <tr><td>4,337</td><th scope="row">Found in the lot records and valued</th><td class="gone">1,411 left out, no current lot record</td></tr>
+          <tr><td>3,856</td><th scope="row">Zoning district unchanged and the lot in one district</th><td class="gone">481 left out, 304 rezoned and 177 split across two districts</td></tr>
+          <tr class="end"><td>2,647</td><th scope="row">In R6 to R10, the comparison above</th><td class="gone">1,209 other districts</td></tr>
+        </tbody>
+      </table>
+
+      <dl class="defs">
+        <div><dt>R4 and R5 are excluded</dt><dd>City of Yes, adopted in December 2024, changed the rules for these districts. Every filing in the sample predates it, so the comparison would hold old filings against new rules.</dd></div>
+        <div><dt>Other districts</dt><dd>Commercial and manufacturing districts matched less closely and are not part of the claim on this page.</dd></div>
+        <div><dt>Why 2014 to 2021</dt><dd>Projects filed in these years have had time to move through permitting, so the filings reflect settled designs.</dd></div>
+      </dl>
+    </section>
+
+    <section class="band" id="land-method" aria-labelledby="land-method-h">
+      <div class="col">
+        <h2 id="land-method-h">How the land value check is run</h2>
+        <p>The land value check follows the same pattern, using recorded sales in place of filings, and keeps half the sites apart from any work on the method.</p>
+      </div>
+      <ol class="steps">
+        <li><div><strong>Find lots with a build intent</strong>Lots with a new-building or full-demolition filing in DOB NOW since January 2025.</div></li>
+        <li><div><strong>Match the closing</strong>Deeds recorded in ACRIS that cover one lot only, convey the full interest, and show a price of $250,000 or more. The filing must come within 90 days before the deed was recorded or after it. One sale per lot, the latest before its filing.</div></li>
+        <li><div><strong>Set half aside</strong>Sites are split in two by a fixed hash of the tax lot number. Only one half is used to work on the method; the results on this page are the other half.</div></li>
+        <li><div><strong>Price from earlier sales</strong>For each site, the development site sales in Arosa's own records that were recorded before its sale, within a mile (or out to two miles where a mile holds fewer than five), are priced per square foot of as-of-right buildable floor area on their own lots and adjusted to the site. The weighted median of the nearest, at least five and up to 15, times the site's as-of-right buildable floor area is Arosa's figure.</div></li>
+        <li><div><strong>Fit on one half only</strong>The four adjustments, the corner markup, the distance weighting and the step down for sales past a mile were chosen on the tuning half. The held-out half was scored once, at the end.</div></li>
+        <li><div><strong>Compare</strong>The recorded price is divided by Arosa's figure. Within half to double means a ratio from 0.5 to 2.</div></li>
+      </ol>
+    </section>
+
+    <section class="band" id="limits" aria-labelledby="limits-h">
+      <div class="col">
+        <h2 id="limits-h">What the figures do not mean</h2>
+      </div>
+      <dl class="defs">
+        <div><dt>They are not an entitlement determination.</dt><dd>Arosa is a research aid. Verify any figure against current official text and a qualified professional before you rely on it.</dd></div>
+        <div><dt>A match across many lots is not a match for your lot.</dt><dd>The results describe how Arosa performs across thousands of buildings. Any single site can land well above or below the median.</dd></div>
+        <div><dt>Filings are not the legal maximum.</dt><dd>A filing records what the owner proposed, which can be less or more than what zoning allows for the lot alone.</dd></div>
+        <div><dt>The rules have moved.</dt><dd>Filings from 2014 to 2021 were made under the rules then in force. Arosa reads the rules in force today.</dd></div>
+      </dl>
+      <div class="col prose">
+        <p>For where each source comes from and how often it updates, see <a class="inline" href="/help/sources-and-freshness">sources and freshness</a>.</p>
+      </div>
+    </section>
+
+    <section class="band" id="refresh" aria-labelledby="refresh-h">
+      <div class="col">
+        <h2 id="refresh-h">When this page changes</h2>
+        <p>Both checks were last run on October 23, 2026. We rerun them whenever the floor area or land value calculations change, with the same method, and update the figures and the date on this page. Results from different runs are comparable because the method does not change between them.</p>
+      </div>
+    </section>
+
+    <div class="closing">
+      <div>
+        <h2>See the numbers on your own site</h2>
+        <p>Arosa is in private beta for New York City, open to at most 50 firms.</p>
+      </div>
+      <a class="go" href="/beta#apply">Apply for the beta<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+    </div>
+  </div>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="bottom">
+      <span>© 2026 Arosa</span>
+      <span><a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/support">Support</a></span>
+    </div>
+  </div>
+</footer>
+<script>
+(() => {
+  const html = document.documentElement, btn = document.getElementById('theme'), nav = document.getElementById('nav');
+  const sync = () => {
+    const dark = html.classList.contains('dark');
+    btn.querySelector('.sun').toggleAttribute('hidden', dark);
+    btn.querySelector('.moon').toggleAttribute('hidden', !dark);
+    btn.setAttribute('aria-pressed', String(dark));
+    btn.setAttribute('aria-label', dark ? 'Switch to the day view' : 'Switch to the night view');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#1a1a1a' : '#f9f9f9');
+  };
+  btn.addEventListener('click', () => {
+    html.classList.toggle('dark');
+    try { localStorage.theme = html.classList.contains('dark') ? 'dark' : 'light'; } catch (e) {}
+    sync();
+  });
+  sync();
+  const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 8);
+  addEventListener('scroll', onScroll, {passive: true}); onScroll();
+  const fig = document.getElementById('dist');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduced && 'IntersectionObserver' in window) {
+    html.classList.add('motion');
+    new IntersectionObserver((es, io) => es.forEach(e => { if (e.isIntersecting) { fig.classList.add('in'); io.disconnect(); } }), {threshold: 0.2}).observe(fig);
+    setTimeout(() => fig.classList.add('in'), 4000);
+  }
+})();
+</script>
+</body>
+</html>

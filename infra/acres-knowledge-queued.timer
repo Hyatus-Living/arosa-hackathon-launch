@@ -1,0 +1,7 @@
+[Unit]
+Description=Process Acres on-demand knowledge refresh requests
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=5min
+[Install]
+WantedBy=timers.target

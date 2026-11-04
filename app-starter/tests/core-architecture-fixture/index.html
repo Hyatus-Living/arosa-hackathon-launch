@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Architecture section fixture</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/core.css" />
+    <link rel="stylesheet" href="/activity.css" />
+    <style>
+      body { margin: 0; background: var(--bg); color: var(--ink); }
+      #core-page { height: 100dvh; overflow-y: auto; }
+    </style>
+    <script>if (new URLSearchParams(location.search).get('theme') === 'light') document.documentElement.classList.remove('dark');</script>
+  </head>
+  <body class="core-mode">
+    <main id="core-page" class="core-page"></main>
+    <script type="module">
+      import { createCorePage } from '/core.js';
+      import { mountPlanEditor } from '/plan-editor-loader.js';
+      import { parseRoute } from '/core-route.js';
+      const viewer = new URLSearchParams(location.search).has('viewer');
+      let concept, architecture;
+      const page = createCorePage({
+        root: document.querySelector('#core-page'),
+        navigate: (path) => location.assign(path + location.search), underwrite() {}, pendingBox: () => document.createElement("div"), conversationId: () => null, canSend: () => !viewer,
+        mountConcept: async (container, c, places) => { concept ??= import('/genui/concept-view.js'); await concept; window.acresConceptView.render(container, c, { places, tilesKey: null, threadId: null }); },
+        mountArchitecture: async (container, props) => { architecture ??= import('/genui/architecture-view.js'); await architecture; window.acresArchitectureView.render(container, props); },
+        mountPlan: mountPlanEditor,
+        architectureEnabled: () => true,
+      });
+      const route = parseRoute(location.pathname);
+      if (route.view === 'plan') page.showPlan(route.projectId);
+      else page.showParcel(route.projectId);
+      const params = new URLSearchParams(location.search);
+      if (params.has('run')) page.setRun({ label: params.get('run'), tools: params.getAll('tool') });
+    </script>
+  </body>
+</html>

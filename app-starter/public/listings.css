@@ -1,0 +1,775 @@
+/* Home's NYC listings: filters, a ranked list of deal cards beside a map of every match, the listing
+   inspector, and the conversation as a sidebar that opens beside the page. Shared tokens only. */
+
+#home-listings[hidden] { display: none; }
+
+.listings {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  padding: 20px 24px 40px;
+}
+/* The results and the map size to the page width, which narrows when the chat opens. Only this
+   wrapper is a size container, so the page's fixed Ask Arosa button stays fixed to the viewport. */
+.listings-body { display: grid; gap: 12px; container-type: inline-size; }
+/* The place search and the filters share one row when the page is wide enough; otherwise the
+   filters take the row under the search. In the shared row the search gives up width first. */
+.listings-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  container: listings-head / inline-size;
+}
+.listings-head > .listings-filters { flex: 1 1 100%; min-width: 0; }
+@container listings-head (min-width: 1100px) {
+  .listings-head > .listings-find { flex: 1 1 240px; max-width: 440px; }
+  .listings-head .listings-find-field { min-height: 36px; padding-block: 2px; }
+  .listings-head > .listings-filters { flex: 1 1 auto; }
+}
+/* Home's address form stays mounted for its submit and pending status; the place search drives it. */
+.listings-address .home-address { display: none; }
+.listings-address:not(:has(.home-pending:not([hidden]))) { display: none; }
+.listings-address { flex-basis: 100%; }
+
+/* Place search: location filters as removable tokens, an address or BBL to underwrite. */
+.listings-find { position: relative; flex: 1 1 320px; max-width: 680px; min-width: 0; }
+.listings-find-field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 42px;
+  padding: 4px 6px 4px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  cursor: text;
+  transition: border-color var(--dur-1, 0.12s) ease-out, box-shadow var(--dur-1, 0.12s) ease-out;
+}
+.listings-find-field:focus-within { border-color: color-mix(in oklch, var(--ink) 55%, transparent); box-shadow: 0 0 0 3px color-mix(in oklch, var(--ink) 8%, transparent); }
+.listings-find-field > svg { flex: none; width: 16px; height: 16px; color: var(--ink-faint); }
+.listings-find-tokens { display: contents; }
+.listings-token {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  min-height: 28px;
+  padding: 0 6px 0 10px;
+  border-radius: var(--r-pill);
+  background: var(--surface-3);
+  color: var(--ink);
+  font: 500 12.5px var(--sans);
+  white-space: nowrap;
+}
+.listings-token svg { width: 12px; height: 12px; color: var(--ink-muted); }
+.listings-token:hover { background: color-mix(in oklch, var(--ink) 14%, var(--surface)); }
+.listings-token:hover svg { color: var(--ink); }
+.listings-find-field input { flex: 1 1 140px; min-width: 0; height: 32px; padding: 0 6px; border: 0; outline: 0; background: transparent; color: var(--ink); font: 14px var(--sans); }
+.listings-find-field input::placeholder { color: var(--ink-faint); }
+.listings-find-options {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 25;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-2);
+}
+.listings-find-options[hidden] { display: none; }
+/* One row per typed place: the main choice fills it, a second reading sits at its end as a quiet chip. */
+.listings-find-row { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 6px; }
+.listings-find-option { display: flex; flex: 1 1 220px; align-items: baseline; gap: 12px; min-width: 0; padding: 9px 12px; border-radius: var(--r-sm); font-size: 13.5px; cursor: pointer; overflow-wrap: anywhere; }
+.listings-find-option[aria-selected="true"] { background: var(--surface-2); }
+.listings-find-option.is-underwrite:not(.is-secondary) .listings-find-label { font-weight: 550; }
+.listings-find-option.is-secondary { flex: none; align-items: center; min-height: 32px; margin-right: 4px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: var(--r-pill); color: var(--ink-muted); font-size: 12.5px; white-space: nowrap; }
+.listings-find-option.is-secondary:hover, .listings-find-option.is-secondary[aria-selected="true"] { border-color: var(--ink-muted); background: var(--surface-2); color: var(--ink); }
+.listings-find-kind { flex: none; min-width: 72px; color: var(--ink-faint); font-size: 12px; }
+.listings-find-option.is-listing .listings-find-label { font-weight: 550; }
+.listings-find-meta { margin-left: auto; color: var(--ink-muted); font-size: 12.5px; white-space: nowrap; }
+.listings-find .listings-filter-error { padding-left: 16px; max-inline-size: none; }
+
+/* Filters: four quick panels, the drawer for everything, and the cost assumptions apart. */
+/* Positioned, so the visually hidden labels inside stay within the row when it scrolls on phones. */
+.listings-filters { position: relative; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.listings-filters-rule { flex: none; width: 1px; height: 20px; margin: 0 4px; background: var(--line-strong); }
+.listings-control select,
+.listings-control input,
+.listings-pop > summary,
+.listings-all,
+.listings-clear {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  color: var(--ink);
+  font: 13px var(--sans);
+}
+.listings-control select { padding-right: 28px; }
+.listings-all { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; white-space: nowrap; }
+.listings-all svg { width: 15px; height: 15px; }
+.listings-all:hover, .listings-pop > summary:hover { border-color: color-mix(in oklch, var(--ink) 45%, transparent); }
+.listings-all-count { min-width: 18px; height: 18px; padding: 0 5px; border-radius: var(--r-pill); background: var(--ink); color: var(--bg); font: 600 11px/18px var(--sans); text-align: center; font-variant-numeric: tabular-nums; }
+.listings-all-count[hidden] { display: none; }
+.listings-cost-pop { margin-left: auto; }
+.listings-cost-pop > summary { border-color: transparent; background: var(--surface-2); color: var(--ink-muted); }
+.listings-cost-pop > summary:hover { color: var(--ink); border-color: transparent; }
+.listings-control input::placeholder { color: var(--ink-faint); }
+.listings-pop { position: relative; }
+.listings-pop > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  list-style: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.listings-pop > summary::-webkit-details-marker { display: none; }
+.listings-pop > summary::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+}
+.listings-pop.is-set > summary,
+.listings-control select:has(option:checked:not([value=""])) { border-color: var(--ink); }
+.listings-pop[open] > summary { background: var(--surface-2); }
+.listings-pop-body {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  z-index: 20;
+  display: grid;
+  gap: 10px;
+  width: min(340px, calc(100vw - 24px));
+  min-width: 0;
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+  padding: 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-2, 0 8px 24px rgb(0 0 0 / 0.18));
+}
+.listings-pop-body:not(:popover-open) { display: none; }
+.listings-field { display: grid; gap: 4px; font-size: 12px; color: var(--ink-muted); }
+.listings-filter-error { margin: 4px 0 0; max-inline-size: 32ch; color: var(--danger); font-size: 12px; line-height: 1.4; overflow-wrap: anywhere; }
+.listings-field input[aria-invalid="true"], .listings-control input[aria-invalid="true"] { border-color: var(--danger); }
+.listings-field input {
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  background: var(--paper);
+  color: var(--ink);
+  font: 13px var(--sans);
+}
+.listings-check { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; line-height: 1.35; cursor: pointer; }
+.listings-check input { flex: none; width: 16px; height: 16px; margin: 1px 0 0; accent-color: var(--ink); }
+.listings-costs form { display: grid; gap: 10px; }
+/* Until the first results bring the values, each field shows its shape. */
+.listings-costs .skel-field { display: none; height: 36px; border-radius: var(--r-sm); }
+.listings-costs form.is-loading .skel-field { display: block; }
+.listings-costs form.is-unavailable .listings-field { display: none; }
+.listings-costs form.is-loading input,
+.listings-costs form.is-loading .listings-costs-actions { display: none; }
+.listings-costs-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; }
+.listings-costs-actions .home-follow { min-height: 40px; }
+.listings-costs-reset, .listings-drawer-reset { min-height: 32px; padding: 0 2px; color: var(--ink-muted); font: 500 12.5px var(--sans); text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 3px; }
+.listings-costs-reset:hover:not(:disabled), .listings-drawer-reset:hover { color: var(--ink); text-decoration-color: currentColor; }
+.listings-costs-reset[hidden] { display: none; }
+.listings-costs-note { margin: 0; font-size: 12px; color: var(--ink-muted); }
+.listings-costs-note:empty { display: none; }
+.listings-costs-note.is-error { color: var(--danger); }
+.skel.skel-count { width: 84px; height: 14px; }
+.skel.skel-chip { display: inline-block; width: 58px; height: 11px; border-radius: var(--r-pill); }
+.listings-clear { border-style: dashed; color: var(--ink-muted); }
+.listings-clear:hover { color: var(--ink); }
+.listings-clear[hidden] { display: none; }
+
+/* The drawer: every filter, grouped, over the right edge with the map still visible behind it. */
+.listings-drawer {
+  position: fixed;
+  inset: 0 0 0 auto;
+  width: min(420px, 100vw);
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-left: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-dialog);
+}
+.listings-drawer[open] { animation: drawer-enter 0.22s var(--ease); }
+/* No blur: the map and count stay readable behind the drawer while filters apply. */
+.listings-drawer::backdrop { background: rgb(0 0 0 / 0.22); backdrop-filter: none; }
+.listings-drawer-panel { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; height: 100%; }
+.listings-drawer-head { display: flex; align-items: center; justify-content: space-between; height: 58px; padding: 0 12px 0 22px; border-bottom: 1px solid var(--line); }
+.listings-drawer-head h2 { margin: 0; font-size: 15px; font-weight: 600; }
+.listings-drawer-close svg { width: 16px; height: 16px; }
+.listings-drawer-body { overflow-y: auto; overscroll-behavior: contain; padding: 0 22px; }
+.listings-drawer-group { display: grid; gap: 10px; padding: 18px 0 20px; border-top: 1px solid var(--line); }
+.listings-drawer-group:first-child { border-top: 0; }
+.listings-drawer-group h3 { margin: 0 0 2px; font-size: 13px; font-weight: 600; }
+.listings-save, .listings-saved-rename { display: flex; gap: 8px; align-items: center; }
+.listings-save .listings-drawer-text, .listings-saved-rename input { flex: 1; min-width: 0; }
+.listings-saved-note:empty { display: none; }
+.listings-saved-note, .listings-saved-empty { margin: 0; color: var(--ink-muted); font-size: 12.5px; }
+.listings-saved-list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.listings-saved-item { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 2px 8px; align-items: center; }
+.listings-saved-apply { padding: 0; color: var(--ink); font: 550 13.5px var(--sans); text-align: left; overflow-wrap: anywhere; }
+.listings-saved-apply:hover { text-decoration: underline; }
+.listings-saved-detail { grid-column: 1; grid-row: 2; color: var(--ink-muted); font-size: 12px; overflow-wrap: anywhere; }
+.listings-saved-action { min-height: 32px; padding: 0 4px; color: var(--ink-muted); font: 500 12.5px var(--sans); text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 3px; }
+.listings-saved-action:hover { color: var(--ink); text-decoration-color: currentColor; }
+.listings-drawer .listings-control { display: grid; }
+.listings-drawer .listings-control select,
+.listings-drawer .listings-control input { width: 100%; min-height: 40px; border-radius: var(--r-sm); background: var(--paper); }
+.listings-drawer-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.listings-drawer-grid > :nth-child(3), .listings-drawer-grid > .listings-filter-error { grid-column: 1 / -1; }
+.listings-drawer .listings-field { min-width: 0; }
+.listings-drawer .listings-field input { box-sizing: border-box; width: 100%; min-width: 0; min-height: 40px; }
+.listings-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.listings-chips .listings-check {
+  position: relative;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-pill);
+  font-size: 13px;
+  transition: background var(--dur-1, 0.12s) ease-out, color var(--dur-1, 0.12s) ease-out;
+}
+.listings-chips .listings-check input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.listings-chips .listings-check:hover { border-color: color-mix(in oklch, var(--ink) 45%, transparent); }
+.listings-chips .listings-check:has(input:checked) { border-color: var(--ink); background: var(--ink); color: var(--bg); }
+.listings-chips .listings-check:has(input:focus-visible) { outline: 2px solid var(--ink); outline-offset: 2px; }
+.listings-drawer-foot { display: flex; align-items: center; gap: 12px; padding: 14px 22px; border-top: 1px solid var(--line); }
+.listings-drawer-foot .home-follow { min-height: 44px; }
+.listings-drawer-count { margin: 0 0 0 auto; color: var(--ink-muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.listings-drawer-done { flex: none; min-width: 112px; }
+
+.listings-receipt {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid color-mix(in oklch, var(--info) 45%, var(--line));
+  border-radius: var(--r-md);
+  background: color-mix(in oklch, var(--info) 8%, var(--surface));
+  font-size: 13px;
+}
+.listings-receipt[hidden] { display: none; }
+.listings-undo { padding: 2px 4px; font-size: 13px; font-weight: 550; color: var(--ink); text-decoration: underline; }
+
+.listings-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; }
+.listings-sort { display: inline-flex; align-items: center; margin-left: auto; color: var(--ink-faint); font: 500 13px var(--sans); }
+.listings-sort-label { padding-left: 10px; }
+.listings-sort select { width: auto; min-height: 32px; padding: 0 26px 0 6px; border: 0; border-radius: var(--r-pill); background: transparent; color: var(--ink-muted); font: 500 13px var(--sans); cursor: pointer; }
+.listings-sort select:hover { background: var(--surface-2); color: var(--ink); }
+.listings-share { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 10px; border-radius: var(--r-pill); color: var(--ink-muted); font: 500 13px var(--sans); }
+.listings-share svg { width: 15px; height: 15px; }
+.listings-share:hover:not(:disabled) { background: var(--surface-2); color: var(--ink); }
+.listings-share:disabled { opacity: 0.5; cursor: not-allowed; }
+.listing-search-share > p { color: var(--ink-muted); font-size: 13px; }
+.listing-search-share input { display: block; box-sizing: border-box; width: 100%; margin: 16px 0; }
+.listing-search-share-status { min-height: 1.5em; }
+.listings-page-context { flex-basis: 100%; min-width: 0; max-width: 100%; margin-top: 8px; color: var(--ink-muted); font-size: 12px; line-height: 1.5; }
+.listings-page-context summary { min-height: 44px; box-sizing: border-box; padding-block: 13px; cursor: pointer; }
+.listings-page-context ol { padding-left: 28px; }
+.listings-page-context li { margin: 6px 0; overflow-wrap: anywhere; }
+.listings-status { margin: 0; font-size: 13px; font-weight: 550; font-variant-numeric: tabular-nums; }
+/* Map-following belongs to the map, as a toggle over its top edge. */
+.listings-follow {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  z-index: 2;
+  transform: translateX(-50%);
+  align-items: center;
+  padding: 7px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+  color: var(--ink);
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.listings-follow { display: inline-flex; gap: 8px; cursor: pointer; }
+/* The map-following switch: still a checkbox, drawn as an on/off track. */
+.listings-switch {
+  appearance: none;
+  position: relative;
+  flex: none;
+  width: 28px;
+  height: 16px;
+  margin: 0;
+  border-radius: var(--r-pill);
+  background: var(--line-strong);
+  cursor: pointer;
+  transition: background var(--dur-1, 0.12s) var(--ease);
+}
+.listings-switch::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+  transition: transform var(--dur-1, 0.12s) var(--ease);
+}
+.listings-switch:checked { background: var(--ink); }
+.listings-switch:checked::before { transform: translateX(12px); background: var(--bg); }
+.listings-switch:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.listings-views { display: none; }
+/* An open listing takes the results column; its own Back to results replaces the result count and sort. */
+.listings.is-inspecting .listings-bar { display: none; }
+/* Set your costs on a listing page opens the Costs control, shown alone above the listing while open. */
+.listings.is-inspecting.is-costs-open .listings-bar { display: flex; }
+.listings.is-inspecting.is-costs-open .listings-bar > :not(.listings-cost-pop) { display: none; }
+
+/* The split: results on the left, the map filling the rest of the height on the right. */
+.listings-split {
+  display: grid;
+  grid-template-columns: minmax(340px, 5fr) minmax(0, 6fr);
+  gap: 12px;
+  height: max(520px, calc(100dvh - 230px));
+}
+.listings-results {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  padding-right: 4px;
+}
+.listings-list { display: grid; gap: 10px; align-content: start; }
+.listings-list[aria-busy="true"] .listing-card { opacity: 0.6; }
+.listings-list[hidden],
+.listings-pager[hidden],
+.listings-inspector[hidden] { display: none; }
+.listings-pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0 4px; }
+.listings-pager .home-follow { min-height: 36px; }
+.listings-range { font-size: 12.5px; color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+.listings-empty {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+  margin: 0;
+  padding: 16px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-md);
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+.listings-empty p { margin: 0; }
+/* A load that failed: one line naming it, and Retry beside it. */
+.retry-line { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin: 0; padding: 10px 12px; border: 1px solid color-mix(in oklch, var(--danger) 35%, var(--line)); border-radius: var(--r-md); background: color-mix(in oklch, var(--danger) 6%, var(--surface)); color: var(--ink); font-size: 13px; line-height: 1.4; overflow-wrap: anywhere; }
+.retry-line > span { flex: 1 1 200px; min-width: 0; }
+.retry-line-action { flex: none; min-height: 32px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: var(--r-pill); background: var(--surface); color: var(--ink); font: 500 12.5px var(--sans); }
+.retry-line-action:hover { border-color: var(--ink-muted); }
+.listings-map > .retry-line { position: absolute; top: 56px; left: 16px; right: 16px; z-index: 2; }
+.listings-map-pane { position: relative; min-height: 0; border: 1px solid var(--line); border-radius: var(--r-xl); overflow: hidden; background: var(--surface-2); }
+/* More specific than MapLibre's own .maplibregl-map rule, which sets position: relative. */
+.listings-map-pane > .listings-map { position: absolute; inset: 0; }
+.listings-map > .listings-empty { margin: 16px; background: var(--surface); }
+.listings-legend {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  /* Clear of the map credit, which sits folded to its (i) button in the bottom right corner. */
+  max-width: calc(100% - 52px);
+  margin: 0;
+  padding: 6px 8px;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: color-mix(in oklch, var(--surface) 92%, transparent);
+  font-size: 11.5px;
+  color: var(--ink-muted);
+}
+.listings-legend li { position: relative; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+/* The tier thresholds show above the item while it is hovered or focused, and never outlive it. */
+.listings-legend li[data-note]::after { content: attr(data-note); position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%); padding: 5px 9px; border-radius: var(--r-sm); background: var(--ink); color: var(--bg); font: 500 11.5px var(--sans); white-space: nowrap; box-shadow: var(--shadow-1); opacity: 0; pointer-events: none; transition: opacity var(--dur-1) var(--ease); }
+.listings-legend li[data-note]:hover::after, .listings-legend li[data-note]:focus-within::after { opacity: 1; }
+.listings-legend-dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid transparent; }
+.listings-legend .verdict-great .listings-legend-dot { background: var(--success); }
+.listings-legend .verdict-good .listings-legend-dot { background: color-mix(in oklch, var(--success) 30%, var(--surface)); border-color: var(--success); }
+.listings-legend .verdict-fair .listings-legend-dot { background: var(--ink-muted); }
+/* Full price is the one hollow ring; unpriced is a solid dot in the info color, as on the map. */
+.listings-legend .verdict-full .listings-legend-dot { border-color: var(--ink-muted); }
+.listings-legend .verdict-unpriced .listings-legend-dot { background: var(--info); }
+.listings-popup .maplibregl-popup-content {
+  padding: 6px 10px;
+  border-radius: var(--r-sm);
+  background: var(--ink);
+  color: var(--bg);
+  font: 500 12px var(--sans);
+  box-shadow: var(--shadow-1);
+}
+.listings-popup .maplibregl-popup-tip { border-top-color: var(--ink); border-bottom-color: var(--ink); }
+.listings-map .maplibregl-ctrl-group { background: var(--surface); }
+html.dark .listings-map .maplibregl-ctrl-group button .maplibregl-ctrl-icon { filter: invert(1); }
+html.dark .listings-map .maplibregl-ctrl-attrib { background: color-mix(in oklch, var(--surface) 80%, transparent); color: var(--ink-muted); }
+html.dark .listings-map .maplibregl-ctrl-attrib a { color: var(--ink-muted); }
+
+/* Deal card: photo beside the figures. The address button stretches over the card, so the whole card is its target. */
+.listing-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr);
+  gap: 14px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  background: var(--surface);
+  cursor: pointer;
+  transition: border-color var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease);
+}
+.listing-card:hover,
+.listing-card.is-active { border-color: var(--ink-muted); box-shadow: var(--shadow-1); }
+.listing-card:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+.listing-card:focus:not(:focus-visible) { outline: none; }
+.listing-card-media {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 112px;
+  overflow: hidden;
+  border-radius: var(--r-md);
+  background: var(--surface-3);
+}
+.listing-card-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+/* Without a photo the media square is a zoning tile: the district code, set like a map label. */
+.listing-card-media:not(:has(img)) { background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); }
+.listing-card-zone { display: grid; justify-items: center; gap: 2px; padding: 22px 6px 0; text-align: center; }
+.listing-card-zone small { color: var(--ink-faint); font: 500 11px var(--sans); }
+.listing-card-zone strong { color: var(--ink-muted); font: 500 17px/1.2 "Geist Mono", ui-monospace, monospace; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.listing-card-media .verdict-pill { position: absolute; left: 6px; top: 6px; }
+.listing-card-mih { position: absolute; z-index: 1; left: 6px; bottom: 6px; padding: 2px 8px; border-radius: var(--r-pill); background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--line); font: 600 11px/18px var(--sans); white-space: nowrap; }
+.verdict-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  color: var(--ink);
+  font: 600 11px/18px var(--sans);
+  white-space: nowrap;
+  box-shadow: 0 0 0 1px var(--line);
+}
+.verdict-pill::before { content: ""; width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid transparent; }
+.verdict-pill.verdict-great::before { background: var(--success); }
+.verdict-pill.verdict-good::before { background: color-mix(in oklch, var(--success) 30%, var(--surface)); border-color: var(--success); }
+.verdict-pill.verdict-fair::before { background: var(--ink-muted); }
+.verdict-pill.verdict-bad::before { border-color: var(--ink-muted); }
+.verdict-pill.verdict-unpriced::before { background: var(--info); }
+.listing-card-body { display: grid; align-content: start; gap: 4px; min-width: 0; padding: 2px 4px 2px 0; }
+.listing-card-title { margin: 0; font-size: 15px; font-weight: 550; line-height: 1.3; }
+/* The card's number, the one on its map pin. */
+.listing-card-rank { display: inline-grid; place-items: center; min-width: 20px; height: 20px; margin-right: 6px; padding: 0 5px; border-radius: var(--r-pill); background: var(--ink); color: var(--surface); font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; vertical-align: 1px; box-sizing: border-box; }
+.listing-card.is-selected { border-color: var(--ink); }
+.listing-card-open { padding: 0; color: var(--ink); text-align: left; font: inherit; overflow-wrap: anywhere; }
+.listing-card-open::after { content: ""; position: absolute; inset: 0; }
+.listing-card:hover .listing-card-open { text-decoration: underline; }
+.listing-card-open:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; border-radius: var(--r-3xs); }
+/* Keyboard focus rings the whole card, drawn inside its edge so the scrolling list never clips it. */
+@supports selector(:has(*)) {
+  .listing-card-open:focus-visible { outline: none; }
+  .listing-card:has(.listing-card-open:focus-visible) { outline: 2px solid var(--green); outline-offset: -2px; }
+}
+.listing-card-place { margin: 0; font-size: 12.5px; color: var(--ink-muted); }
+.listing-card-hold { margin: 0; font-size: 12px; color: var(--ink); padding-left: 6px; border-left: 2px solid var(--warning); }
+/* The listing's saved underwriting, from its site. */
+.listing-card-site { margin: 0; font-size: 12px; font-weight: 500; color: var(--ink); padding-left: 6px; border-left: 2px solid var(--accent); }
+.listing-card-figures { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; margin: 6px 0 0; }
+.listing-card-figures dt { font-size: 11.5px; color: var(--ink-muted); }
+.listing-card-figures dd { margin: 1px 0 0; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* Listing inspector, in place of the list. */
+.listing-inspector { display: grid; gap: 16px; padding-bottom: 16px; }
+.inspector-back { justify-self: start; min-height: 36px; padding: 0 2px; font-size: 13px; color: var(--ink-muted); }
+.inspector-state .home-follow { justify-self: start; min-height: 44px; }
+.inspector-state p { overflow-wrap: anywhere; }
+.inspector-back::before { content: "\2190  "; }
+.inspector-back:hover { color: var(--ink); }
+.inspector-head { display: grid; gap: 6px; }
+.inspector-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+/* What the reader is buying for: a two-way switch above the listing. */
+.inspector-goal { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; justify-self: start; padding: 3px; border: 1px solid var(--line); border-radius: var(--r-pill); background: var(--surface); }
+.inspector-goal-label { padding: 0 6px 0 8px; font: 500 12px/1 var(--sans); color: var(--ink-muted); }
+.inspector-goal-option { min-height: 32px; padding: 0 12px; border: 0; border-radius: var(--r-pill); background: none; font: 500 13px var(--sans); color: var(--ink-muted); cursor: pointer; transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease); }
+.inspector-goal-option:hover { color: var(--ink); background: var(--surface-2); }
+.inspector-goal-option.is-active { background: var(--ink); color: var(--bg); }
+.inspector-goal-option:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.inspector-keep .deal-figures { margin: 0; }
+.inspector-pill { padding: 2px 8px; border-radius: var(--r-pill); background: var(--surface-2); font: 500 11px/18px var(--sans); color: var(--ink-muted); }
+.inspector-pill.is-risk { background: color-mix(in oklch, var(--warning) 16%, var(--surface)); color: var(--ink); }
+.inspector-head h2 { margin: 0; font-size: 20px; font-weight: 600; line-height: 1.25; }
+.inspector-head h2:focus { outline: none; }
+.inspector-sub { margin: 0; font-size: 13px; color: var(--ink-muted); }
+.inspector-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 10px; }
+.inspector-actions .home-follow { min-height: 40px; }
+.inspector-action-reason { margin: 0; flex: 1 1 220px; font-size: 13px; line-height: 1.4; color: var(--ink-muted); }
+.inspector-action-reason.inspector-site { color: var(--ink); font-weight: 500; }
+.inspector-more > summary { min-height: 40px; }
+.inspector-more > summary::after { content: " \25BE"; font-size: 11px; }
+.inspector-menu { width: min(380px, calc(100vw - 24px)); gap: 4px; padding: 8px; }
+.inspector-menu-item { display: grid; gap: 2px; padding: 6px 8px 8px; border-radius: var(--r-sm); }
+.inspector-menu-item:hover { background: var(--surface-2); }
+.inspector-menu-item .home-follow { justify-self: start; min-height: 32px; padding: 0 2px; border: 0; background: none; font-weight: 600; }
+.inspector-menu-item .home-follow:hover:not(:disabled) { background: none; text-decoration: underline; text-underline-offset: 3px; }
+.inspector-menu-what { font-size: 12.5px; line-height: 1.4; color: var(--ink-muted); }
+
+/* Loading placeholders: the page's shape, with one slow sweep of light. */
+.skel { display: block; position: relative; overflow: hidden; height: 14px; border-radius: var(--r-sm); background: var(--surface-2); }
+.skel::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent 20%, color-mix(in oklch, var(--ink) 7%, transparent) 50%, transparent 80%); animation: skel-sweep 1.6s ease-in-out infinite; }
+.skel-pill { height: 20px; border-radius: var(--r-pill); }
+.skel-title { height: 24px; }
+.skel-text { height: 13px; }
+.skel-button { height: 40px; border-radius: var(--r-md); }
+.skel-photo { height: 200px; border-radius: var(--r-md); }
+.skel-figure { height: 58px; border-radius: var(--r-md); }
+.skel-block { border-radius: var(--r-md); }
+.skel-media { height: 100%; min-height: 96px; border-radius: var(--r-md); }
+.listing-skeleton { display: grid; gap: 10px; }
+.listing-skeleton-row { display: flex; align-items: center; gap: 8px 12px; }
+.listing-skeleton-figures { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 6px; }
+.listing-skeleton-section { display: grid; gap: 8px; padding-top: 14px; border-top: 1px solid var(--line); }
+.listing-card-skeleton { cursor: default; }
+.listing-card-skeleton .listing-card-body { gap: 6px; }
+.listing-card-skeleton .listing-card-figures { margin-top: 8px; }
+@keyframes skel-sweep { to { transform: translateX(100%); } }
+.inspector-link { display: inline-flex; align-items: center; text-decoration: none; }
+.inspector-verification-link { display: inline-flex; align-items: center; min-height: 44px; color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.inspector-link::after, .inspector-verification-link::after { content: " \2197"; margin-left: 4px; }
+.inspector-photo { width: 100%; max-height: 240px; object-fit: cover; border-radius: var(--r-md); background: var(--surface-3); }
+.inspector-figures { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.inspector-section { display: grid; gap: 8px; padding-top: 14px; border-top: 1px solid var(--line); }
+.inspector-section h3,
+.inspector-basis summary { margin: 0; font-size: 13px; font-weight: 600; }
+.inspector-basis summary { cursor: pointer; }
+.inspector-basis ul { margin: 8px 0 0; padding-left: 18px; font-size: 12px; color: var(--ink-muted); display: grid; gap: 4px; }
+.inspector-rows { display: grid; gap: 6px; margin: 0; }
+.inspector-rows > div { display: grid; grid-template-columns: minmax(120px, 42%) minmax(0, 1fr); gap: 12px; font-size: 13px; }
+.inspector-rows dt { color: var(--ink-muted); }
+.inspector-rows dd { margin: 0; font-variant-numeric: tabular-nums; }
+.inspector-note { margin: 0; font-size: 12.5px; color: var(--ink-muted); }
+.inspector-tier-basis { margin: 0; font-size: 13px; line-height: 1.4; color: var(--ink-muted); }
+.inspector-tier-method { font-size: 12.5px; line-height: 1.45; color: var(--ink-muted); }
+.inspector-tier-method summary { cursor: pointer; font-weight: 600; }
+.inspector-tier-method p { margin: 6px 0; }
+.inspector-costs-action { justify-self: start; min-height: 36px; padding: 0 2px; font: 600 13px var(--sans); color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.inspector-costs-action:hover { color: var(--ink); text-decoration-thickness: 2px; }
+.inspector-comps { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; container-type: inline-size; }
+.inspector-comps li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--r-md); overflow-wrap: anywhere; }
+.inspector-comps li > div { display: grid; gap: 2px; min-width: 0; }
+.inspector-comps strong { font-size: 13px; font-weight: 550; }
+.inspector-comps small { font-size: 12px; color: var(--ink-muted); }
+.inspector-comp-value { text-align: right; font-variant-numeric: tabular-nums; }
+.inspector-comp-reasons { grid-column: 1 / -1; margin: 0; font-size: 12px; line-height: 1.5; color: var(--ink-muted); }
+@container (max-width: 360px) {
+  .inspector-comps li { grid-template-columns: minmax(0, 1fr); }
+  .inspector-comps .inspector-comp-value { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; text-align: left; }
+}
+
+/* The listings page's own empty chat, with questions that fill the composer. */
+body.listings-mode .core-chat-empty { margin: 24px 4px 0; }
+.listings-suggestions, .site-suggestions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 4px 0; }
+.listings-suggestions[hidden], .site-suggestions[hidden] { display: none; }
+.listings-suggestions button, .site-suggestions button {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-pill);
+  font-size: 12.5px;
+  color: var(--ink);
+  text-align: left;
+}
+.listings-suggestions button:hover, .site-suggestions button:hover { background: var(--surface-2); }
+
+/* The page narrows when the chat opens beside it: the cards stack their photo over the figures. */
+@container (max-width: 1040px) {
+  .listings-split { grid-template-columns: minmax(300px, 420px) minmax(440px, 1fr); }
+  .listing-card { grid-template-columns: 104px minmax(0, 1fr); gap: 12px; }
+  .listing-card-media { min-height: 150px; aspect-ratio: auto; }
+  .listing-card-body { padding: 0; }
+}
+
+/* A page too narrow for the cards beside a 440px map shows the list or the map, with a switch between them. */
+@container (width < 754px) {
+  .listings-views { display: inline-flex; margin-left: auto; border: 1px solid var(--line-strong); border-radius: var(--r-pill); overflow: hidden; }
+  .listings-views { flex: none; }
+  .listings-views button { min-height: 34px; padding: 0 12px; font-size: 13px; color: var(--ink-muted); }
+  .listings-views button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+  .listings-split { grid-template-columns: minmax(0, 1fr); height: auto; }
+  .listings-results { overflow: visible; padding-right: 0; }
+  .listings[data-view="list"] .listings-map-pane { display: none; }
+  .listings[data-view="map"] .listings-results { display: none; }
+  .listings-map-pane { height: max(420px, calc(100dvh - 260px)); }
+}
+/* Narrow screens: the chat takes the page instead of sharing the width. */
+@media (max-width: 850px) {
+  .listings { padding: 14px 16px 88px; }
+  /* 16px fields keep iOS Safari from zooming the page on focus. */
+  .listings-find-field input, .listings-field input { font-size: 16px; }
+  /* The quick filters scroll sideways; the edges fade so a chip cut by the screen reads as more to scroll. */
+  .listings-filters { flex-wrap: nowrap; overflow-x: auto; margin: 0 -16px; padding: 2px 16px 6px; scrollbar-width: none; mask-image: linear-gradient(90deg, transparent 0, #000 16px, #000 calc(100% - 36px), transparent 100%); }
+  .listings-filters::-webkit-scrollbar { display: none; }
+  .listings-filters > * { flex: none; }
+  /* The scrolling row leads with the drawer, so every filter is one tap away. */
+  .listings-all { order: -2; }
+  .listings-filters-rule { order: -1; }
+}
+@media (max-width: 600px) {
+  .inspector-rows > div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  /* Phones: the count, sort, share and list or map switch share one row, so the first listing
+     shows within the first screen. */
+  .listings { gap: 10px; }
+  /* The row never grows past the column: the count gives up width first, with the map area on a line of
+     its own, and the sort keeps at least a full target beside share and the list or map switch. */
+  .listings-bar { flex-wrap: nowrap; gap: 4px; min-width: 0; }
+  .listings-status { flex: 0 1 auto; min-width: 0; overflow: hidden; line-height: 1.3; white-space: nowrap; text-overflow: ellipsis; }
+  .listings-status-where { display: block; overflow: hidden; text-overflow: ellipsis; color: var(--ink-muted); font-size: 12px; font-weight: 500; }
+  .listings-sort { flex: 1 0 44px; min-width: 44px; justify-content: flex-end; }
+  .listings-sort-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .listings-sort select { width: 100%; min-width: 44px; max-width: 150px; padding-right: 22px; text-overflow: ellipsis; }
+  .listings-share { flex: none; width: 44px; justify-content: center; padding: 0; }
+  .listings-share span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+/* The narrowest phones give the count its own line, so the sort keeps room to name its order. */
+@media (max-width: 359px) {
+  .listings-bar { flex-wrap: wrap; row-gap: 0; }
+  .listings-status { flex: 1 0 100%; }
+  .listings-status-where { display: inline; }
+}
+/* Touch screens: every filter, the sort, share, list or map switch and the pager is a 44 px target,
+   and every field in the all filters drawer, with the Save search button beside its name, and the listing's
+   action row are 44 px tall. */
+@media (max-width: 850px), (pointer: coarse) {
+  .listings :is(.listings-filters, .listings-bar) :is(.listings-control select, .listings-control input, .listings-pop > summary, .listings-all, .listings-clear),
+  .listings .listings-drawer :is(.listings-field input, .listings-save .home-follow),
+  .listings .listings-sort select,
+  .listings :is(.inspector-actions > .home-follow, .inspector-more > summary) { min-height: 44px; }
+  .listings :is(.listings-share, .listings-views button, .listings-pager .home-follow) { min-width: 44px; min-height: 44px; }
+}
+/* Phones: the drawer rises as a sheet from the bottom edge. */
+@media (max-width: 600px) {
+  .listings-drawer { inset: auto 0 0 0; width: 100%; height: auto; max-height: 88dvh; border-left: 0; border-top: 1px solid var(--line); border-radius: var(--r-2xl) var(--r-2xl) 0 0; }
+  .listings-drawer[open] { animation-name: sheet-enter; }
+  .listings-drawer-panel { max-height: 88dvh; }
+  .listings-find { flex-basis: 100%; }
+}
+/* Phones: the listing's More menu rises as a bottom sheet. The popover script anchors panels under
+   their button with inline offsets, which the sheet overrides. */
+@media (max-width: 600px) {
+  .inspector-menu:popover-open {
+    inset: auto 0 0 0 !important;
+    width: 100%;
+    max-width: none;
+    max-height: 80dvh;
+    box-sizing: border-box;
+    gap: 2px;
+    padding: 8px 12px calc(12px + env(safe-area-inset-bottom));
+    border-width: 1px 0 0;
+    border-radius: var(--r-2xl) var(--r-2xl) 0 0;
+    box-shadow: var(--shadow-dialog);
+    animation: sheet-enter 0.22s var(--ease);
+  }
+  .inspector-menu::before { content: ""; justify-self: center; width: 36px; height: 4px; margin: 2px 0 6px; border-radius: var(--r-pill); background: var(--line-strong); }
+  .inspector-menu-item { padding: 8px 6px 10px; }
+  .inspector-menu-item .home-follow { min-height: 40px; font-size: 15px; }
+  .inspector-menu::backdrop { background: rgb(0 0 0 / 0.32); }
+}
+@keyframes sheet-enter { from { transform: translateY(32px); opacity: 0.6; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .skel::after { animation: none; }
+  .listing-card { transition: none; }
+  .listings-drawer[open] { animation: none; }
+  .inspector-menu:popover-open { animation: none; }
+  .listings-switch, .listings-switch::before { transition: none; }
+}
+
+/* A question asked from the listings page notes it; the page context it carried shows on hover. */
+.message.user:has(> .listings-context-note), .message.user:has(> .listings-page-context) { flex-wrap: wrap; }
+.message .listings-context-note { flex-basis: 100%; margin-top: 4px; font-size: 11.5px; color: var(--ink-faint); text-align: right; }
+
+/* Saved acquisition investigations are independent of the selected listing page. */
+.listing-investigation{width:min(920px,calc(100vw - 32px));max-height:90vh;max-height:90dvh;border:1px solid var(--line);border-radius:var(--r-2xl);padding:28px;color:var(--ink);background:var(--surface);overflow:auto}
+.listing-investigation::backdrop{background:rgb(0 0 0 / .48)}
+.investigation-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+.investigation-head>button{flex-shrink:0}
+.investigation-head h2{margin:0;font-size:22px;letter-spacing:-0.015em}
+.investigation-subtitle{margin:4px 0 0;color:var(--ink-muted);font-size:14px}
+.listing-investigation .investigation-close{border-color:transparent;background:none;color:var(--ink-muted)}
+.listing-investigation .investigation-close:hover{color:var(--ink);background:var(--surface-2)}
+.investigation-start{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+.investigation-start>button{flex:none}
+.investigation-pricing{flex:1 1 260px;margin:0;color:var(--ink-muted);font-size:13px;line-height:1.45}
+.investigation-skeleton{display:grid;gap:10px;margin:14px 0}
+.investigation-quiet{min-height:36px;padding:0 4px;color:var(--ink-muted);font:500 13px var(--sans);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:3px}
+.investigation-quiet:hover:not(:disabled){color:var(--ink);text-decoration-color:currentColor}
+.investigation-quiet:disabled{opacity:.6;cursor:default}
+.listing-investigation>.retry-line{margin:14px 0}
+.listing-investigation .home-follow{border:1px solid var(--line-strong);border-radius:var(--r-sm);padding:10px 16px;background:var(--surface-2);color:var(--ink);cursor:pointer}
+.listing-investigation .home-follow.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.listing-investigation .home-follow:disabled{opacity:.5;cursor:not-allowed}
+.investigation-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:18px 0 0}
+.investigation-field{min-width:0;display:grid;gap:7px;font-size:14px}
+.investigation-field:has(textarea),.investigation-form>p{grid-column:1/-1}
+.investigation-field select,.investigation-field textarea{width:100%;padding:11px;border:1px solid var(--line-strong);border-radius:var(--r-sm);font:inherit;color:inherit;background:inherit}
+
+.investigation-status{padding:14px;background:var(--surface-2);border-radius:var(--r-md);overflow-wrap:anywhere}
+.investigation-controls{display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap;margin:14px 0}
+.investigation-controls:empty{display:none}
+/* Saved investigations read as a list of records, each row opening its report. */
+.investigation-history{display:grid;gap:2px;margin:14px 0}
+.investigation-history h3{font-size:13px;font-weight:600;margin:0 0 6px}
+.listing-investigation .investigation-history .home-follow{justify-self:stretch;white-space:normal;text-align:left;border:0;border-radius:var(--r-sm);background:none;padding:9px 10px;font-size:13.5px}
+.listing-investigation .investigation-history .home-follow:hover{background:var(--surface-2)}
+.investigation-setup{margin:18px 0;padding:14px 16px;border:1px solid var(--line);border-radius:var(--r-md)}
+.investigation-setup>summary{cursor:pointer;font-size:14px;font-weight:600}
+.investigation-setup[open]>summary{margin-bottom:14px}
+.investigation-setup textarea{resize:vertical;line-height:1.5}
+.investigation-setup textarea::placeholder{color:var(--ink-muted);opacity:1}
+.investigation-setup summary:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
+.investigation-report{border-top:1px solid var(--line);margin-top:24px;padding-top:20px}
+.investigation-report-text{font-size:15px;line-height:1.65;overflow-wrap:anywhere}
+.investigation-report-text h3{font-size:18px;margin-top:24px}
+.investigation-report-text table{display:block;overflow-x:auto;border-collapse:collapse;font-size:13px;max-width:100%}
+.investigation-report-text td,.investigation-report-text th{border:1px solid var(--line);padding:10px;text-align:left;vertical-align:top;min-width:130px}
+.investigation-report-text th{background:var(--surface-2)}
+.investigation-notice{font-size:13px;color:var(--ink-muted)}
+.investigation-sources{font-size:14px;overflow-wrap:anywhere}
+@media(max-width:600px){.listing-investigation{padding:20px}.investigation-form{grid-template-columns:1fr}.investigation-head>button{flex-shrink:0}
+.investigation-head h2{font-size:20px}}
+.deals-content-loading { display: grid; gap: 10px; }
+
+/* Touch targets meet the 44px platform minimum on coarse pointers; dense desktop sizing is unchanged. */
+@media (pointer: coarse) {
+  :is(button, [role="button"], summary, input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea) { min-height: 44px; }
+  .inspector-menu-item .home-follow { min-height: 44px; }
+  .listings-find-field input { height: 44px; }
+}

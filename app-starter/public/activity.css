@@ -1,0 +1,152 @@
+.research-activity {
+  margin: 0 0 14px;
+  font: 500 13px/1.55 var(--sans);
+  color: var(--muted);
+  max-width: 100%;
+}
+.research-activity > summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 30px;
+  cursor: pointer;
+  list-style: none;
+  border-radius: var(--r-xs);
+}
+.research-activity summary::-webkit-details-marker {
+  display: none;
+}
+.research-activity > summary {
+  transition: color var(--dur-2) var(--ease), background-color var(--dur-2) var(--ease);
+}
+.research-activity > summary:hover {
+  color: var(--ink);
+}
+.research-status {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.activity-chevron {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  transition: transform var(--dur-2) var(--ease);
+}
+.research-activity[open] > summary .activity-chevron {
+  transform: rotate(90deg);
+}
+.research-dots {
+  display: none;
+  align-items: center;
+  gap: 4px;
+  width: 23px;
+  flex: none;
+}
+.is-running > summary .research-dots {
+  display: flex;
+}
+.research-dots i {
+  width: 4px;
+  height: 4px;
+  background: var(--green);
+  border-radius: 50%;
+  animation: research-breathe 1.5s ease-in-out infinite;
+}
+.research-dots i:nth-child(2) {
+  animation-delay: 0.18s;
+}
+.research-dots i:nth-child(3) {
+  animation-delay: 0.36s;
+}
+@keyframes research-breathe {
+  0%,
+  65%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+.activity-steps {
+  list-style: none;
+  border-left: 1px solid var(--line);
+  margin: 8px 0 0 10px;
+  padding: 0 0 0 20px;
+}
+.activity-steps li {
+  position: relative;
+  padding: 6px 0;
+  overflow-wrap: anywhere;
+}
+.activity-steps li::before {
+  content: "";
+  position: absolute;
+  left: -24px;
+  top: 14px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--line);
+  border: 1px solid var(--paper);
+}
+.activity-steps li[data-status="complete"]::before {
+  background: var(--green);
+}
+.activity-steps li[data-status="failed"] {
+  color: var(--warning);
+}
+.activity-steps summary {
+  list-style: none;
+  white-space: pre-wrap;
+}
+.activity-steps .has-detail > summary {
+  cursor: pointer;
+}
+.activity-steps .has-detail > summary::after {
+  content: " +";
+  color: var(--muted);
+}
+.activity-steps .has-detail[open] > summary::after {
+  content: " −";
+}
+.activity-steps pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: 11px/1.6 var(--sans);
+  margin: 6px 0 10px;
+  padding: 10px 12px;
+  border-radius: var(--r-xs);
+  background: var(--side);
+  border: 1px solid var(--line);
+}
+.research-activity summary:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 4px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .research-dots i {
+    animation: none;
+    opacity: 0.75;
+  }
+  .activity-chevron {
+    transition: none;
+  }
+}
+/* The model's reasoning headlines sit between the steps as quieter notes. */
+.activity-steps li.is-thought {
+  color: var(--muted);
+  font-style: italic;
+}
+.activity-steps li.is-thought::before {
+  background: transparent;
+  border-color: var(--line);
+}

@@ -1,0 +1,6 @@
+[Unit]
+Description=Power the GPU render host off when idle
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/acres-render-gpu-idle

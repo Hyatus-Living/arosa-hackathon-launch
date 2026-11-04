@@ -1,0 +1,11 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    env: ['DOCKER_BUILDKIT=1']
+    args: ['build', '-t', '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/acres-mcp:$BUILD_ID', '.']
+images:
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/acres-mcp:$BUILD_ID'
+substitutions:
+  _REGION: us-central1
+  _REPOSITORY: apps
+options:
+  logging: CLOUD_LOGGING_ONLY

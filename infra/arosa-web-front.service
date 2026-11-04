@@ -1,0 +1,20 @@
+[Unit]
+Description=Arosa web front (the tunnel's origin, forwarding to the live blue or green container)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/local/bin/node /usr/local/lib/arosa-web-front.mjs
+# SIGHUP rereads /etc/arosa-acres/web-target; arosa-web-switch sends it with systemctl kill.
+DynamicUser=yes
+RuntimeDirectory=arosa-web-front
+RuntimeDirectoryMode=0700
+Restart=always
+RestartSec=1
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

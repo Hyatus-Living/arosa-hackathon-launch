@@ -1,0 +1,13 @@
+#!/bin/sh
+# Power the GPU render host off once it has been up 15 minutes and no job has run for 15 minutes;
+# the research host starts it again for the next job (worker/remote_worker.py).
+set -eu
+last=/var/lib/acres-gpu/last-job
+[ -e "$last" ] || touch "$last"
+if systemctl list-units --state=active --no-legend 'acres-architecture-worker@*' | grep -q .; then exit 0; fi
+up=$(cut -d. -f1 /proc/uptime)
+idle=$(( $(date +%s) - $(stat -c %Y "$last") ))
+if [ "$up" -ge 900 ] && [ "$idle" -ge 900 ]; then
+  logger -t acres-render-gpu-idle "idle ${idle}s, powering off"
+  systemctl poweroff
+fi

@@ -1,0 +1,35 @@
+/* Sending an option to an architect or contractor: the card's quiet action and its sheet (send-option.js). */
+.uw-scheme-send { display: flex; align-items: center; justify-content: space-between; gap: 4px 10px; flex-wrap: wrap; margin-top: auto; padding-top: 10px; border-top: 1px solid var(--line); }
+.uw-scheme-send-button { min-height: 32px; padding: 0 10px; margin-left: -10px; border: 0; border-radius: var(--r-sm); background: none; color: var(--ink); font: inherit; font-size: 13px; font-weight: 550; text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 3px; cursor: pointer; }
+.uw-scheme-send-button:hover { background: var(--surface-2); text-decoration-color: currentColor; }
+.uw-scheme-send-button:focus-visible { outline: 2px solid color-mix(in oklch, var(--ink) 40%, transparent); outline-offset: 1px; }
+.uw-scheme-sent { display: inline-flex; align-items: baseline; flex-wrap: wrap; gap: 2px 8px; font-size: 12px; color: var(--ink-muted); }
+.send-option-withdraw { display: inline-flex; align-items: baseline; flex-wrap: wrap; gap: 2px 8px; }
+.send-option-text { padding: 2px 0; border: 0; background: none; color: var(--ink); font: inherit; font-weight: 550; text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 3px; cursor: pointer; }
+.send-option-text:hover { text-decoration-color: currentColor; }
+.send-option-text.is-danger { color: var(--danger); }
+.send-option-text:disabled { opacity: 0.5; cursor: default; }
+.send-option-text:focus-visible { outline: 2px solid color-mix(in oklch, var(--ink) 40%, transparent); outline-offset: 2px; border-radius: var(--r-3xs); }
+.uw-scheme-sent:empty { display: none; }
+
+dialog.send-option { width: min(520px, calc(100% - 32px)); }
+.send-option-body { display: grid; gap: 8px; }
+.send-option-lede { margin: 0 0 8px; font-size: 13.5px; line-height: 1.55; color: var(--ink-muted); }
+.send-option-lede strong { color: var(--ink); font-weight: 600; }
+.send-option-label { margin-top: 6px; font-size: 12.5px; font-weight: 550; color: var(--ink); }
+.send-option-link { display: flex; gap: 8px; }
+.send-option-link input { flex: 1; min-width: 0; height: 38px; padding: 0 10px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface-2); color: var(--ink-muted); font: 12.5px/1 var(--figure); }
+.send-option-body textarea { width: 100%; min-height: 112px; padding: 10px 12px; border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; line-height: 1.5; resize: vertical; }
+.send-option-body :is(input, textarea, button, a):focus-visible { outline: 2px solid color-mix(in oklch, var(--ink) 40%, transparent); outline-offset: 1px; }
+.send-option-actions { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 8px; }
+.send-option-quiet { flex: none; height: 38px; padding: 0 14px; border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface); color: var(--ink); font-size: 13px; font-weight: 550; cursor: pointer; }
+.send-option-quiet:hover { background: var(--surface-2); }
+.send-option-primary { display: inline-flex; align-items: center; height: 38px; padding: 0 16px; border-radius: var(--r-md); background: var(--ink); color: var(--bg); font-size: 13px; font-weight: 600; text-decoration: none; }
+.send-option-primary:hover { background: color-mix(in oklch, var(--ink) 86%, var(--bg)); }
+.send-option-status { flex: 1; min-width: 0; margin: 0; font-size: 12.5px; line-height: 1.4; color: var(--ink-muted); }
+.send-option-status.is-error { color: var(--danger); }
+@media (max-width: 850px) {
+  .send-option-actions { flex-wrap: wrap; }
+  .send-option-actions > :not(.send-option-status) { flex: 1; justify-content: center; }
+  .send-option-status { flex-basis: 100%; order: 1; }
+}

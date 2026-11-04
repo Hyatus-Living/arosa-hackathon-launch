@@ -1,0 +1,30 @@
+.env
+.env.*
+!.env.example
+node_modules/
+*.log
+.DS_Store
+coverage/
+.deploy-research
+*private*.json
+*token*
+*.pem
+*.key
+.deploy-research-result
+.deploy-research.tmp
+app-starter/public/generated-ui.js
+app-starter/public/generated-ui.css
+
+app-starter/public/genui/
+app-starter/public/assets/
+
+# Vercel CLI link state for site/
+.vercel
+
+# Architecture worker downloads, installs and local job runs
+worker/build/
+
+# Planning sidecar environment and example output
+planning/.venv/
+planning/out/
+__pycache__/

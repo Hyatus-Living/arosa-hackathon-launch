@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Plan editor fixture</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/genui/plan-editor.css" />
+    <style>
+      body { margin: 0; background: var(--bg); color: var(--ink); }
+      .fixture { display: flex; flex-direction: column; gap: 12px; height: 100dvh; padding: 16px; box-sizing: border-box; }
+      .fixture-bar { display: flex; flex-wrap: wrap; gap: 8px; }
+      .fixture-bar button { min-height: 44px; padding: 0 12px; }
+      #root { flex: 1; min-height: 0; }
+    </style>
+    <script>if (new URLSearchParams(location.search).get('theme') === 'light') document.documentElement.classList.remove('dark');</script>
+  </head>
+  <body>
+    <div class="fixture">
+      <div class="fixture-bar" aria-label="Fixture controls">
+        <button type="button" data-sample="sample-floorplan.json" data-input="json-input">Sample JSON</button>
+        <button type="button" data-sample="sample-floorplan.svg" data-input="drawing-input">Sample SVG</button>
+        <button type="button" id="bump">Save elsewhere</button>
+      </div>
+      <div id="root"></div>
+    </div>
+    <script type="module">
+      await import('/genui/plan-editor.js');
+      const projectId = new URLSearchParams(location.search).get('project') || 'proj_fixture';
+      window.acresPlanEditor.mount(document.querySelector('#root'), {projectId});
+      for (const button of document.querySelectorAll('[data-sample]')) {
+        button.addEventListener('click', async () => {
+          const name = button.dataset.sample;
+          const blob = await (await fetch(`/fixtures/${name}`)).blob();
+          const input = document.querySelector(`[data-testid="${button.dataset.input}"]`);
+          const files = new DataTransfer();
+          files.items.add(new File([blob], name, {type: blob.type}));
+          input.files = files.files;
+          input.dispatchEvent(new Event('change', {bubbles: true}));
+        });
+      }
+      document.querySelector('#bump').addEventListener('click', () => fetch(`/__bump/${projectId}`, {method: 'POST'}));
+    </script>
+  </body>
+</html>

@@ -1,0 +1,9 @@
+node_modules
+dist
+tests
+.env*
+*.log
+*memberships*.json
+README.md
+docs
+plugin

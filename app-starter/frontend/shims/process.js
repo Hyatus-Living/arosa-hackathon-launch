@@ -1,0 +1,1 @@
+export const process = {env: {NODE_ENV: 'production'}, browser: true, platform: 'browser', version: '', versions: {}, emit() {}, on() {}, nextTick(fn, ...args) { queueMicrotask(() => fn(...args)); }};

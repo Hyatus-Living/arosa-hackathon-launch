@@ -1,0 +1,13 @@
+[Unit]
+Description=Acres research listener
+# systemd owns the listening socket and hands it to each research process (fd 3). While one process
+# drains and the next starts, new connections wait in the backlog instead of being refused.
+[Socket]
+ListenStream=10.42.0.2:18800
+# The address is on ens4, which may come up after sockets.target at boot.
+FreeBind=true
+NoDelay=true
+Backlog=4096
+Service=acres-research.service
+[Install]
+WantedBy=sockets.target

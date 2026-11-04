@@ -1,0 +1,10 @@
+{
+  "name": "arosa-acres-mcp-edge",
+  "main": "acres-mcp-edge.mjs",
+  "account_id": "YOUR_CLOUDFLARE_ACCOUNT_ID",
+  "compatibility_date": "2026-10-12",
+  "workers_dev": false,
+  "routes": [{"pattern":"mcp.witharosa.ai","custom_domain":true}],
+  "vars": {"UPSTREAM_ORIGIN":"https://acres-mcp-mqyrmn65na-uc.a.run.app"},
+  "observability": {"enabled":false}
+}

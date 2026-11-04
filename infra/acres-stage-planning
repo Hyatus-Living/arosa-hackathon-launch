@@ -1,0 +1,29 @@
+#!/bin/bash
+# Stage the planner with an immutable dependency environment, before the active service drains.
+set -euo pipefail
+umask 022
+SOURCE_ROOT=${1:?source checkout required}
+RELEASE_ROOT=${2:?release tree required}
+ENV_ROOT=${3:?planning environment root required}
+PLANNER=$RELEASE_ROOT/opt/planning
+install -d -m 755 "$PLANNER/exporters" "$PLANNER/.venv/bin" "$ENV_ROOT"
+for FILE in run.py architecture.py assemble.py engine.py layout.py outlines.py zoning.py model_intake.py requirements.txt exporters/__init__.py exporters/drawings.py exporters/dxf.py exporters/ifc.py exporters/package.py exporters/pascal.py exporters/svg.py exporters/zd1.py exporters/arosa.ids; do
+  [[ -f "$SOURCE_ROOT/planning/$FILE" && ! -L "$SOURCE_ROOT/planning/$FILE" ]]
+  install -m 644 "$SOURCE_ROOT/planning/$FILE" "$PLANNER/$FILE"
+done
+ENV_HASH=$(python3 -c 'import hashlib,sys; print(hashlib.sha256(open(sys.argv[1],"rb").read()).hexdigest())' "$PLANNER/requirements.txt")
+ENV_DIR=$ENV_ROOT/$ENV_HASH
+if [[ ! -f "$ENV_DIR/.ready" ]]; then
+  # An incomplete environment has never been referenced by an applied release.
+  rm -rf "$ENV_DIR"
+  python3 -c 'import sys; assert sys.version_info >= (3,11), "The planner requires Python 3.11 or newer with venv support."'
+  python3 -m venv "$ENV_DIR"
+  "$ENV_DIR/bin/python" -m pip install --disable-pip-version-check -r "$PLANNER/requirements.txt"
+  "$ENV_DIR/bin/python" -c 'import ifcopenshell, ifctester, shapely, ezdxf, openpyxl, trimesh, scipy, rtree, plyfile, laspy, lazrs'
+  touch "$ENV_DIR/.ready"
+fi
+# A regular executable file fits the existing atomic file installer. The previous release keeps
+# its own environment path, so rollback restores both source and dependency selection.
+printf '#!/bin/sh\nexec "%s/bin/python" "$@"\n' "$ENV_DIR" > "$PLANNER/.venv/bin/python"
+chmod 755 "$PLANNER/.venv/bin/python"
+"$PLANNER/.venv/bin/python" -c 'import pathlib,sys; root=pathlib.Path(sys.argv[1]); [compile(p.read_text(),str(p),"exec") for p in root.rglob("*.py")]; sys.path.insert(0,str(root)); import model_intake, trimesh, scipy, rtree, plyfile, laspy, lazrs' "$PLANNER"

@@ -1,0 +1,5 @@
+[Unit]
+Description=Install the Acres research backend from the shared builder
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/acres-deploy-research

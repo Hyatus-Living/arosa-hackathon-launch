@@ -1,0 +1,11 @@
+[Unit]
+Description=Sync the Acres NYC development ledger nightly
+
+[Timer]
+OnCalendar=*-*-* 04:30:00 America/New_York
+RandomizedDelaySec=10m
+Persistent=true
+Unit=acres-ledger.service
+
+[Install]
+WantedBy=timers.target

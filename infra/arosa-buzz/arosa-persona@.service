@@ -1,0 +1,19 @@
+[Unit]
+Description=Arosa shared %i assistant
+After=docker.service network-online.target
+Requires=docker.service
+Wants=network-online.target
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+Type=simple
+ExecStartPre=-/usr/bin/docker rm arosa-%i
+ExecStart=/usr/bin/docker run --rm --init --name arosa-%i --user 1001:1001 --read-only --cap-drop ALL --security-opt no-new-privileges --pids-limit 256 --memory 1536m --cpus 1 --log-opt max-size=10m --log-opt max-file=3 --tmpfs /tmp:rw,nosuid,size=256m --env-file /etc/arosa-agents/%i.env --mount type=bind,src=/var/lib/arosa-agents/%i,dst=/home/arosa --mount type=bind,src=/var/lib/arosa-buzz/.codex,dst=/run/arosa-codex --workdir /home/arosa/work arosa-buzz:0.5.28-codex-2.2.2
+ExecStop=/usr/bin/docker stop --time 45 arosa-%i
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=60
+
+[Install]
+WantedBy=multi-user.target

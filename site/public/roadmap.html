@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roadmap | Arosa</title>
+<meta name="description" content="What Arosa does today for New York City sites, and what is next: parking, efficiency tuning and a recommendation on which option to pursue.">
+<meta property="og:title" content="Roadmap | Arosa">
+<meta property="og:description" content="What Arosa does today and what is next.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://witharosa.ai/roadmap">
+<meta property="og:image" content="https://witharosa.ai/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#f9f9f9">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site.css">
+<link rel="stylesheet" href="/home.css">
+<style>.page { padding: 9rem 0 6rem; } .page h1 { font-size: clamp(2.25rem, 5vw, 3.5rem); line-height: 1.04; letter-spacing: -0.03em; max-width: 18ch; } .page .lede { max-width: 38rem; } .ledger { margin-top: 3.5rem; }</style>
+<script>try{if(localStorage.theme==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav" id="nav">
+  <div class="wrap">
+    <nav class="bar" aria-label="Site">
+      <a class="brand" href="/" aria-label="Arosa home">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="currentColor"/><path d="M8 24h4v-5h8v5h4V14h-4v-4h-4V6h-4v4H8z" fill="var(--bg)"/></svg>
+        <span>Arosa</span>
+      </a>
+      <div class="nav-links">
+        <a href="/#site">A real site</a>
+        <a href="/#who">Who it is for</a>
+        <a href="/#sources">Sources</a>
+        <a href="/accuracy">Accuracy</a>
+        <a href="/help">Help</a>
+      </div>
+      <div class="right">
+        <a class="signin" href="https://build.witharosa.ai">Sign in</a>
+        <button class="icon-btn" id="theme" type="button" aria-label="Switch to the night view" aria-pressed="false">
+          <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        </button>
+        <a class="btn btn-primary cta" href="/beta#apply">Apply for the beta</a>
+        <button class="icon-btn burger" id="burger" type="button" aria-label="Open the menu" aria-expanded="false" aria-controls="menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+      </div>
+    </nav>
+    <div class="menu" id="menu">
+      <a href="/#site">A real site</a>
+      <a href="/#who">Who it is for</a>
+      <a href="/#sources">Sources</a>
+      <a href="/accuracy">Accuracy</a>
+      <a href="/help">Help</a>
+      <a href="https://build.witharosa.ai">Sign in</a>
+      <a href="/beta#apply"><strong>Apply for the beta</strong></a>
+    </div>
+  </div>
+</header>
+
+<main id="main" tabindex="-1" class="page">
+  <div class="wrap">
+    <h1>What Arosa does today, and what is next.</h1>
+    <p class="lede">See what is available today and what is coming next for property research, Underwriting and architectural Modeling.</p>
+    <div class="ledger">
+      <div>
+        <h3>In Arosa today</h3>
+        <div class="skill"><span class="num">01</span><div><div class="name">Site intake</div><p class="desc">An address with its city and state becomes an identified site in its jurisdiction. In New York City, an address, a building name or a BBL becomes a confirmed parcel with its boundary, the neighbors from NYC building footprints, and nearby transit, parks and retail.</p></div></div>
+        <div class="skill"><span class="num">02</span><div><div class="name">Zoning engine</div><p class="desc">The site's own zoning code, read live and cited by section in any city. In New York City, also districts, overlays and special districts from the parcel record, FAR by use against the existing building, and curated rules with their Zoning Resolution sections, read as starting points to verify.</p></div></div>
+        <div class="skill"><span class="num">03</span><div><div class="name">Entitlement</div><p class="desc">The mechanisms that could add floor area or change use, with the approvals and recorded instruments each one needs.</p></div></div>
+        <div class="skill"><span class="num">04</span><div><div class="name">Massing study</div><p class="desc">Concepts drawn in 2D and 3D with computed areas, FAR and height, compared side by side in any city. In New York City they are also placed among the footprint neighbors, with Street View and photorealistic context, and rendered from the street and from above.</p></div></div>
+        <div class="skill"><span class="num">05</span><div><div class="name">Program and unit mix</div><p class="desc">Market inputs recorded with their sources, and a unit mix by bedroom type sized to the residential area and the efficiency you expect.</p></div></div>
+        <div class="skill"><span class="num">07</span><div><div class="name">Floor plans</div><p class="desc">A typical-floor plan for each option, with rooms, walls, doors and windows you can edit, and a check that every room is closed.</p></div></div>
+        <div class="skill"><span class="num">09</span><div><div class="name">Financial model</div><p class="desc">A line-item development budget, revenue, NOI, yield on cost, value, returns and sensitivities, run as code from the inputs you supply, with the arithmetic shown.</p></div></div>
+        <div class="skill"><span class="num">13</span><div><div class="name">Final deliverable</div><p class="desc">A seven-slide underwriting deck drawn from the site, to print or save as a PDF.</p></div></div>
+      </div>
+      <div>
+        <h3>Next</h3>
+        <div class="skill next"><span class="num">06</span><div><div class="name">Parking optimization</div><p class="desc">Required and achievable parking, layouts and ramps, under each jurisdiction's own rules; the Manhattan Core rules are encoded today.</p></div></div>
+        <div class="skill next"><span class="num">08</span><div><div class="name">Efficiency optimization</div><p class="desc">Net-to-gross, unit counts and layout choices tuned against each other.</p></div></div>
+        <div class="skill next"><span class="num">10</span><div><div class="name">Feasibility recommendation</div><p class="desc">The option worth pursuing, with the evidence and the risks laid out.</p></div></div>
+        <div class="skill next"><span class="num">11</span><div><div class="name">Architectural concepting</div><p class="desc">Facade and material directions that fit the site and the program.</p></div></div>
+        <div class="skill next"><span class="num">12</span><div><div class="name">Iterative design</div><p class="desc">Version history for concepts; revise, branch and compare.</p></div></div>
+        <div class="skill next"><span class="num">14</span><div><div class="name">Independent workspaces</div><p class="desc">Start Modeling or Underwriting with a property address. Develop a design or evaluate a deal independently, with an optional transfer of selected quantities.</p></div></div>
+        <div class="skill next"><span class="num">15</span><div><div class="name">Editable IFC import</div><p class="desc">Bring an existing building into Modeling as editable walls, levels, doors and windows. Review unsupported elements and retain the original model.</p></div></div>
+        <div class="skill next"><span class="num">16</span><div><div class="name">Scan validation</div><p class="desc">Compare an aligned point cloud with model surfaces, inspect discrepancy maps and review distances at a chosen tolerance.</p></div></div>
+        <div class="skill next"><span class="num">17</span><div><div class="name">Assisted building reconstruction</div><p class="desc">Turn scans into reviewable existing-condition models, then develop proposed designs as separate revisions.</p></div></div>
+      </div>
+    </div>
+    <p class="next"><a class="textlink" href="/beta#apply">Apply for the beta</a> to use the steps above on your own sites.</p>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div>
+        <span class="brand"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="currentColor"/><path d="M8 24h4v-5h8v5h4V14h-4v-4h-4V6h-4v4H8z" fill="var(--bg)"/></svg><span>Arosa</span></span>
+        <p>What zoning allows, three ways to build it, and what the land is worth at your costs, for every New York City lot.</p>
+      </div>
+      <nav aria-label="On this page">
+        <h3>On this page</h3>
+        <ul>
+          <li><a href="/#site">A real site</a></li>
+          <li><a href="/#who">Who it is for</a></li>
+          <li><a href="/#sources">Sources</a></li>
+          <li><a href="/#faq">Questions</a></li>
+        </ul>
+      </nav>
+      <nav aria-label="Arosa">
+        <h3>Arosa</h3>
+        <ul>
+          <li><a href="/beta#apply">Apply for the beta</a></li>
+          <li><a href="https://build.witharosa.ai">Sign in</a></li>
+          <li><a href="/accuracy">Accuracy</a></li>
+          <li><a href="/help">Help</a></li>
+          <li><a href="/roadmap">Roadmap</a></li>
+          <li><a href="/privacy">Privacy</a></li>
+          <li><a href="/terms">Terms</a></li>
+          <li><a href="/support">Support</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="bottom">
+      <span>© <span id="year">2026</span> Arosa</span>
+      <span>A research aid with citations, not an entitlement determination.</span>
+    </div>
+  </div>
+</footer>
+<script src="/site.js" defer></script>
+</body>
+</html>

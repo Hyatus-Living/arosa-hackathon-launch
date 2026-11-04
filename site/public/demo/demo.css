@@ -1,0 +1,59 @@
+/* Glue for the app's views inside a landing page window: the page is the window, no app shell. */
+html, body { height: 100%; }
+body.demo { display: block; margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); overflow: hidden; }
+.demo .symbols { position: absolute; width: 0; height: 0; overflow: hidden; }
+/* Explore: the list and map fill the window beside each other; narrow, the page scrolls as on a phone. */
+html:has(.demo-explore), .demo-explore { height: auto; overflow: visible; }
+@container (min-width: 681px) { .demo .listings-split { height: calc(100dvh - 196px); min-height: 360px; } }
+/* The window is a phone's width less the page gutters, so the sort menu gives up the difference. */
+@media (max-width: 600px) { .demo .listings-sort select { max-width: 118px; } }
+
+/* The light map that stands in for the tile map. */
+.nyc-map { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; background: var(--bg); }
+.nyc-map:active { cursor: grabbing; }
+.nyc-map-land path { fill: var(--surface-2); stroke: var(--line-strong); stroke-width: 0.6; vector-effect: non-scaling-stroke; }
+.nyc-map-pin { cursor: pointer; }
+.nyc-map-tip { position: absolute; z-index: 3; transform: translate(-50%, calc(-100% - 14px)); pointer-events: none; white-space: nowrap; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 6px 9px; font-size: 12px; box-shadow: var(--shadow-1); }
+.nyc-map-zoom { position: absolute; top: 10px; right: 10px; z-index: 2; display: grid; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface); overflow: hidden; }
+.nyc-map-zoom button { width: 29px; height: 29px; font: inherit; font-size: 16px; line-height: 1; color: var(--ink); background: none; border: 0; cursor: pointer; }
+.nyc-map-zoom button + button { border-top: 1px solid var(--line); }
+.nyc-map-zoom button:hover { background: var(--surface-2); }
+
+/* The site page in its window. */
+.demo-scroll { height: 100%; overflow-y: auto; overscroll-behavior: contain; box-sizing: border-box; padding: 28px 28px 40px; }
+.demo-site .core-parcel.uw { margin: 0 auto; padding-bottom: 0; }
+.demo-site .uw-header .core-back { display: none; }
+@media (max-width: 600px) { .demo-scroll { padding: 18px 16px 32px; } }
+
+/* The massing view. */
+.massing-view { position: relative; }
+.massing-view canvas { display: block; width: 100%; touch-action: pan-y; cursor: grab; outline: none; }
+.massing-view canvas:active { cursor: grabbing; }
+.massing-view canvas:focus-visible { box-shadow: inset 0 0 0 2px var(--ink); border-radius: inherit; }
+.massing-hint { position: absolute; left: 12px; bottom: 10px; font: 500 11px/1 var(--sans); color: var(--ink-muted); pointer-events: none; }
+.demo-scroll { overflow-x: hidden; }
+
+/* The chat in its window: the conversation scrolls above the composer. */
+.ask-shell { height: 100%; display: flex; flex-direction: column; }
+.ask-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 24px 28px 8px; }
+.ask-scroll #messages, .ask-scroll .welcome { max-width: 760px; margin: 0 auto; }
+.demo-ask .welcome { padding: 48px 0 0; }
+.demo-ask .composer-dock { position: static; padding: 8px 28px 20px; max-width: 760px; width: 100%; margin: 0 auto; box-sizing: border-box; }
+.demo-ask .listings-suggestions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.demo-ask .listings-suggestions[hidden] { display: none; }
+.demo-open { display: inline-flex; margin-top: 4px; text-decoration: none; }
+@media (max-width: 600px) { .ask-scroll { padding: 16px 16px 8px; } .demo-ask .composer-dock { padding: 8px 12px 14px; } }
+
+/* A page that grows with its content: the landing page sizes the window to it. */
+.demo-grow { overflow: hidden; }
+.demo-grow .demo-scroll { height: auto; overflow: visible; }
+
+/* The examples show what zoning allows and what a building costs and earns. Deal tiers, land value
+   and the buy decision stay out of the landing page windows. */
+.demo .verdict-pill, .demo .inspector-tier-basis, .demo .listing-card-rank, .demo .listings-sort, .demo .listings-legend { display: none; }
+.demo .listings-filters > details:has(input[value="great_deal"]) { display: none; }
+.demo .inspector-section:has(.deal-scale), .demo .inspector-section:has(.inspector-costs-action) { display: none; }
+.demo .nyc-map-pin circle:first-child { fill: var(--ink-muted) !important; stroke: var(--bg) !important; }
+.demo-site .uw-steps > .uw-step:nth-child(4) { display: none; }
+/* Chat, links and the plan editor live in the app, not in these windows. */
+.demo .inspector-more, .demo [data-open-chat], .demo-site a[data-route], .demo-build .uw-menu { display: none; }

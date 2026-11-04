@@ -1,0 +1,36 @@
+#!/bin/bash
+# Install a staged research release. acres-research.service runs this as root before every start
+# (ExecStartPre=+), so files change only after the previous process has exited and before the next
+# one loads them, however the start comes (a deploy, a crash restart or a connection to the socket).
+# acres-deploy-research stages the release as a complete tree mirroring / and renames it to
+# $RELEASES/next in one step. The files it replaces are kept in $RELEASES/previous; to roll back,
+# rename previous to next and restart acres-research.service.
+set -euo pipefail
+umask 022
+RELEASES=/var/lib/acres-research-release
+NEXT=$RELEASES/next
+PREVIOUS=$RELEASES/previous
+[[ -d "$NEXT" ]] || exit 0
+mapfile -d '' FILES < <(cd "$NEXT" && find opt -type f -print0)
+for FILE in "${FILES[@]}"; do
+  [[ "$FILE" == opt/acres-research/* || "$FILE" == opt/app-starter/* || "$FILE" == opt/planning/* ]]
+done
+rm -rf "$PREVIOUS.partial"
+for FILE in "${FILES[@]}"; do
+  if [[ -f "/$FILE" ]]; then
+    mkdir -p "$PREVIOUS.partial/$(dirname "$FILE")"
+    cp -a "/$FILE" "$PREVIOUS.partial/$FILE"
+  fi
+done
+mkdir -p "$PREVIOUS.partial"
+rm -rf "$PREVIOUS"
+mv -T "$PREVIOUS.partial" "$PREVIOUS"
+# Each file is replaced by a rename, so no reader sees a partly written file.
+for FILE in "${FILES[@]}"; do
+  mkdir -p "/$(dirname "$FILE")"
+  TEMP=$(mktemp "/$(dirname "$FILE")/.apply.XXXXXX")
+  cp -a "$NEXT/$FILE" "$TEMP"
+  mv -fT "$TEMP" "/$FILE"
+done
+rm -rf "$NEXT"
+echo "Installed the staged research release; the files it replaced are in $PREVIOUS."

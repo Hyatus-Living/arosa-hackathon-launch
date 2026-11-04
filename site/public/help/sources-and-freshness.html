@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Where does Arosa&rsquo;s data come from, and how fresh is it? | Arosa Help</title>
+<meta name="description" content="Each dataset behind Arosa, what it feeds, how often it refreshes, and where its date shows in the product.">
+<meta name="theme-color" content="#f9f9f9">
+<link rel="canonical" href="https://witharosa.ai/help/sources-and-freshness">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site.css">
+<link rel="stylesheet" href="/help/help.css">
+<script>try{if(localStorage.theme==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav" id="nav">
+  <div class="wrap">
+    <nav class="bar" aria-label="Site">
+      <a class="brand" href="/" aria-label="Arosa home">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="currentColor"/><path d="M8 24h4v-5h8v5h4V14h-4v-4h-4V6h-4v4H8z" fill="var(--bg)"/></svg>
+        <span>Arosa</span>
+      </a>
+      <div class="right">
+        <a class="help-link" href="/help">Help</a>
+        <a class="btn btn-primary cta" href="https://build.witharosa.ai">Open the app</a>
+      </div>
+    </nav>
+  </div>
+</header>
+<main id="main" class="help">
+<nav class="crumbs" aria-label="Breadcrumb"><a href="/help">Help</a><span aria-hidden="true">/</span><span aria-current="page">Sources and freshness</span></nav>
+<h1>Where does Arosa&rsquo;s data come from, and how fresh is it?</h1>
+<p class="lead">Every figure comes from a named public record, a listing feed, or an Arosa planning assumption with a date. The date shown is when Arosa last read the source, not when the city last changed the record.</p>
+<h2>Datasets</h2>
+<table class="tbl"><thead><tr><th scope="col">Dataset</th><th scope="col">What it feeds</th><th scope="col">Refresh</th><th scope="col">Where the date shows</th></tr></thead><tbody><tr><th scope="row">PLUTO</th><td data-label="What it feeds">Lot area, shape, zoning district, existing building, flood zone</td><td data-label="Refresh">Read from NYC Open Data when a site or listing is matched. City Planning publishes new releases a few times a year.</td><td data-label="Where the date shows">Retrieved date in the sources list on a site and in a report</td></tr><tr><th scope="row">Zoning Resolution, including December 2024 City of Yes</th><td data-label="What it feeds">Floor area ratios, height and setback, the affordability bonus, mandatory inclusionary housing</td><td data-label="Refresh">Each figure cites its section and the text it was checked against.</td><td data-label="Where the date shows">Retrieved date in the sources list</td></tr><tr><th scope="row">DOB filings</th><td data-label="What it feeds">New-building filings near the site over three years, prior jobs on the lot</td><td data-label="Refresh">Read live from NYC Open Data when you open a site.</td><td data-label="Where the date shows">&ldquo;NYC Department of Buildings filings as of&rdquo; with the date, in the nearby filings view</td></tr><tr><th scope="row">ACRIS</th><td data-label="What it feeds">Recorded deeds, air rights transfers, easements, zoning lot agreements</td><td data-label="Refresh">Read live for each lot.</td><td data-label="Where the date shows">Retrieved date in the sources list</td></tr><tr><th scope="row">HPD registrations</th><td data-label="What it feeds">Building registration and tenant checks behind the deal tier</td><td data-label="Refresh">Matched to each listing during the six-hour listings refresh.</td><td data-label="Where the date shows">The tier&rsquo;s conditions in the listing detail</td></tr><tr><th scope="row">Listings</th><td data-label="What it feeds">More than 12,000 listings from major listing platforms and brokerage feeds: asking prices and rents</td><td data-label="Refresh">Every six hours.</td><td data-label="Where the date shows">Listed date on each listing and comp</td></tr><tr><th scope="row">Closings used as comps</th><td data-label="What it feeds">More than 46,000 recorded closings: condo sale prices per square foot</td><td data-label="Refresh">Loaded in batches. The latest load was October 21, 2026.</td><td data-label="Where the date shows">Basis line under the sale price per square foot, with the count and latest date</td></tr><tr><th scope="row">Building footprints</th><td data-label="What it feeds">Neighboring buildings in the massing view</td><td data-label="Refresh">Read once per property when a concept is drawn.</td><td data-label="Where the date shows">Retrieved date in the sources list</td></tr><tr><th scope="row">Rules and rent tables</th><td data-label="What it feeds">RPTL <span class="nb">485-x</span>, HPD affordable rents, DOF tax rates</td><td data-label="Refresh">Entered with the publication date of the table or rule.</td><td data-label="Where the date shows">As-of date beside each assumption in the listing detail</td></tr><tr><th scope="row">Arosa planning assumptions</th><td data-label="What it feeds">Hard and soft cost, carry, operating costs, borough rent and sale baselines</td><td data-label="Refresh">Dated when set. Defaults last set October 15, 2026.</td><td data-label="Where the date shows">As-of date beside each assumption in the listing detail</td></tr></tbody></table>
+<p>Where your own number replaces an assumption, the listing detail marks it as your override.</p>
+<h2>What it does not cover</h2>
+<p>Arosa reads public records and listing feeds. It does not see off-market sales, private rent rolls, or anything filed with the city after the date shown.</p>
+<h2>Common questions</h2>
+<h3>Does Arosa use asking prices as sale prices?</h3>
+<p>No. Sale prices per square foot come from recorded closings only. When a ZIP has too few closings, Arosa says so and uses a dated planning figure instead.</p>
+<section class="more" aria-labelledby="more-h"><h2 id="more-h">Keep reading</h2><ul><li><a href="/help/buildable-area">How does Arosa work out how much I can build?</a></li><li><a href="/help/land-value">How does Arosa value the land?</a></li></ul></section>
+<p class="ask">Something unclear or wrong? Email <a href="mailto:michael@witharosa.ai">michael@witharosa.ai</a>.</p>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="bottom">
+      <span>© 2026 Arosa</span>
+      <span><a href="/help">Help</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/support">Support</a></span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

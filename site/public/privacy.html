@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy | Arosa</title>
+<meta name="description" content="How Arosa collects, uses, shares and retains personal data across witharosa.ai, the Arosa app and the Arosa tools for ChatGPT.">
+<meta name="theme-color" content="#f9f9f9">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site.css">
+<script>try{if(localStorage.theme==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
+<style>
+.legal { max-width: 44rem; margin: 0 auto; padding: 8rem var(--gutter) 5rem; }
+.legal h1 { font-size: 2rem; font-weight: 500; letter-spacing: -0.03em; margin: 0 0 0.75rem; text-wrap: balance; }
+.legal .meta { color: var(--ink-muted); font-size: 0.875rem; margin: 0 0 2.5rem; }
+.legal h2 { font-size: 1.125rem; font-weight: 500; letter-spacing: -0.02em; margin: 2.5rem 0 0.75rem; }
+.legal p, .legal li { color: var(--ink-muted); font-size: 0.9375rem; line-height: 1.7; }
+.legal ul { padding-left: 1.25rem; margin: 0.5rem 0; }
+.legal li { margin: 0.35rem 0; }
+.legal a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.legal strong { color: var(--ink); font-weight: 500; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav" id="nav">
+  <div class="wrap">
+    <nav class="bar" aria-label="Site">
+      <a class="brand" href="/" aria-label="Arosa home">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="currentColor"/><path d="M8 24h4v-5h8v5h4V14h-4v-4h-4V6h-4v4H8z" fill="var(--bg)"/></svg>
+        <span>Arosa</span>
+      </a>
+    </nav>
+  </div>
+</header>
+<main id="main" class="legal">
+<h1>Privacy Policy</h1>
+<p class="meta">Effective October 13, 2026 · Arosa, operated by Hyatus Living</p>
+
+<p>This policy covers <strong>witharosa.ai</strong>, the Arosa app at <strong>build.witharosa.ai</strong> (also <strong>app.witharosa.ai</strong>), sign-in at <strong>login.witharosa.ai</strong>, and the <strong>Arosa tools for ChatGPT</strong> served from mcp.witharosa.ai (together, "Arosa"). Questions and requests: <a href="mailto:michael@witharosa.ai">michael@witharosa.ai</a>.</p>
+
+<h2>What we collect</h2>
+<ul>
+<li><strong>Account data.</strong> Your name, email address, a salted hash of your password (never the password itself), whether your email is verified, and the OAuth connections you approve, such as connecting the Arosa tools inside ChatGPT.</li>
+<li><strong>Tool inputs.</strong> The property addresses, borough-block-lot (BBL) identifiers and search queries you submit to the Arosa tools, and the source snapshots the tools retain for your account so a result can be re-opened later.</li>
+<li><strong>Service logs.</strong> Request identifiers, a pseudonymous account and workspace identifier, tool names, timing, success or failure and safe error codes. The tool gateway does not write your raw queries or tool payloads into its logs.</li>
+<li><strong>Cookies.</strong> Session cookies at login.witharosa.ai that keep you signed in. We do not use advertising or cross-site tracking cookies.</li>
+</ul>
+
+<h2>Why we use it</h2>
+<ul>
+<li>To create and secure your account, verify your email and complete sign-in and OAuth consent.</li>
+<li>To answer your tool requests: resolving properties in US cities, returning public parcel records where available, and searching and fetching retained source evidence with citations.</li>
+<li>To enforce per-account request limits, prevent abuse, keep the service reliable and debug failures.</li>
+<li>To send account email you asked for, such as verification and password-reset links.</li>
+</ul>
+<p>We do not sell personal data, share it for cross-context behavioral advertising, or use your tool inputs to train models.</p>
+
+<h2>Who receives it</h2>
+<p>We use service providers that process data to run Arosa, and public data services that answer property lookups:</p>
+<ul>
+<li><strong>Google Cloud</strong> hosts the tool gateway and the private research service.</li>
+<li><strong>Cloudflare</strong> hosts sign-in, email delivery and edge routing, and protects the app.</li>
+<li><strong>Google Cloud (Firebase Hosting)</strong> hosts this public website.</li>
+<li><strong>New York City public data services</strong> (such as NYC Planning GeoSearch and PLUTO open data) receive the address or BBL in a lookup, never your account identity.</li>
+<li><strong>Exa</strong>, only when public web search is enabled for a query, receives that search query.</li>
+</ul>
+<p>We may disclose data when required by law, or to protect the security of the service and its users.</p>
+
+<h2>How long we keep it</h2>
+<ul>
+<li><strong>Retained source evidence</strong> is kept for 30 days per account, then becomes unavailable and is pruned. Backup copies expire on the backup rotation schedule.</li>
+<li><strong>Account data</strong> is kept while your account is active.</li>
+<li><strong>Operational logs</strong> are kept only as long as needed for security and reliability, and in the ordinary course no longer than 12 months.</li>
+</ul>
+
+<h2>Your controls</h2>
+<ul>
+<li><strong>Disconnect anytime.</strong> Remove the Arosa connection in ChatGPT to revoke its access, or write to us to revoke an OAuth grant.</li>
+<li><strong>Delete your account.</strong> Email <a href="mailto:michael@witharosa.ai">michael@witharosa.ai</a> from your account address and we will delete your account and its retained evidence, and confirm within 30 days.</li>
+<li><strong>Access and correct.</strong> Email us to request a copy of your account data or a correction.</li>
+</ul>
+
+<h2>Security</h2>
+<p>Data is encrypted in transit. Passwords are stored as salted scrypt hashes. Tool access tokens are short-lived (10 minutes), scoped to read-only Arosa access, and bound to the Arosa tools audience. Each account's retained evidence is isolated from every other account.</p>
+
+<h2>Children</h2>
+<p>Arosa is not directed to children under 13 and they may not create an account. Users aged 13 to 17 may use Arosa only where their guardian's consent is not additionally required by applicable law.</p>
+
+<h2>Changes</h2>
+<p>When this policy changes materially, we will update the effective date above and post the new version here before it takes effect.</p>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="bottom">
+      <span>© 2026 Arosa</span>
+      <span><a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/support">Support</a></span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

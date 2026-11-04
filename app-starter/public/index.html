@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Arosa · Zoning intelligence</title>
+    <meta name="theme-color" content="#f9f9f9" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <script>try{if(localStorage.theme==='dark'){document.documentElement.classList.add('dark');document.querySelector('meta[name="theme-color"]').setAttribute('content','#161616')}}catch(e){}</script>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/wallet.css" />
+    <link rel="stylesheet" href="/core.css" />
+    <link rel="stylesheet" href="/home.css" />
+    <link rel="stylesheet" href="/listings.css" />
+    <link rel="stylesheet" href="/budget.css" />
+    <link rel="stylesheet" href="/render.css" />
+    <link rel="stylesheet" href="/workspace-shell.css" />
+    <link rel="stylesheet" href="/surfaces.css" />
+    <link rel="stylesheet" href="/report.css" />
+    <link rel="stylesheet" href="/send-option.css" />
+    <link rel="stylesheet" href="/whats-new.css" />
+    <link rel="stylesheet" href="/onboarding.css" />
+  </head>
+  <body class="booting" aria-busy="true">
+    <div id="workspace-loading" role="status">
+      <div class="workspace-loading-content">
+        <span class="research-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="sr-only">Loading your workspace</span>
+      </div>
+    </div>
+    <svg class="symbols" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <symbol id="plus" viewBox="0 0 24 24">
+          <path d="M12 5v14M5 12h14" />
+        </symbol>
+        <symbol id="arrow" viewBox="0 0 24 24">
+          <path d="m7 10 5-5 5 5M12 5v14" />
+        </symbol>
+        <symbol id="search" viewBox="0 0 24 24">
+          <circle cx="10.5" cy="10.5" r="6.5" />
+          <path d="m16 16 4 4" />
+        </symbol>
+        <symbol id="chat" viewBox="0 0 24 24">
+          <path d="M20 11a8 8 0 0 1-8 8H5l-3 2v-9a9 9 0 0 1 18-1Z" />
+        </symbol>
+        <symbol id="pin" viewBox="0 0 24 24">
+          <path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z" />
+          <circle cx="12" cy="10" r="2.5" />
+        </symbol>
+        <symbol id="file" viewBox="0 0 24 24">
+          <path d="M14 3H5v18h14V8Zm0 0v5h5M8 13h8M8 17h6" />
+        </symbol>
+        <symbol id="compare" viewBox="0 0 24 24">
+          <path d="M5 20V9h5v11M14 20V4h5v16M3 20h19" />
+        </symbol>
+        <symbol id="check" viewBox="0 0 24 24">
+          <path d="m5 12 4 4L19 6" />
+        </symbol>
+        <symbol id="panel" viewBox="0 0 24 24">
+          <rect x="3" y="4" width="18" height="16" rx="3" />
+          <path d="M15 4v16" />
+        </symbol>
+        <symbol id="close" viewBox="0 0 24 24">
+          <path d="m6 6 12 12M6 18 18 6" />
+        </symbol>
+        <symbol id="clip" viewBox="0 0 24 24">
+          <path d="m8 12 6-6a4 4 0 0 1 6 6L10 22a6 6 0 0 1-8-8L12 4M6 16l9-9" />
+        </symbol>
+        <symbol id="menu" viewBox="0 0 24 24">
+          <path d="M4 6h16M4 12h16M4 18h16" />
+        </symbol>
+        <symbol id="copy" viewBox="0 0 24 24">
+          <rect x="8" y="8" width="12" height="12" rx="2" />
+          <path d="M16 8V4H4v12h4" />
+        </symbol>
+        <symbol id="down" viewBox="0 0 24 24">
+          <path d="M12 4v16m-6-6 6 6 6-6" />
+        </symbol>
+        <symbol id="stop" viewBox="0 0 24 24">
+          <rect x="6" y="6" width="12" height="12" rx="2" />
+        </symbol>
+        <symbol id="steer" viewBox="0 0 24 24">
+          <path d="M5 19v-7a5 5 0 0 1 5-5h9m-5-5 5 5-5 5" />
+        </symbol>
+        <symbol id="share" viewBox="0 0 24 24">
+          <circle cx="6" cy="12" r="2.5" /><circle cx="18" cy="5" r="2.5" /><circle cx="18" cy="19" r="2.5" /><path d="m8 11 8-5M8 13l8 5" />
+        </symbol>
+        <symbol id="users" viewBox="0 0 24 24">
+          <circle cx="9" cy="8" r="3.5" /><path d="M3 20c0-3.5 2.7-5.5 6-5.5s6 2 6 5.5M16 5a3.5 3.5 0 0 1 0 7M18.5 15c1.7.8 2.5 2.4 2.5 5" />
+        </symbol>
+        <symbol id="settings" viewBox="0 0 24 24">
+          <path d="M4 7h9M17 7h3M4 17h3M11 17h9" /><circle cx="15" cy="7" r="2" /><circle cx="9" cy="17" r="2" />
+        </symbol>
+        <symbol id="chevron" viewBox="0 0 24 24">
+          <path d="m9 6 6 6-6 6" />
+        </symbol>
+        <symbol id="link" viewBox="0 0 24 24">
+          <path d="M10 14a4 4 0 0 0 6 0l3-3a4 4 0 0 0-6-6l-1.5 1.5M14 10a4 4 0 0 0-6 0l-3 3a4 4 0 0 0 6 6l1.5-1.5" />
+        </symbol>
+        <symbol id="map" viewBox="0 0 24 24">
+          <path d="m9 4-6 2.5v13.5l6-2.5 6 2.5 6-2.5V4l-6 2.5zM9 4v13.5M15 6.5V20" />
+        </symbol>
+        <symbol id="home" viewBox="0 0 24 24">
+          <path d="M4 11 12 4l8 7M6 9.5V20h12V9.5M10 20v-5h4v5" />
+        </symbol>
+        <symbol id="sidebar" viewBox="0 0 24 24">
+          <rect x="3" y="4" width="18" height="16" rx="3" /><path d="M9 4v16" />
+        </symbol>
+        <symbol id="history" viewBox="0 0 24 24">
+          <path d="M3.5 12a8.5 8.5 0 1 0 2.5-6M3.5 4v4h4M12 7.5V12l3 2" />
+        </symbol>
+        <symbol id="expand" viewBox="0 0 24 24">
+          <path d="M14 4h6v6M20 4l-7 7M10 20H4v-6M4 20l7-7" />
+        </symbol>
+        <symbol id="collapse" viewBox="0 0 24 24">
+          <path d="M4 14h6v6M3 21l7-7M20 10h-6V4M21 3l-7 7" />
+        </symbol>
+        <symbol id="wallet" viewBox="0 0 24 24">
+          <path d="M4 7a2 2 0 0 1 2-2h11v4M4 7v11a2 2 0 0 0 2 2h14V9H6a2 2 0 0 1-2-2Z" /><circle cx="16" cy="14.5" r="1" />
+        </symbol>
+        <symbol id="logout" viewBox="0 0 24 24">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+        </symbol>
+      </defs>
+    </svg>
+    <a class="skip-link" href="#page-main">Skip to page content</a>
+    <p class="route-announcement" aria-live="polite" aria-atomic="true"></p>
+    <button class="nav-scrim" aria-label="Close menu" hidden></button>
+    <aside id="navigation" class="sidebar" aria-label="Main menu">
+      <div class="rail-head">
+        <a class="brand" href="/" aria-label="Arosa home"
+          ><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="currentColor"/><path d="M8 24h4v-5h8v5h4V14h-4v-4h-4V6h-4v4H8z" fill="var(--bg)"/></svg><span class="rail-label">Arosa</span></a
+        >
+        <button class="icon-button rail-collapse" type="button" aria-label="Collapse menu" aria-expanded="true" aria-controls="navigation"><svg><use href="#sidebar" /></svg></button>
+        <button class="icon-button sidebar-close" type="button" aria-label="Close menu"><svg><use href="#close" /></svg></button>
+      </div>
+      <nav class="app-nav" aria-label="Main menu">
+        <a href="/" data-route="/" title="Home"><svg aria-hidden="true"><use href="#map" /></svg><span class="rail-label">Home</span></a>
+        <a href="/sites" data-route="/sites" title="Underwriting"><svg aria-hidden="true"><use href="#pin" /></svg><span class="rail-label">Underwriting</span></a>
+        <a href="/modeling" data-route="/modeling" title="Modeling" id="modeling-nav" hidden><svg aria-hidden="true"><use href="#file" /></svg><span class="rail-label">Modeling</span></a>
+        <a href="/whats-new" data-route="/whats-new" title="What's new"><svg aria-hidden="true"><use href="#file" /></svg><span class="rail-label">What's new</span></a>
+      </nav>
+      <section class="rail-site" aria-labelledby="site-nav-title">
+        <div class="site-nav-label rail-label">This site</div>
+        <strong class="site-nav-title rail-label" id="site-nav-title">Site research</strong>
+        <nav class="rail-sections" aria-label="Site sections"></nav><div class="workspace-tools">
+          <button class="nav-item" type="button" data-view="properties" title="Property">
+            <svg><use href="#home" /></svg><span class="rail-label">Property</span><span class="count">0</span></button
+          ><button class="nav-item" type="button" data-view="sources" title="Sources">
+            <svg><use href="#file" /></svg><span class="rail-label">Sources</span><span class="count">0</span>
+          </button>
+          <button class="nav-item" id="plan-button" type="button" title="Floor plan" hidden><svg><use href="#file" /></svg><span class="rail-label">Floor plan</span></button>
+          <button class="nav-item" id="site-chat-button" type="button" title="Conversation" aria-controls="chat-panel"><svg><use href="#chat" /></svg><span class="rail-label">Conversation</span></button>
+        </div>
+      </section>
+      <section class="rail-jobs" aria-labelledby="rail-jobs-title" hidden>
+        <div class="site-nav-label rail-label" id="rail-jobs-title">Activity</div>
+        <div class="rail-jobs-list" aria-live="polite"></div>
+      </section>
+      <section class="rail-recent" aria-labelledby="rail-recent-title" hidden>
+        <div class="site-nav-label rail-label" id="rail-recent-title">Recent</div>
+        <div class="rail-recent-list"></div>
+        <button class="nav-item rail-all-conversations" type="button" data-history-open><svg aria-hidden="true"><use href="#search" /></svg><span class="rail-label">All conversations</span></button>
+      </section>
+      <div class="rail-spacer"></div>
+      <div class="beta-bar" id="beta-bar" hidden>
+        <span class="beta-bar-label rail-label">You're testing Arosa early.</span>
+        <button class="nav-item" id="beta-feedback-button" type="button" aria-haspopup="dialog" title="Give feedback"><svg aria-hidden="true"><use href="#chat" /></svg><span class="rail-label">Give feedback</span></button>
+      </div>
+      <div class="rail-secondary">
+        <button class="nav-item" id="rail-teams" type="button" aria-haspopup="dialog" title="Teams"><svg aria-hidden="true"><use href="#users" /></svg><span class="rail-label">Teams</span></button>
+        <button class="nav-item" id="wallet-button" type="button" aria-haspopup="dialog" title="Plan"><svg aria-hidden="true"><use href="#wallet" /></svg><span class="rail-label">Plan</span><span class="rail-badge" id="wallet-balance" hidden></span></button>
+        <button class="nav-item" id="admin-button" type="button" aria-haspopup="dialog" title="Admin" hidden><svg aria-hidden="true"><use href="#settings" /></svg><span class="rail-label">Admin</span></button>
+        <button class="nav-item theme-toggle" id="theme" type="button" aria-label="Switch to the night view" aria-pressed="false"><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><span class="rail-label">Appearance</span></button>
+      </div>
+      <div class="sidebar-bottom">
+        <details class="workspace-card account-menu"><summary title="Account menu">
+          <span class="workspace-logo" id="account-initials" aria-hidden="true">A</span>
+          <div class="account-text rail-label">
+            <strong id="account-name">Arosa account</strong
+            ><small id="account-email">Saved to your Arosa account</small>
+          </div>
+          </summary><div class="account-actions"><button type="button" id="account-appearance">Appearance</button><a id="sign-out" class="sign-out" href="/cdn-cgi/access/logout" aria-label="Sign out" title="Sign out"><svg aria-hidden="true"><use href="#logout" /></svg><span class="sr-only">Sign out</span></a>
+        </div></details>
+      </div>
+    </aside>
+    <div class="shell" id="page-main" role="main" tabindex="-1">
+      <header class="topbar">
+        <button
+          class="icon-button mobile-menu"
+          type="button"
+          aria-label="Open menu"
+          aria-expanded="false"
+          aria-controls="navigation"
+        >
+          <svg><use href="#menu" /></svg>
+        </button>
+        <strong id="conversation-title">Arosa</strong><details class="page-more" hidden><summary aria-label="More page actions">•••</summary><div class="page-more-actions" aria-label="Page actions"></div></details>
+      </header>
+      <section id="core-page" class="core-page" aria-label="Sites" hidden></section>
+      <section id="report-page" class="report-page" aria-label="Underwriting report" hidden></section>
+      <section id="whats-new-page" class="whats-new-page" aria-label="What's new" hidden></section>
+      <div id="home-listings" hidden></div>
+      <section class="welcome" id="welcome" aria-label="Start" hidden>
+        <svg class="welcome-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="currentColor"/><path d="M8 24h4v-5h8v5h4V14h-4v-4h-4V6h-4v4H8z" fill="var(--bg)"/></svg>
+        <h1>What more could you build?</h1>
+        <p class="intro">See what current zoning lets you build, three ways to build it, and what the land is worth at your costs. For developers sizing a bid, brokers marketing a site and investors screening deal flow.</p>
+        <p id="access-note" class="access-note" role="status" hidden></p>
+        <div id="home-address" class="home-mount"></div>
+        <div class="welcome-links">
+          <button
+            class="example-link"
+            data-prompt="How much additional floor area could 120 Broadway in Manhattan support? Compare the current zoning baseline with potential development options, cite your sources, and flag assumptions or required approvals."
+          >
+            Try 120 Broadway, Manhattan
+          </button>
+        </div>
+        <div id="home-sites" class="home-mount"></div>
+      </section>
+      <section id="chat-panel" class="chat-panel" aria-label="Chat"><div class="drawer-tabs" role="tablist" aria-label="Research drawer"><button id="drawer-conversation-tab" role="tab" aria-controls="conversation" aria-selected="true" type="button">Conversation</button><button id="drawer-context-tab" role="tab" aria-controls="property-context" aria-selected="false" tabindex="-1" type="button">Property &amp; sources</button></div>
+      <div id="main" aria-label="Conversation">
+        <header class="chat-panel-head">
+          <button class="chat-history-open chat-head-button" type="button" data-history-open aria-label="History" title="History"><svg aria-hidden="true"><use href="#history" /></svg></button>
+          <div class="chat-panel-title"><strong id="chat-context-title" tabindex="-1">New conversation</strong><span class="chat-panel-meta"><span class="chat-attached">Not attached to a site</span><span class="saved-label" role="status" hidden></span></span><span class="chat-run-status" role="status" hidden><i aria-hidden="true"></i><span>Researching</span></span></div>
+          <div class="chat-panel-actions">
+            <button class="new-chat chat-head-button" type="button" aria-label="New chat" title="New chat"><svg aria-hidden="true"><use href="#plus" /></svg></button>
+            <button id="share-button" class="chat-head-button" type="button" aria-haspopup="dialog" aria-label="Share" title="Share" disabled><svg aria-hidden="true"><use href="#share" /></svg></button>
+            <button class="chat-expand chat-head-button" type="button" aria-label="Expand chat" title="Expand chat"><svg aria-hidden="true"><use href="#expand" /></svg></button>
+            <button type="button" class="core-chat-close chat-head-button" aria-controls="chat-panel" aria-label="Close chat" title="Close chat"><svg aria-hidden="true"><use href="#close" /></svg><span class="chat-back-label">Back</span></button>
+          </div>
+        </header>
+        <section
+          class="conversation"
+          id="conversation"
+          aria-label="Conversation"
+        >
+          <button class="chat-sources context-toggle" type="button" aria-expanded="false" aria-controls="property-context" hidden><svg aria-hidden="true"><use href="#panel" /></svg>Property &amp; sources</button>
+          <p class="core-chat-empty" hidden>Ask Arosa about this site. Its answers update this page.</p>
+          <div class="listings-suggestions" hidden>
+            <button type="button" data-compose="Which of these listings gives the most buildable floor area for the price?">Most floor area for the price</button>
+            <button type="button" data-compose="Find great deals in Brooklyn under $3 million with at least 1 FAR of headroom.">Great deals in Brooklyn under $3M</button>
+            <button type="button" data-compose="Compare the first three listings on the page for a condo development.">Compare the first three</button>
+          </div>
+          <div class="site-suggestions" hidden>
+            <button type="button" data-compose="Find a published floor plan for this site, draft the floor plan from it, then render the 3D walkthrough.">Draft the floor plan</button>
+            <button type="button" data-compose="Render the 3D walkthrough of this site's current floor plan.">Render the 3D walkthrough</button>
+          </div>
+          <div id="messages"></div>
+        </section>
+        <div class="composer-dock" id="composer-dock">
+          <button
+            id="jump-latest"
+            class="icon-button jump-latest"
+            aria-label="Scroll to latest message"
+            hidden
+          >
+            <svg><use href="#down" /></svg>
+          </button>
+          <p id="plan-notes" class="composer-plan-notes" role="status" hidden></p>
+          <form class="composer" id="composer">
+            <div id="attachments"></div>
+            <label for="prompt" class="sr-only">Ask about a property</label
+            ><textarea
+              id="prompt"
+              rows="1"
+              maxlength="3000"
+              aria-describedby="prompt-help prompt-count"
+              placeholder="Ask a question or explore an idea…"
+            ></textarea>
+            <div class="composer-bottom">
+              <div class="composer-tools">
+                <svg><use href="#pin" /></svg
+                ><span>Any US city</span>
+                <button type="button" class="attach-plan-btn" id="attach-plan-button" title="Add complete UTF-8 plan, survey or specification text that fits with your question (.json, .csv, .txt, .md, .svg, .ifc)">
+                  <svg><use href="#clip" /></svg><span>Add plan text</span>
+                </button>
+                <input type="file" id="plan-file-input" accept=".json,.csv,.txt,.md,.svg,.ifc" hidden />
+              </div>
+              <div class="composer-right">
+                <span id="prompt-count" hidden></span
+                ><button
+                  class="send-button"
+                  type="submit"
+                  aria-label="Send message"
+                >
+                  <svg><use href="#arrow" /></svg>
+                </button>
+              </div>
+            </div>
+          </form>
+          <div id="viewer-notice" class="viewer-notice" role="status" hidden>You can view this thread. Ask the owner for access to take part.</div>
+          <div class="composer-note" id="prompt-help">
+            Check the sources. Confirm zoning and approvals with the local
+            authorities for that city.
+          </div>
+        </div>
+      </div>
+      <section id="chat-history-view" class="chat-history-view" aria-labelledby="history-view-title" hidden>
+        <header class="history-view-head">
+          <button class="icon-button history-view-back" type="button" aria-label="Back to the conversation" title="Back to the conversation"><svg aria-hidden="true"><use href="#chevron" /></svg></button>
+          <h2 id="history-view-title">History</h2>
+        </header>
+        <label class="sr-only" for="conversation-search">Search your conversations</label>
+        <input id="conversation-search" type="search" placeholder="Search an address or a question" autocomplete="off" />
+        <p class="search-note">Your conversations, including threads shared with you.</p>
+        <div id="search-results"></div>
+      </section>
+      </section>
+      <div class="ask-bar" id="ask-bar" hidden>
+        <form class="ask-bar-pill" id="ask-handle" tabindex="-1" aria-describedby="ask-bar-status">
+          <span class="ask-bar-status" id="ask-bar-status" hidden><i aria-hidden="true"></i><span></span></span>
+          <input class="ask-bar-input" id="ask-input" type="text" maxlength="3000" autocomplete="off" aria-label="Ask Arosa" title="Ask Arosa (⌘J or Ctrl+J)" aria-keyshortcuts="Meta+J Control+J" placeholder="Ask a question or explore an idea…" />
+          <button class="send-button" type="submit" aria-label="Open chat" aria-controls="chat-panel" aria-expanded="false"><svg><use href="#arrow" /></svg></button>
+        </form>
+      </div>
+    </div>
+    <button
+      class="context-scrim"
+      aria-label="Dismiss property context"
+      hidden
+    ></button>
+    <aside
+      id="property-context"
+      class="context-panel"
+      aria-label="Property context"
+      hidden
+    >
+      <header>
+        <span>Property &amp; sources</span
+        ><button
+          class="icon-button context-toggle"
+          aria-label="Close property context"
+        >
+          <svg><use href="#close" /></svg>
+        </button>
+      </header>
+      <div class="context-content"></div>
+    </aside>
+    <dialog id="source-dialog" aria-labelledby="source-title">
+      <div class="dialog-header">
+        <div>
+          <span class="section-kicker">SOURCE</span>
+          <h2 id="source-title"></h2>
+        </div>
+        <button class="icon-button" id="close-dialog" aria-label="Close source">
+          <svg><use href="#close" /></svg>
+        </button>
+      </div>
+      <div id="source-body"></div>
+      <div class="source-status"></div>
+    </dialog>
+    <dialog id="concept-dialog" aria-labelledby="concept-title">
+      <div class="dialog-header">
+        <div>
+          <span class="section-kicker">CONCEPT</span>
+          <h2 id="concept-title"></h2>
+        </div>
+        <button class="icon-button" id="close-concept" aria-label="Close concept">
+          <svg><use href="#close" /></svg>
+        </button>
+      </div>
+      <p id="concept-summary"></p>
+      <div id="concept-body"></div>
+    </dialog>
+    <dialog id="share-dialog" aria-labelledby="share-title">
+      <div class="dialog-header">
+        <h2 id="share-title">Share conversation</h2>
+        <button class="icon-button" id="close-share" aria-label="Close sharing"><svg><use href="#close" /></svg></button>
+      </div>
+      <p id="share-notice" role="status" aria-live="polite"></p>
+      <div id="share-manage" hidden>
+        <form id="share-add-form" class="share-invite" novalidate>
+          <label class="sr-only" for="share-email">Email to share with</label>
+          <input id="share-email" type="email" placeholder="Add people by email" list="people-suggestions" autocomplete="off" aria-required="true" />
+          <datalist id="people-suggestions"></datalist>
+          <label class="sr-only" for="share-role">Role</label>
+          <select id="share-role"><option value="participant">Participant</option><option value="viewer">Viewer</option></select>
+          <button type="submit">Invite</button>
+        </form>
+        <div class="share-footer">
+          <div class="share-link-actions">
+            <button type="button" id="share-copy-link" class="share-primary"><svg aria-hidden="true"><use href="#link" /></svg>Copy link</button>
+            <span class="share-link-reason">Anyone signed in with the link can view</span>
+            <details class="listings-pop share-more">
+              <summary>More</summary>
+              <div class="listings-pop-body share-menu">
+                <section class="share-menu-section" aria-labelledby="share-team-title">
+                  <h3 id="share-team-title">Share with a team</h3>
+                  <div class="share-team-form" id="share-team-row">
+                    <label class="sr-only" for="share-team-select">Team to share with</label>
+                    <select id="share-team-select"><option value="">Choose a team…</option></select>
+                    <label class="sr-only" for="share-team-role">Team role</label>
+                    <select id="share-team-role"><option value="participant">Participant</option><option value="viewer">Viewer</option></select>
+                    <button type="button" id="share-add-team">Add</button>
+                  </div>
+                  <p id="share-team-focus-note" class="share-team-note" role="status"></p>
+                  <p id="share-team-empty" class="share-team-empty" hidden>No teams yet. <button type="button" id="share-create-team" class="text-button">Create a team</button></p>
+                </section>
+                <section class="share-menu-section" aria-labelledby="share-links-title">
+                  <h3 id="share-links-title">View link</h3>
+                  <div id="share-links"></div>
+                </section>
+              </div>
+            </details>
+          </div>
+          <input id="share-link-url" readonly hidden aria-label="Share link" />
+        </div>
+      </div>
+      <div class="share-skeleton" role="status"><span class="sr-only">Loading sharing settings</span><span class="skel skel-button" aria-hidden="true"></span></div>
+      <h3 class="share-members-heading">People with access</h3>
+      <div id="share-members"></div>
+    </dialog>
+    <dialog id="team-dialog" class="team-dialog" aria-labelledby="team-title">
+      <div class="dialog-header team-dialog-header">
+        <div>
+          <h2 id="team-title">Teams</h2>
+        </div>
+        <button class="icon-button" id="close-teams" aria-label="Close teams"><svg><use href="#close" /></svg></button>
+      </div>
+      <p id="team-notice" class="team-notice" role="status" aria-live="polite"></p>
+      <div class="team-manager" id="team-manager">
+        <aside class="team-manager-rail" aria-label="Your teams">
+          <div class="team-rail-header">
+            <div><h3>Your teams</h3><p id="team-rail-count"></p></div>
+            <button class="team-button primary compact" id="team-create-open" type="button"><svg aria-hidden="true"><use href="#plus" /></svg>New team</button>
+          </div>
+          <div class="team-search-wrap" id="team-search-wrap" hidden>
+            <svg aria-hidden="true"><use href="#search" /></svg>
+            <label class="sr-only" for="team-search">Search teams</label>
+            <input id="team-search" type="search" placeholder="Search teams" autocomplete="off" />
+          </div>
+          <div id="team-list" class="team-manager-list" aria-label="Choose a team to manage"></div>
+        </aside>
+        <section id="team-detail" class="team-detail" aria-label="Team details"></section>
+      </div>
+    </dialog>
+    <dialog id="wallet-dialog" aria-labelledby="wallet-title">
+      <div class="dialog-header"><h2 id="wallet-title">Plan</h2><button class="icon-button" id="close-wallet" aria-label="Close plan"><svg><use href="#close" /></svg></button></div>
+      <p id="wallet-notice" role="status" aria-live="polite"></p>
+      <div id="wallet-content"><div class="dialog-skeleton" role="status"><span class="sr-only">Loading your plan</span><span class="skel skel-text" style="width: 30%"></span><span class="skel skel-title" style="width: 45%"></span><span class="skel skel-block" style="height: 72px"></span></div></div>
+    </dialog>
+    <dialog id="feedback-dialog" aria-labelledby="feedback-title">
+      <div class="dialog-header"><h2 id="feedback-title">Give feedback</h2><button class="icon-button" id="close-feedback" aria-label="Close feedback"><svg><use href="#close" /></svg></button></div>
+      <ol id="feedback-thread" class="feedback-thread" aria-live="polite"></ol>
+      <p id="feedback-notice" role="alert"></p>
+      <form id="feedback-form" class="feedback-form">
+        <label class="sr-only" for="feedback-text">Your feedback</label>
+        <textarea id="feedback-text" rows="3" maxlength="4000" placeholder="Type anything"></textarea>
+        <div class="feedback-actions"><button type="button" id="feedback-finish" class="feedback-finish" hidden>That's all</button><button type="submit" id="feedback-send" class="feedback-send">Send</button></div>
+      </form>
+    </dialog>
+    <dialog id="admin-dialog" aria-labelledby="admin-title">
+      <div class="dialog-header">
+        <div>
+          <h2 id="admin-title">Admin</h2>
+        </div>
+        <button class="icon-button" id="close-admin" aria-label="Close admin"><svg><use href="#close" /></svg></button>
+      </div>
+      <div class="admin-tabs" role="tablist" aria-label="Admin sections">
+        <button type="button" role="tab" data-admin-tab="market" aria-selected="true">Market data</button>
+        <button type="button" role="tab" data-admin-tab="crm" aria-selected="false">Outreach</button>
+        <button type="button" role="tab" data-admin-tab="feedback" aria-selected="false">Feedback</button>
+      </div>
+      <p id="admin-notice" role="status" aria-live="polite"></p>
+      <div id="admin-content"><div class="dialog-skeleton" role="status"><span class="sr-only">Loading configuration</span><span class="skel skel-figure"></span><span class="skel skel-block" style="height: 120px"></span></div></div>
+    </dialog>
+    <div class="toast" role="status" hidden><span class="toast-message"></span><button class="toast-dismiss" type="button" aria-label="Dismiss notification">Dismiss</button></div>
+    <script type="module" src="/theme.js"></script>
+    <script type="module" src="/app.js"></script>
+    <script type="module" src="/wallet.js"></script>
+    <script type="module" src="/admin.js"></script>
+  </body>
+</html>

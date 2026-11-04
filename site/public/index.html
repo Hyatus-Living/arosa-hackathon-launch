@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>if(new URLSearchParams(location.search).has('wallet'))location.replace('https://build.witharosa.ai/'+location.search);</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arosa | Know what any New York lot could become</title>
+<meta name="description" content="Name any lot in the five boroughs. In minutes, Arosa works out what current zoning lets you build, prices three ways to build it, and tells you what the land is worth at your costs. Every figure is cited to the city's own records.">
+<meta property="og:title" content="Arosa | Know what any New York lot could become">
+<meta property="og:description" content="What zoning allows, three ways to build it, and what the land is worth at your costs, in minutes. Built on the city's own records, for developers, brokers and investors.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://witharosa.ai/">
+<meta property="og:image" content="https://witharosa.ai/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#f9f9f9">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site.css">
+<link rel="stylesheet" href="/home.css">
+<link rel="stylesheet" href="/stat-ticker.css">
+<script>document.documentElement.classList.add('js');try{if(localStorage.theme==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav" id="nav">
+  <div class="wrap">
+    <nav class="bar" aria-label="Site">
+      <a class="brand" href="/" aria-label="Arosa home">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="currentColor"/><path d="M8 24h4v-5h8v5h4V14h-4v-4h-4V6h-4v4H8z" fill="var(--bg)"/></svg>
+        <span>Arosa</span>
+      </a>
+      <div class="nav-links">
+        <a href="#site">A real site</a>
+        <a href="#who">Who it is for</a>
+        <a href="#sources">Sources</a>
+        <a href="/accuracy">Accuracy</a>
+        <a href="/help">Help</a>
+      </div>
+      <div class="right">
+        <a class="signin" href="https://build.witharosa.ai">Sign in</a>
+        <button class="icon-btn" id="theme" type="button" aria-label="Switch to the night view" aria-pressed="false">
+          <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        </button>
+        <a class="btn btn-primary cta" href="/beta#apply">Apply for the beta</a>
+        <button class="icon-btn burger" id="burger" type="button" aria-label="Open the menu" aria-expanded="false" aria-controls="menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+      </div>
+    </nav>
+    <div class="menu" id="menu">
+      <a href="#site">A real site</a>
+      <a href="#who">Who it is for</a>
+      <a href="#sources">Sources</a>
+      <a href="/accuracy">Accuracy</a>
+      <a href="/help">Help</a>
+      <a href="https://build.witharosa.ai">Sign in</a>
+      <a href="/beta#apply"><strong>Apply for the beta</strong></a>
+    </div>
+  </div>
+</header>
+
+<main id="main" tabindex="-1">
+  <section class="opening" aria-labelledby="hero-title">
+    <canvas class="opening-contours" aria-hidden="true"></canvas>
+    <canvas class="opening-helix" aria-hidden="true"></canvas>
+    <div class="wrap hero-in">
+      <h1 id="hero-title">Know what any New&nbsp;York lot could become.</h1>
+      <p class="lede">Name any lot in the five boroughs. In minutes, Arosa works out what current zoning lets you build, prices three ways to build it, and tells you what the land is worth at your costs.</p>
+      <div class="actions">
+        <a class="go" href="/beta#apply">Apply for the beta<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+        <a class="textlink" href="#site">See a real site</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="proof" aria-label="What Arosa is built on and how accurate it is">
+    <div class="wrap">
+      <p class="proof-line rise">Arosa prices <strong data-count="12000" data-suffix="+">12,000+</strong> for-sale listings as development sites, refreshed every six hours, against <strong data-count="46000" data-suffix="+">46,000+</strong> closings recorded with the city.</p>
+      <div class="live-stats" id="stats" aria-label="Arosa at work"></div>
+      <figure class="window embed flat">
+        <div class="chrome">
+          <div class="dots" aria-hidden="true"><span></span><span></span><span></span></div>
+          <span class="title">Explore NYC</span>
+          <span class="state"><span class="chip">Example listings</span></span>
+        </div>
+        <iframe class="frame" data-embed="explore" data-src="/demo/explore" title="Arosa's listing screen on example New York City listings" style="--h: 38rem; --h-phone: 40rem"></iframe>
+      </figure>
+      <p class="note embed-note">The listing screen on example listings. Search, filter and open one to see what zoning allows there.</p>
+      <div class="check rise">
+        <h2>Buildable floor area, checked against what was filed</h2>
+        <div class="check-body">
+          <p>For a typical project, the floor area filed with the city matches Arosa's figure at the median, a ratio of <b>1.00</b>.</p>
+          <p>In R6 to R10 districts, across 2,647 buildings, Arosa lands within 10% of the filing more often than the lot area times FAR shortcut.</p>
+          <div class="bars" role="img" aria-label="Share of buildings where the figure is within 10% of the filed floor area: Arosa 57 percent, lot area times FAR 45 percent">
+            <div class="bar-row us"><span class="who">Arosa</span><span class="track"><span class="fill" style="--w:57%"></span></span><span class="pct">57%</span></div>
+            <div class="bar-row"><span class="who">Lot area × FAR</span><span class="track"><span class="fill" style="--w:45%"></span></span><span class="pct">45%</span></div>
+          </div>
+          <p class="note">Share of buildings within 10% of the floor area filed with the Department of Buildings. Measured October 22, 2026 against new-building filings from 2014 to 2021. R4 and R5 districts are left out because those filings predate City of Yes. <a href="/accuracy">How we measured</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="replaces" aria-labelledby="replaces-title">
+    <div class="wrap">
+      <div class="head rise">
+        <h2 id="replaces-title">The first look at a site, without the wait.</h2>
+        <p>A developer's first zoning analysis and feasibility study usually waits on an architect, an expediter or a consultant. Arosa does that first pass in minutes, so their time goes to the sites worth it.</p>
+      </div>
+      <div class="swap">
+        <div class="swap-row rise"><h3>Zoning analysis</h3><p class="was">Someone reads the Zoning Resolution for your lot.</p><p class="now">Floor area computed from the current text, cited by section.</p></div>
+        <div class="swap-row rise" style="--i:1"><h3>Ways to build it</h3><p class="was">One massing study at a time.</p><p class="now">As of right, most floor area and an alternative, side by side.</p></div>
+        <div class="swap-row rise" style="--i:2"><h3>Budget and land price</h3><p class="was">A feasibility study, re-run when a cost changes.</p><p class="now">A line-item budget and residual land value at your costs, updated when you change one.</p></div>
+      </div>
+      <p class="after rise">Arosa does not replace your architect or land-use attorney. It tells you which sites deserve their time.</p>
+    </div>
+  </section>
+
+  <section class="block" id="site" aria-labelledby="site-title">
+    <div class="wrap">
+      <div class="head rise">
+        <h2 id="site-title">One site, start to finish.</h2>
+        <p>39 Winthrop Street in Brooklyn, a 5,300 sq ft lot in an R6 district, listed at $1.95M with a 1,878 sq ft house from 1910 on it. This is what Arosa produced for it.</p>
+      </div>
+      <ol class="steps rise" aria-label="The four steps">
+        <li><b>Confirm the lot</b><span>Tax lot, district, existing building and flags from the city's lot data.</span></li>
+        <li><b>Size what zoning allows</b><span>Floor area from the current Zoning Resolution, cited by section.</span></li>
+        <li><b>Price three ways to build</b><span>A massing, floor plan and line-item budget for each.</span></li>
+        <li><b>Test the land price</b><span>What nearby development sites sold for, and what a developer can pay, against the asking price.</span></li>
+      </ol>
+      <ul class="options">
+        <li class="option rise">
+          <img class="shot" src="/example/winthrop-as_of_right.jpg" width="1000" height="625" loading="lazy" decoding="async" alt="Street view of the as of right building among its neighbours on Winthrop Street">
+          <div class="option-body">
+            <div><h3>As of right</h3><p>A condo built to current zoning.</p></div>
+            <dl class="option-key"><div><dt>Floor area</dt><dd>11,660 sq ft</dd></div><div><dt>Stories</dt><dd>3</dd></div><div><dt>Units</dt><dd>11</dd></div></dl>
+            <div class="plan"><img src="/example/winthrop-plan-as-of-right.svg" width="1024" height="1497" loading="lazy" decoding="async" alt="Typical floor plan of the as of right option with four units around a stair hall"><p><b>Typical floor</b>Four units around a central stair hall.</p></div>
+            <table class="budget"><caption>Budget</caption><tbody><tr><th scope="row">Land and acquisition</th><td>$2.00M</td></tr><tr><th scope="row">Hard costs</th><td>$5.03M</td></tr><tr><th scope="row">Soft costs</th><td>$1.11M</td></tr><tr><th scope="row">Financing and carry</th><td>$0.81M</td></tr><tr><th scope="row">Total cost</th><td>$8.94M</td></tr></tbody></table>
+          </div>
+        </li>
+        <li class="option rise" style="--i:1">
+          <img class="shot" src="/example/winthrop-max_bonus.jpg" width="1000" height="625" loading="lazy" decoding="async" alt="Street view of the six-storey most floor area building among its neighbours on Winthrop Street">
+          <div class="option-body">
+            <div><h3>Most floor area</h3><p>A condo using the City of Yes affordability bonus, with 9,010 sq ft of affordable space.</p></div>
+            <dl class="option-key"><div><dt>Floor area</dt><dd>20,670 sq ft</dd></div><div><dt>Stories</dt><dd>6</dd></div><div><dt>Units</dt><dd>23</dd></div></dl>
+            <div class="plan"><img src="/example/winthrop-plan-most-floor-area.svg" width="1024" height="1346" loading="lazy" decoding="async" alt="Typical floor plan of the most floor area option with four units around a stair hall, two of them affordable"><p><b>Typical floor</b>Four units, two of them affordable.</p></div>
+            <table class="budget"><caption>Budget</caption><tbody><tr><th scope="row">Land and acquisition</th><td>$1.99M</td></tr><tr><th scope="row">Hard costs</th><td>$8.91M</td></tr><tr><th scope="row">Soft costs</th><td>$1.96M</td></tr><tr><th scope="row">Financing and carry</th><td>$1.29M</td></tr><tr><th scope="row">Total cost</th><td>$14.15M</td></tr></tbody></table>
+          </div>
+        </li>
+        <li class="option rise" style="--i:2">
+          <img class="shot" src="/example/winthrop-as_of_right.jpg" width="1000" height="625" loading="lazy" decoding="async" alt="Street view of the alternative option, the same three-storey building as the as of right option">
+          <div class="option-body">
+            <div><h3>Alternative</h3><p>The same building as a rental with the 485-x tax benefit, Option B.</p></div>
+            <dl class="option-key"><div><dt>Floor area</dt><dd>11,660 sq ft</dd></div><div><dt>Stories</dt><dd>3</dd></div><div><dt>Units</dt><dd>14</dd></div></dl>
+            <div class="plan"><img src="/example/winthrop-plan-alternative.svg" width="1024" height="1497" loading="lazy" decoding="async" alt="Typical floor plan of the alternative option with five units around a stair hall"><p><b>Typical floor</b>Five units around a central stair hall.</p></div>
+            <table class="budget"><caption>Budget</caption><tbody><tr><th scope="row">Land and acquisition</th><td>$2.00M</td></tr><tr><th scope="row">Hard costs</th><td>$5.03M</td></tr><tr><th scope="row">Soft costs</th><td>$1.11M</td></tr><tr><th scope="row">Financing and carry</th><td>$0.81M</td></tr><tr><th scope="row">Total cost</th><td>$8.94M</td></tr></tbody></table>
+          </div>
+        </li>
+      </ul>
+      <dl class="site-land rise">
+        <div><dt>Land value</dt><dd class="v">$2.50M</dd><dd>What nearby development sites sold for: 15 sales within 0.53 miles, adjusted to this lot, $214 per buildable sq ft on its as-of-right floor area.</dd></div>
+        <div><dt>A developer can pay</dt><dd class="v">$2.13M</dd><dd>The most the as of right building pays for the land at the target return and Arosa&rsquo;s default costs. Both figures are above the $1.95M asking price.</dd></div>
+      </dl>
+      <p class="note site-note rise">Options captured October 22, 2026 and land figures read October 23, 2026 from a saved site in Arosa. Budgets use $375 per gross sq ft for hard costs, 22% for soft costs and a 10% carry. <a href="/help/land-value">How land value works</a>. Renderings use simplified materials, with neighboring buildings in gray.</p>
+      <div class="turn rise">
+        <h3>Turn the building yourself.</h3>
+        <p>An example site's zoning envelope as a massing you can drag. Each version carries its floor area, height and unit count.</p>
+      </div>
+      <figure class="window embed flat">
+        <div class="chrome">
+          <div class="dots" aria-hidden="true"><span></span><span></span><span></span></div>
+          <span class="title" data-site-title>1234 Fulton St</span>
+          <span class="state"><span class="chip">Example site</span></span>
+        </div>
+        <iframe class="frame" data-embed="building" data-grow data-src="/demo/building" title="What zoning allows on an example site, with a 3D massing you can turn" style="--h: 64rem; --h-phone: 66rem"></iframe>
+      </figure>
+    </div>
+  </section>
+
+  <section class="block" id="state" aria-labelledby="state-title">
+    <div class="wrap">
+      <div class="head rise">
+        <h2 id="state-title">Change one number and the whole site updates.</h2>
+        <p>Hard costs, soft costs, financing and target returns are yours. Change one, or the property or the rents, and every option, budget and land value is worked out again from the same inputs, so a plan and a number never disagree.</p>
+      </div>
+      <figure class="window embed flat">
+        <div class="chrome">
+          <div class="dots" aria-hidden="true"><span></span><span></span><span></span></div>
+          <span class="title" data-site-title>1234 Fulton St</span>
+          <span class="state"><span class="chip">Example site</span></span>
+        </div>
+        <iframe class="frame" data-embed="underwrite" data-grow data-src="/demo/underwrite" title="An example site underwritten by Arosa, step by step" style="--h: 91rem; --h-phone: 128rem"></iframe>
+      </figure>
+      <p class="note embed-note">Open Your numbers under step 3, change a cost and update the underwriting.</p>
+    </div>
+  </section>
+
+  <section class="block" id="who" aria-labelledby="who-title">
+    <div class="wrap">
+      <div class="head rise">
+        <h2 id="who-title">Built for the people who bid on, sell and screen New York sites.</h2>
+      </div>
+      <div class="roles">
+        <article class="role rise">
+          <h3>Developers sizing a bid</h3>
+          <p>See what the lot can hold and what you can pay for it before you spend on an architect or a consultant. Compare three ways to build, each with its budget, at your own costs.</p>
+        </article>
+        <article class="role rise" style="--i:1">
+          <h3>Brokers marketing a site</h3>
+          <p>Know what a listing could become before a buyer asks. Buildable area, three options and the Zoning Resolution sections behind them are ready for the first call.</p>
+        </article>
+        <article class="role rise" style="--i:2">
+          <h3>Investors screening deal flow</h3>
+          <p>Every for-sale listing is matched to its tax lot and priced as a development site, then tiered great, good or fair with the reason. Start with the ones that pencil.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="sources" aria-labelledby="sources-title">
+    <div class="wrap">
+      <div class="from">
+        <div class="head rise">
+          <h2 id="sources-title">Where the numbers come from.</h2>
+          <p>The city's own records and dated listing feeds. Every regulatory claim is cited to its section and every figure to its source, with the date it was read, so you can defend it to partners and lenders.</p>
+          <p><a class="textlink" href="/help/sources-and-freshness">How each source is used and how fresh it is</a></p>
+        </div>
+        <ul class="refs rise">
+          <li><b>PLUTO</b><span>Tax-lot data: lot size, frontage, existing building, districts and landmark flags.</span></li>
+          <li><b>Zoning Resolution</b><span>The current text, including the December 2024 City of Yes changes, read section by section.</span></li>
+          <li><b>DOB filings</b><span>Department of Buildings records for the existing building and for new buildings near each site, three years back.</span></li>
+          <li><b>ACRIS</b><span>Recorded sales, deeds and air-rights instruments, used as comps.</span></li>
+          <li><b>HPD registrations</b><span>Housing Preservation and Development registrations and violations.</span></li>
+          <li><b>Listings</b><span>For-sale listings from major listing platforms and brokerage feeds, refreshed every six hours.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="faq" aria-labelledby="faq-title">
+    <div class="wrap">
+      <div class="faq-grid">
+        <div class="head rise"><h2 id="faq-title">Questions, answered.</h2></div>
+        <div class="faq rise">
+          <details><summary>What does Arosa do?</summary><div class="a">Name a New York City lot or listing. Arosa confirms the tax lot, computes what current zoning lets you build, prices three ways to build it as rentals or condos, and works out what the land is worth at your own costs.</div></details>
+          <details><summary>Where does the data come from?</summary><div class="a">The city's own records: PLUTO lot data, the Zoning Resolution including the December 2024 City of Yes text, DOB filings, ACRIS records and HPD registrations. Listings come from major listing platforms and brokerage feeds, refreshed every six hours.</div></details>
+          <details><summary>How current is it?</summary><div class="a">Listings refresh every six hours. Each source shows the date it was read, so you can see how fresh every figure is.</div></details>
+          <details><summary>How accurate is it?</summary><div class="a">Every regulatory claim is cited to its section and every figure to its source. Buildable floor area has been checked against the city's filed new buildings; <a href="/accuracy">the results are here</a>. Where five or more development sites nearby have sold, land value starts from what they sold for; on sites set aside to test it, that figure was within half to double the price paid 89% of the time. What a developer can pay at a target return carries no accuracy claim.</div></details>
+          <details><summary>Can I use my own costs and returns?</summary><div class="a">Yes. Hard costs, soft costs, financing and target returns are yours. Change one and every option, budget and land value updates.</div></details>
+          <details><summary>Does it replace my architect or land-use attorney?</summary><div class="a">No. Arosa is a first pass that tells you which sites are worth their time. It is a research aid, not an entitlement determination.</div></details>
+          <details><summary>What does it cost?</summary><div class="a">Use is unlimited during the private beta. Beta firms get 50% off their first year after launch.</div></details>
+          <details><summary>Does it work outside New York City?</summary><div class="a">New York City is covered lot by lot. Elsewhere, Arosa researches that city's own zoning code with citations and says plainly what it cannot compute.</div></details>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="apply" aria-labelledby="apply-title">
+    <div class="wrap">
+      <div class="apply rise">
+        <div>
+          <h2 id="apply-title">See what your next site could become.</h2>
+          <p>The private beta is open to at most 50 firms, with $5 million of AI inference set aside for them. Use is unlimited during the beta, and beta firms get 50% off their first year after launch.</p>
+        </div>
+        <a class="go" href="/beta#apply">Apply for the beta<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+      </div>
+      <p class="next">What's next: parking layouts, efficiency tuning and a recommendation on which option to pursue. <a class="textlink" href="/roadmap">See the roadmap</a></p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div>
+        <span class="brand"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="currentColor"/><path d="M8 24h4v-5h8v5h4V14h-4v-4h-4V6h-4v4H8z" fill="var(--bg)"/></svg><span>Arosa</span></span>
+        <p>What zoning allows, three ways to build it, and what the land is worth at your costs, for every New York City lot.</p>
+      </div>
+      <nav aria-label="On this page">
+        <h3>On this page</h3>
+        <ul>
+          <li><a href="#site">A real site</a></li>
+          <li><a href="#who">Who it is for</a></li>
+          <li><a href="#sources">Sources</a></li>
+          <li><a href="#faq">Questions</a></li>
+        </ul>
+      </nav>
+      <nav aria-label="Arosa">
+        <h3>Arosa</h3>
+        <ul>
+          <li><a href="/beta#apply">Apply for the beta</a></li>
+          <li><a href="https://build.witharosa.ai">Sign in</a></li>
+          <li><a href="/accuracy">Accuracy</a></li>
+          <li><a href="/help">Help</a></li>
+          <li><a href="/roadmap">Roadmap</a></li>
+          <li><a href="/privacy">Privacy</a></li>
+          <li><a href="/terms">Terms</a></li>
+          <li><a href="/support">Support</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="bottom">
+      <span>© <span id="year">2026</span> Arosa</span>
+      <span>A research aid with citations, not an entitlement determination.</span>
+    </div>
+  </div>
+</footer>
+<script src="/site.js" defer></script>
+<script type="module" src="/motion.js"></script>
+</body>
+</html>

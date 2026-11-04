@@ -1,0 +1,22 @@
+[Unit]
+Description=Sync the Acres NYC development ledger from NYC Open Data
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=openclaw
+Group=openclaw
+WorkingDirectory=/home/openclaw/.openclaw/workspace/acres
+Environment=HOME=/home/openclaw
+EnvironmentFile=/home/openclaw/.openclaw/gateway.env
+# The Socrata app token is pulled with the gateway secrets at boot (infra/acres-pull-secrets).
+EnvironmentFile=-/run/acres-secrets/gateway-secrets.env
+ExecStart=/usr/local/bin/node /home/openclaw/.openclaw/workspace/acres/scripts/ledger-sync.mjs
+TimeoutStartSec=45min
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/openclaw/.openclaw/acres-state
+UMask=0077

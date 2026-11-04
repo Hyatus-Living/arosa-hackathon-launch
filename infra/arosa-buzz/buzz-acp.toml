@@ -1,0 +1,11 @@
+[[rules]]
+name = "direct-conversation-with-arosai"
+channels = ["dda4a6e5-3cee-4947-ba81-44726190a1fa"]
+kinds = [9, 40007]
+require_mention = false
+
+[[rules]]
+name = "mentions-in-other-channels"
+channels = "all"
+kinds = [9, 46010, 40007, 45001, 45002, 45003]
+require_mention = true

@@ -1,0 +1,33 @@
+{
+  "name": "acres",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node --check app-starter/server.js && node --check app-starter/public/app.js && node --check acres-research/service.mjs && node --check acres-research/research.mjs && node --check acres-research/codex.mjs && node --check acres-research/meta.mjs && node --check acres-research/meta-visual.mjs && node --check acres-research/tools.mjs && node --check acres-research/composio.mjs && node --check acres-research/manager.mjs && node --check acres-research/store.mjs && node --check acres-research/project-state.mjs && node --check acres-research/trace.mjs && node --check acres-research/generated-ui.mjs && node --check app-starter/auth.js && node --check app-starter/public/chat-api.js && node --check app-starter/public/sign-out.js && node --check acres-research/knowledge.mjs && node --check acres-research/knowledge-refresh.mjs && node --check acres-research/knowledge-providers.mjs && node --check acres-research/knowledge-tools.mjs && node --check acres-research/knowledge-query.mjs && node --check acres-research/parcels.mjs && node --check acres-research/public-http.mjs && node --check acres-research/public-url.mjs && node --check acres-research/mcp-store.mjs && node --check acres-research/mcp-domain.mjs && node --check acres-research/mcp-admin.mjs && node --check acres-research/source-registry.mjs && node --check acres-research/zoning-facts.mjs && node --check acres-research/wallet.mjs && node --check app-starter/payments.mjs && node --check app-starter/public/wallet.js && node --check scripts/wallet-reconcile.mjs && node --check scripts/stripe-sandbox-setup.mjs && node --check acres-research/concepts.mjs && node --check acres-research/context.mjs && node --check acres-research/places.mjs && node --check acres-research/zoning.mjs && node --check acres-research/nyc-zoning-lookups.mjs && node --check acres-research/rent-stabilized-units.mjs && node --check acres-research/envelope.mjs && node --check acres-research/market.mjs && node --check acres-research/market-store.mjs && node --check acres-research/city-closed-sales.mjs && node --check acres-research/broker-listings.mjs && node --check acres-research/loopnet-listings.mjs && node --check acres-research/news-feeds.mjs && node --check acres-research/proforma.mjs && node --check acres-research/budget-lines.mjs && node --check acres-research/construction-costs.mjs && node --check acres-research/tax-485x.mjs && node --check acres-research/fanout.mjs && node --check acres-research/fetch-url.mjs && node --check acres-research/lanes.mjs && node --check acres-research/jurisdiction.mjs && node --check acres-research/planning.mjs && node --check acres-research/instructions.mjs && node --check acres-research/capabilities.mjs && node --check acres-research/entitlements.mjs && node --check acres-research/feasibility.mjs && node --check acres-research/keep.mjs && node --check acres-research/assembly.mjs && node --check acres-research/dream.mjs && node --check scripts/dream-review.mjs && node --check acres-research/ledger.mjs && node --check acres-research/precedents.mjs && node --check scripts/ledger-sync.mjs && node --check acres-research/architecture-artifacts.mjs && node --check acres-research/architecture-jobs.mjs && node --check acres-research/render-scene.mjs && node --check acres-research/scheme-renders.mjs && node --check app-starter/public/render-view.js && node --check acres-research/architecture-drawings.mjs && node --check acres-research/architecture-tools.mjs && node --check acres-research/scheme-plans.mjs && node --check app-starter/public/plan-schemes.js && node --check app-starter/public/plan-intake.js && node --check app-starter/public/plan-editor-loader.js && node --check acres-research/alerts.mjs && node --check acres-research/alert-mailer.mjs && node --check acres-research/alert-sources.mjs && node --check acres-research/alert-runner.mjs && node --check acres-research/alert-tools.mjs && node --check scripts/dream-judge-dry-run.mjs && node --check acres-research/beta.mjs && node --check acres-research/feedback.mjs && node --check acres-research/feedback-instructions.mjs && node --check app-starter/public/beta-feedback.js && node --check app-starter/public/feedback-admin.js && node --check acres-research/crm-enrichment.mjs && node --check acres-research/crm-filings.mjs && node --check scripts/crm-import-filings.mjs && node --check app-starter/public/crm-admin.js && node --check app-starter/share-view.mjs && node --check app-starter/public/send-option.js",
+    "test": "npm run test:node && npm run test:mcp && npm run test:planning && npm run test:worker",
+    "test:node": "node --test acres-research/*.test.mjs app-starter/tests/*.test.mjs",
+    "test:planning": "planning/.venv/bin/python -m unittest discover -s planning -p 'test_*.py'",
+    "knowledge:refresh": "node acres-research/knowledge-refresh.mjs",
+    "knowledge:query": "node acres-research/knowledge-query.mjs",
+    "dream": "node acres-research/dream.mjs",
+    "dream:report": "node scripts/dream-review.mjs report",
+    "dream:approve": "node scripts/dream-review.mjs approve",
+    "dream:reject": "node scripts/dream-review.mjs reject",
+    "ledger:sync": "node scripts/ledger-sync.mjs",
+    "check:mcp": "npm --prefix acres-mcp run check",
+    "test:mcp": "npm --prefix acres-mcp test",
+    "test:worker": "planning/.venv/bin/python -m unittest discover -s worker/tests"
+  },
+  "dependencies": {
+    "@meta-sam/parser": "0.1.0",
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@pascal-app/core": "^1.0.4",
+    "@pascal-app/mcp": "^1.0.4",
+    "ipaddr.js": "2.5.0",
+    "linkedom": "0.18.12"
+  },
+  "devDependencies": {
+    "axe-core": "^4.14.0"
+  },
+  "license": "MIT"
+}

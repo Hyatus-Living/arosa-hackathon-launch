@@ -1,0 +1,10 @@
+.gcloudignore
+.git
+.gitignore
+#!include:.gitignore
+.redesign/
+.impeccable/
+.claude/
+.playwright-cli/
+docs/
+acres-mcp/dist/

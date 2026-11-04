@@ -1,0 +1,23 @@
+{
+  "asOf": "2026-10-21",
+  "source": "Arosa planning assumption for a New York City mid-rise residential building, ordered by the UniFormat elements (substructure, shell, interiors, services, sitework) that RSMeans Square Foot Costs uses for its 4 to 7 storey apartment model; shares are rounded planning figures, not a published cost index or a contractor estimate",
+  "hard": [
+    {"key": "siteWork", "label": "Site work and demolition", "share": 0.04, "note": "Demolition of what stands, excavation support, utilities to the lot line and sidewalks"},
+    {"key": "foundations", "label": "Foundations and substructure", "share": 0.08, "note": "Footings or mat, cellar walls, slab on grade and waterproofing"},
+    {"key": "structure", "label": "Structure", "share": 0.18, "note": "Frame, floor and roof slabs, stairs"},
+    {"key": "facade", "label": "Facade and roofing", "share": 0.14, "note": "Exterior walls, windows, roofing and terraces"},
+    {"key": "interiors", "label": "Interiors and finishes", "share": 0.18, "note": "Partitions, doors, kitchens, baths, flooring and finishes"},
+    {"key": "verticalTransportation", "label": "Vertical transportation", "share": 0.03, "note": "Passenger elevator; a walk-up building has none and its share goes to the other lines", "elevatorOnly": true},
+    {"key": "mep", "label": "Mechanical, electrical and plumbing", "share": 0.20, "note": "Heating and cooling, plumbing, fire protection, electrical and low voltage"},
+    {"key": "generalConditions", "label": "General conditions and GC fee", "share": 0.10, "note": "Site staff, temporary works, insurance carried by the contractor and the contractor's fee"},
+    {"key": "hardContingency", "label": "Hard cost contingency", "share": 0.05, "note": "Allowance for construction changes"}
+  ],
+  "soft": [
+    {"key": "design", "label": "Architecture and engineering", "share": 0.35, "note": "Architect, structural, MEP and civil engineers, expediting and surveys"},
+    {"key": "permits", "label": "Permits and filing fees", "share": 0.08, "note": "Buildings, utility and other agency fees"},
+    {"key": "legal", "label": "Legal and closing", "share": 0.10, "note": "Development and financing legal work, title and loan closing"},
+    {"key": "insurance", "label": "Insurance", "share": 0.12, "note": "Builder's risk, general liability and owner policies during construction"},
+    {"key": "developerFee", "label": "Developer fee", "share": 0.20, "note": "The developer's fee for running the project"},
+    {"key": "softContingency", "label": "Soft cost contingency", "share": 0.15, "note": "Allowance for soft cost changes"}
+  ]
+}

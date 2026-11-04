@@ -1,0 +1,46 @@
+#!/bin/bash
+# Set up (or update) the GPU render host acres-render-gpu: run as root on that host from an export of the
+# repository, `sudo bash infra/acres-render-gpu-setup <export-dir>`. It installs the NVIDIA driver (the
+# prebuilt 580 server module for Ubuntu's GCP kernel, so no DKMS build), the architecture worker, its
+# sandboxed unit with the GPU drop-in, the job helper the research host drives over SSH, and the idle
+# power-off timer, then renders the worker's smoke scene on the GPU. docs/architecture-worker.md,
+# "GPU render host".
+set -euo pipefail
+SRC=$(cd "$1" && pwd -P)
+export DEBIAN_FRONTEND=noninteractive
+
+apt-get update -q
+apt-get install -yq --no-install-recommends linux-modules-nvidia-580-server-gcp nvidia-utils-580-server libnvidia-compute-580-server libnvidia-gl-580-server nvidia-modprobe
+# Blender's libraries, as in "Install" above.
+apt-get install -yq --no-install-recommends xz-utils curl unzip ca-certificates libx11-6 libxi6 libxxf86vm1 libxfixes3 libxrender1 libxkbcommon0 libsm6 libice6 libgl1 libegl1
+modprobe nvidia
+
+id openclaw >/dev/null 2>&1 || useradd --system --create-home --shell /usr/sbin/nologin openclaw
+install -d -o openclaw -g openclaw /opt/acres-architecture-worker
+install -d -m 755 /var/lib/acres-gpu /var/lib/acres-gpu/jobs
+runuser -u openclaw -- bash "$SRC/worker/install.sh" >&2
+
+install -m 644 "$SRC/infra/acres-architecture-worker@.service" /etc/systemd/system/acres-architecture-worker@.service
+install -d -m 755 /etc/systemd/system/acres-architecture-worker@.service.d
+printf '[Service]\nUser=openclaw\nGroup=openclaw\n' > /etc/systemd/system/acres-architecture-worker@.service.d/user.conf
+install -m 644 "$SRC/infra/acres-architecture-worker-gpu.conf" /etc/systemd/system/acres-architecture-worker@.service.d/gpu.conf
+install -m 644 "$SRC/infra/acres-gpu-devices.service" "$SRC/infra/acres-render-gpu-idle.service" "$SRC/infra/acres-render-gpu-idle.timer" /etc/systemd/system/
+install -m 755 "$SRC/infra/acres-gpu-job" "$SRC/infra/acres-render-gpu-idle" /usr/local/sbin/
+systemctl daemon-reload
+systemctl enable --now acres-gpu-devices.service acres-render-gpu-idle.timer
+
+# The smoke render once more, now through the job helper and the sandboxed unit, on the GPU.
+smoke=/opt/acres-architecture-worker/current/smoke-render
+tar -c -C "$smoke" job.json input | acres-gpu-job receive gpu-smoke
+acres-gpu-job run gpu-smoke
+out=$(mktemp -d)
+acres-gpu-job send gpu-smoke | tar -x -C "$out"
+grep "cycles device: OPTIX" "$out/output/blender.log"
+python3 - "$out/output/verification.json" <<'EOF'
+import json, sys
+v = json.load(open(sys.argv[1]))
+assert v["status"] == "succeeded" and v["kind"] == "render", v
+print(json.dumps({"gpuSmoke": v["status"], "timings": v.get("timings")}))
+EOF
+rm -rf "$out"
+nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader

@@ -1,0 +1,28 @@
+// Deployed twice: `wrangler deploy --env=""` targets the Arosa account (witharosa.ai routes);
+// `--env hyatus` deploys the same code to the Hyatus account for the hyatus.com routes.
+{
+  "name": "arosa-legacy-redirects",
+  "main": "arosa-legacy-redirects.mjs",
+  "account_id": "YOUR_CLOUDFLARE_ACCOUNT_ID",
+  "compatibility_date": "2026-10-12",
+  "workers_dev": false,
+  "routes": [
+    {"pattern":"research.witharosa.ai/*","zone_name":"witharosa.ai"},
+    {"pattern":"www.witharosa.ai/*","zone_name":"witharosa.ai"},
+    {"pattern":"acres.witharosa.ai/*","zone_name":"witharosa.ai"}
+  ],
+  "observability": {"enabled":false},
+  "env": {
+    "hyatus": {
+      "name": "arosa-legacy-redirects",
+      "account_id": "YOUR_CLOUDFLARE_ACCOUNT_ID",
+      "workers_dev": false,
+      "routes": [
+        {"pattern":"acres.hyatus.com/*","zone_name":"hyatus.com"},
+        {"pattern":"build.hyatus.com/*","zone_name":"hyatus.com"},
+        {"pattern":"mcp.acres.hyatus.com/*","zone_name":"hyatus.com"}
+      ],
+      "observability": {"enabled":false}
+    }
+  }
+}

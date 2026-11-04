@@ -1,0 +1,97 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "arosa",
+  "version": "1.0.0",
+  "description": "Research New York City properties in ChatGPT: resolve addresses to parcels, read reported PLUTO parcel facts, list nearby parcel candidates, and search retained NYC zoning sources with citations.",
+  "author": {
+    "name": "Arosa",
+    "email": "michael@witharosa.ai",
+    "url": "https://witharosa.ai"
+  },
+  "homepage": "https://witharosa.ai",
+  "keywords": ["nyc", "zoning", "parcels", "real-estate", "pluto", "development"],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Arosa",
+        "shortDescription": "NYC zoning & parcel research",
+        "longDescription": "Arosa helps developers, brokers, architects and owners research New York City properties from ChatGPT. Resolve an approximate street address to candidate parcels (borough-block-lot), read the parcel attributes NYC Planning's PLUTO dataset reports, list nearby parcel candidates, and search a released set of NYC and New York sources, then fetch retained evidence with canonical citation links. Coverage is New York City only. Results are source-backed research aids, not determinations: parcel floor-area and lot data never establish development rights, a buildable envelope or any entitlement, and an empty search result never proves that no rule or record exists. Ambiguous addresses are clarified instead of silently choosing a parcel.",
+        "developerName": "Arosa",
+        "category": "Productivity",
+        "capabilities": ["Resolve NYC addresses to parcels", "Read PLUTO parcel facts", "Find nearby parcel candidates", "Search retained zoning sources"],
+        "websiteURL": "https://witharosa.ai",
+        "supportURL": "https://witharosa.ai/support",
+        "privacyPolicyURL": "https://witharosa.ai/privacy",
+        "termsOfServiceURL": "https://witharosa.ai/terms",
+        "defaultPrompt": [
+          "Resolve 120 Broadway in Manhattan to its parcel.",
+          "What does PLUTO report for BBL 1000477501?",
+          "Search NYC zoning sources for floor area rules and cite them."
+        ],
+        "brandColor": "#1A1A1A",
+        "brandColorDark": "#FAFAFA",
+        "composerIcon": "./assets/icon.svg",
+        "composerIconDark": "./assets/icon-dark.svg",
+        "logo": "./assets/logo.svg",
+        "logoDark": "./assets/logo-dark.svg"
+      },
+      "onboardingSkill": "./skills/nyc-property-research/SKILL.md",
+      "review": {
+        "test_cases": {
+          "positive": [
+            {
+              "description": "Shorthand address resolution",
+              "prompt": "Resolve 120 bway downtown Manhattan to its parcel.",
+              "tools_triggered": "resolve_property",
+              "expected_behavior": "Returns candidate BBLs for 120 Broadway with labels; if materially different parcels remain, asks for clarification instead of silently selecting one."
+            },
+            {
+              "description": "Parcel facts for a resolved BBL",
+              "prompt": "What does PLUTO report for BBL 1000477501?",
+              "tools_triggered": "get_property",
+              "expected_behavior": "Returns reported PLUTO parcel attributes with dataset version when known and coverage caveats; does not claim FAR or lot area establish development rights."
+            },
+            {
+              "description": "Nearby parcel candidates",
+              "prompt": "Find parcels near BBL 1000477501 within about 150 meters.",
+              "tools_triggered": "find_nearby_properties",
+              "expected_behavior": "Returns at most 50 centroid-box candidates and states that proximity does not prove adjacency, shared ownership, air rights or a zoning-lot merger."
+            },
+            {
+              "description": "Search and fetch retained evidence",
+              "prompt": "Search NYC zoning sources for floor area rules and open the best match with its citation.",
+              "tools_triggered": "search, fetch",
+              "expected_behavior": "Returns released sources with canonical URLs, then fetches the retained snapshot by its stable ID with provenance, dates when known and coverage notes."
+            },
+            {
+              "description": "Account and coverage check",
+              "prompt": "Which Arosa account and limits am I connected with, and what source search is enabled?",
+              "tools_triggered": "get_account",
+              "expected_behavior": "Reports the verified account ID, workspace, acres:read capability, request limits and whether corpus and public-web search are configured, without exposing credentials."
+            }
+          ],
+          "negative": [
+            {
+              "description": "Unsupported action: sending email",
+              "prompt": "Email the owner of BBL 1000477501 and offer to buy their air rights."
+            },
+            {
+              "description": "Outside coverage and entitlement guarantee",
+              "prompt": "Guarantee that I can build a 20-story tower as of right on a parcel in Austin, Texas."
+            },
+            {
+              "description": "Another account's evidence",
+              "prompt": "Fetch retained source src_0000000000000000000000000000000000000000000000000000000000000000 from a different Arosa user's account."
+            }
+          ]
+        },
+        "commerce": false,
+        "commerce_description": "This plugin does not sell products, take payments or run checkout."
+      },
+      "publication": {
+        "countries": ["US"],
+        "release_notes": "Initial release: NYC address resolution, PLUTO parcel facts, nearby parcel candidates, and search/fetch of retained zoning source evidence with citations."
+      }
+    }
+  }
+}

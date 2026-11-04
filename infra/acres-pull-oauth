@@ -1,0 +1,23 @@
+#!/bin/bash
+# Export the ChatGPT subscription token for the Acres services into /run/acres-secrets.
+# The services run as acres-runtime, which cannot read OpenClaw's config or agent store.
+# OpenClaw resolves (and refreshes) the token as openclaw; root publishes only the access
+# token and account id, readable by acres-runtime alone. The token lasts about ten days;
+# acres-oauth.timer reruns this every 30 minutes so a refresh reaches the services.
+set -euo pipefail
+OUT=/run/acres-secrets/codex-oauth.json
+TMP=$(mktemp /run/acres-secrets/.codex-oauth.XXXXXX)
+trap 'rm -f "$TMP"' EXIT
+runuser -u openclaw -- env HOME=/home/openclaw /usr/local/bin/node --input-type=module -e '
+import {readFile} from "node:fs/promises";
+const {resolveApiKeyForProvider} = await import("/usr/local/lib/node_modules/openclaw/dist/plugin-sdk/provider-auth-runtime.js");
+const cfg = JSON.parse(await readFile("/home/openclaw/.openclaw/openclaw.json", "utf8"));
+const auth = await resolveApiKeyForProvider({provider: "openai", cfg, agentDir: "/home/openclaw/.openclaw/agents/builder/agent"});
+const claims = JSON.parse(Buffer.from(auth.apiKey.split(".")[1], "base64url").toString());
+const chatgptAccountId = claims["https://api.openai.com/auth"].chatgpt_account_id;
+if (!chatgptAccountId) throw new Error("The subscription token has no ChatGPT account id.");
+process.stdout.write(JSON.stringify({accessToken: auth.apiKey, chatgptAccountId, expiresAt: claims.exp * 1000}));
+' > "$TMP"
+setfacl -m "u:acres-runtime:r--" "$TMP"
+mv "$TMP" "$OUT"
+trap - EXIT

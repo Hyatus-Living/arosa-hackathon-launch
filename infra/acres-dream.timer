@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Acres research judge and memory consolidation every 4 hours
+
+[Timer]
+OnCalendar=*-*-* 00/4:15:00
+RandomizedDelaySec=5m
+Persistent=true
+Unit=acres-dream.service
+
+[Install]
+WantedBy=timers.target

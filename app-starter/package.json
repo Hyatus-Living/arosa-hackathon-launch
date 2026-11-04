@@ -1,0 +1,39 @@
+{
+  "name": "team-app",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check server.js",
+    "test": "node --test tests/*.test.mjs",
+    "test:smoke": "node tests/concept-view.smoke.mjs && node tests/architecture-view.smoke.mjs",
+    "build": "esbuild frontend/generated-ui.jsx frontend/concept-view.jsx frontend/architecture-view.jsx frontend/plan-editor.jsx --bundle --splitting --format=esm --outdir=public/genui --minify --loader:.woff2=file --loader:.woff=file --loader:.ttf=file --asset-names=assets/[name]-[hash] --alias:next/image=./frontend/shims/next-image.jsx --alias:next/link=./frontend/shims/next-link.jsx --alias:stream=./frontend/shims/node-stream.js --alias:util=./frontend/shims/node-util.js --inject:./frontend/shims/process.js --inject:./frontend/shims/react-global.js && esbuild node_modules/three-mesh-bvh/src/workers/generateMeshBVH.worker.js --bundle --format=esm --minify --outfile=public/genui/generateMeshBVH.worker.js && cp node_modules/pdfjs-dist/build/pdf.worker.min.mjs public/genui/pdf.worker.mjs"
+  },
+  "dependencies": {
+    "compression": "^1.8.2",
+    "express": "^5.1.0",
+    "jose": "6.2.12"
+  },
+  "devDependencies": {
+    "@copilotkit/core": "^1.78.0",
+    "@copilotkit/react-core": "^1.78.0",
+    "@pascal-app/core": "^1.0.4",
+    "@pascal-app/editor": "^1.0.4",
+    "@pascal-app/nodes": "^1.0.4",
+    "@pascal-app/viewer": "^1.0.4",
+    "@react-three/drei": "^10.7.9",
+    "@react-three/fiber": "^9.8.1",
+    "3d-tiles-renderer": "^0.5.3",
+    "esbuild": "^0.28.2",
+    "lucide-react": "^1.55.0",
+    "pdfjs-dist": "4.10.38",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "three": "^0.186.1",
+    "three-gpu-pathtracer": "0.0.24",
+    "three-mesh-bvh": "0.9.16",
+    "zod": "^3.25.76",
+    "zustand": "^5.0.15"
+  },
+  "license": "MIT"
+}

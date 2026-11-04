@@ -1,0 +1,12 @@
+.git
+**/node_modules
+.env
+.env.*
+**/.env
+**/.env.*
+**/*.pem
+**/*.key
+**/*private*.json
+**/*token*
+coverage
+.deploy-research*

@@ -1,0 +1,17 @@
+[Unit]
+Description=Arosa Acres application (blue/green switch to the configured image)
+After=docker.service network-online.target acres-secrets.service arosa-web-front.service
+Requires=docker.service
+Wants=arosa-web-front.service
+
+[Service]
+# Starting or restarting this unit runs a zero-downtime switch to the image in
+# /etc/arosa-acres-deploy.env (also after an app.env change). The containers are
+# arosa-acres@blue and arosa-acres@green; stopping this unit leaves the live one running.
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/arosa-web-switch
+TimeoutStartSec=15min
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,30 @@
+#!/bin/sh
+# One architecture job on the GPU render host, driven over SSH by worker/remote_worker.py on the
+# research host (run with sudo):
+#   acres-gpu-job receive <jobId>   job.json and input/ as a tar on stdin
+#   acres-gpu-job run <jobId>       the job in acres-architecture-worker@.service, Cycles on the GPU
+#   acres-gpu-job send <jobId>      output/ as a tar on stdout, then the job directory goes
+#   acres-gpu-job cancel <jobId>    stops the job's unit and removes its directory
+set -eu
+[ "$#" -eq 2 ] || { echo "usage: $0 receive|run|send|cancel <jobId>" >&2; exit 2; }
+case "$2" in ''|*[!A-Za-z0-9_-]*) echo "bad job id: $2" >&2; exit 2 ;; esac
+dir=/var/lib/acres-gpu/jobs/$2
+touch /var/lib/acres-gpu/last-job
+case "$1" in
+  receive)
+    rm -rf "$dir"
+    mkdir -p "$dir/output"
+    tar -x -C "$dir" -f -
+    chown -R openclaw:openclaw "$dir"
+    ;;
+  run) exec /opt/acres-architecture-worker/current/bin/architecture-worker-unit --job "$dir" ;;
+  send)
+    tar -c -C "$dir" -f - output
+    rm -rf "$dir"
+    ;;
+  cancel)
+    systemctl stop "acres-architecture-worker@$(systemd-escape --path "$dir").service" || true
+    rm -rf "$dir"
+    ;;
+  *) echo "unknown action: $1" >&2; exit 2 ;;
+esac

@@ -1,0 +1,22 @@
+/* What's new (/whats-new): shipped changes in the app's monochrome tokens. The page spans the
+   column beside the rail; each line keeps a reading measure. */
+.whats-new-page {
+  grid-area: page;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  background: var(--bg);
+}
+.whats-new-page[hidden] { display: none; }
+
+.whats-new { max-width: 1680px; margin: 0 auto; padding: 32px 24px 64px; }
+:where(.whats-new) p { max-width: 70ch; }
+.whats-new-title { margin: 0 0 8px; font-size: 24px; color: var(--ink); }
+.whats-new-note { margin: 0 0 24px; color: var(--ink-muted); }
+.whats-new-list { margin: 0; padding: 0; list-style: none; }
+.whats-new-entry { padding: 14px 0; border-top: 1px solid var(--line); }
+.whats-new-date { display: block; margin-bottom: 4px; font-size: 13px; color: var(--ink-faint); }
+.whats-new-entry-title { margin: 0; color: var(--ink); }

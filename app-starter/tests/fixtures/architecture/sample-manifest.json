@@ -1,0 +1,216 @@
+{
+ "objects": [
+  {
+   "glbNodeName": "wall-south",
+   "ifcGlobalId": "jgDA5V63hqCTPc3CZCNk3_",
+   "kind": "wall",
+   "levelId": "level-1",
+   "name": "Wall south"
+  },
+  {
+   "glbNodeName": "window-living-window",
+   "ifcGlobalId": "Iy7Sq6sALk_DYjYaBJVqI7",
+   "kind": "window",
+   "levelId": "level-1",
+   "name": "Living window"
+  },
+  {
+   "glbNodeName": "door-entry",
+   "ifcGlobalId": "I$bvc6DJ3XQtsDB5_nUao0",
+   "kind": "door",
+   "levelId": "level-1",
+   "name": "Entry"
+  },
+  {
+   "glbNodeName": "wall-east",
+   "ifcGlobalId": "hRch21vQlmk1M6x8r92UmD",
+   "kind": "wall",
+   "levelId": "level-1",
+   "name": "Wall east"
+  },
+  {
+   "glbNodeName": "window-kitchen-window",
+   "ifcGlobalId": "y7mv5b0XejrDrh9RpjJdNv",
+   "kind": "window",
+   "levelId": "level-1",
+   "name": "Kitchen window"
+  },
+  {
+   "glbNodeName": "wall-north",
+   "ifcGlobalId": "SsUvKSwX30PfnQcXbuROLe",
+   "kind": "wall",
+   "levelId": "level-1",
+   "name": "Wall north"
+  },
+  {
+   "glbNodeName": "window-bedroom-b-window",
+   "ifcGlobalId": "$LL_q8PFirzaRfLBvGkQF5",
+   "kind": "window",
+   "levelId": "level-1",
+   "name": "Bedroom b window"
+  },
+  {
+   "glbNodeName": "window-bedroom-a-window",
+   "ifcGlobalId": "SRiMzG1HXv8PVkjTbKdqOu",
+   "kind": "window",
+   "levelId": "level-1",
+   "name": "Bedroom a window"
+  },
+  {
+   "glbNodeName": "wall-west",
+   "ifcGlobalId": "sdMWBntS3ndUA1zvv7I5zG",
+   "kind": "wall",
+   "levelId": "level-1",
+   "name": "Wall west"
+  },
+  {
+   "glbNodeName": "wall-rooms",
+   "ifcGlobalId": "T85fIt0OdnG4Tz0LEYGUud",
+   "kind": "wall",
+   "levelId": "level-1",
+   "name": "Wall rooms"
+  },
+  {
+   "glbNodeName": "door-bedroom-a-door",
+   "ifcGlobalId": "V5EE6v6_KGCpLqWdmAgKtJ",
+   "kind": "door",
+   "levelId": "level-1",
+   "name": "Bedroom a door"
+  },
+  {
+   "glbNodeName": "door-bedroom-b-door",
+   "ifcGlobalId": "MIbGaV8NWYl1VgehMURJ1I",
+   "kind": "door",
+   "levelId": "level-1",
+   "name": "Bedroom b door"
+  },
+  {
+   "glbNodeName": "door-bathroom-door",
+   "ifcGlobalId": "PSTLsuAxNVWyuN$o_x_2kf",
+   "kind": "door",
+   "levelId": "level-1",
+   "name": "Bathroom door"
+  },
+  {
+   "glbNodeName": "wall-bedrooms",
+   "ifcGlobalId": "QGBZE1VufZkgZYT6ByO8AJ",
+   "kind": "wall",
+   "levelId": "level-1",
+   "name": "Wall bedrooms"
+  },
+  {
+   "glbNodeName": "wall-bathroom",
+   "ifcGlobalId": "q6NyP5umoYOIHBSSp0UcYv",
+   "kind": "wall",
+   "levelId": "level-1",
+   "name": "Wall bathroom"
+  },
+  {
+   "glbNodeName": "wall-kitchen",
+   "ifcGlobalId": "nnOQG5m$XQaF4EK1cNGyxy",
+   "kind": "wall",
+   "levelId": "level-1",
+   "name": "Wall kitchen"
+  },
+  {
+   "glbNodeName": "door-kitchen-door",
+   "ifcGlobalId": "m1FR2Jxh2NTlIsIeDFVZtq",
+   "kind": "door",
+   "levelId": "level-1",
+   "name": "Kitchen door"
+  },
+  {
+   "glbNodeName": "floor-living",
+   "ifcGlobalId": "PopquCcBEqYHqlh6LzWYeO",
+   "kind": "floor",
+   "levelId": "level-1",
+   "roomId": "living",
+   "name": "Living / dining floor"
+  },
+  {
+   "glbNodeName": "floor-kitchen",
+   "ifcGlobalId": "PzvlyYIFWMZo7sC5vmgXnC",
+   "kind": "floor",
+   "levelId": "level-1",
+   "roomId": "kitchen",
+   "name": "Kitchen floor"
+  },
+  {
+   "glbNodeName": "floor-bedroom-a",
+   "ifcGlobalId": "ENBeBSqcbETAlVDnU55z5J",
+   "kind": "floor",
+   "levelId": "level-1",
+   "roomId": "bedroom-a",
+   "name": "Bedroom A floor"
+  },
+  {
+   "glbNodeName": "floor-bedroom-b",
+   "ifcGlobalId": "l6_UCndb7U6hOLyr2YcqUQ",
+   "kind": "floor",
+   "levelId": "level-1",
+   "roomId": "bedroom-b",
+   "name": "Bedroom B floor"
+  },
+  {
+   "glbNodeName": "floor-bathroom",
+   "ifcGlobalId": "uJKNJY9zbNc43TK$RILw05",
+   "kind": "floor",
+   "levelId": "level-1",
+   "roomId": "bathroom",
+   "name": "Bathroom floor"
+  }
+ ],
+ "levels": [
+  {
+   "id": "level-1",
+   "name": "Ground floor",
+   "elevation": 0,
+   "height": 2.8
+  }
+ ],
+ "collision": {
+  "walls": [
+   {
+    "glbNodeName": "wall-south"
+   },
+   {
+    "glbNodeName": "wall-east"
+   },
+   {
+    "glbNodeName": "wall-north"
+   },
+   {
+    "glbNodeName": "wall-west"
+   },
+   {
+    "glbNodeName": "wall-rooms"
+   },
+   {
+    "glbNodeName": "wall-bedrooms"
+   },
+   {
+    "glbNodeName": "wall-bathroom"
+   },
+   {
+    "glbNodeName": "wall-kitchen"
+   }
+  ],
+  "floors": [
+   {
+    "glbNodeName": "floor-living"
+   },
+   {
+    "glbNodeName": "floor-kitchen"
+   },
+   {
+    "glbNodeName": "floor-bedroom-a"
+   },
+   {
+    "glbNodeName": "floor-bedroom-b"
+   },
+   {
+    "glbNodeName": "floor-bathroom"
+   }
+  ]
+ }
+}

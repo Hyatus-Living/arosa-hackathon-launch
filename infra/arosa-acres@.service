@@ -1,0 +1,16 @@
+[Unit]
+Description=Arosa Acres application (%i)
+After=docker.service network-online.target acres-secrets.service
+Requires=docker.service
+# Ordered after the secrets oneshot (enabled on its own) without pulling it in: a secrets refresh
+# must not restart the app, and starting a color must not pull secrets again. The app reads
+# app.env when its container starts.
+
+[Service]
+# blue or green; arosa-web-switch writes the image and host port (18811 or 18812) and starts it.
+EnvironmentFile=/etc/arosa-acres/%i.env
+ExecStartPre=-/usr/bin/docker rm -f arosa-acres-%i
+ExecStart=/usr/bin/docker run --rm --name arosa-acres-%i --env-file=/run/acres-secrets/app.env -p 127.0.0.1:${AROSA_ACRES_PORT}:8080 ${AROSA_ACRES_IMAGE}
+ExecStop=/usr/bin/docker stop arosa-acres-%i
+Restart=on-failure
+RestartSec=10

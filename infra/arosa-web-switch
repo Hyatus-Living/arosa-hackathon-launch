@@ -1,0 +1,76 @@
+#!/bin/bash
+# Blue/green switch of the Arosa web app to the image in /etc/arosa-acres-deploy.env, with no
+# downtime. The tunnel's origin is the front (arosa-web-front, 127.0.0.1:18810), which forwards to
+# the live color's port named in /etc/arosa-acres/web-target. This starts the image as the idle
+# color, waits for its health check, points the front at it, lets the old color finish the
+# requests it already has, then stops the old color. A new color that fails its health check is
+# stopped and the old color keeps serving. Run by arosa-acres.service (systemctl restart
+# arosa-acres) and by app-starter/deploy.sh.
+set -euo pipefail
+exec 9>/run/arosa-web-switch.lock
+flock 9
+STATE=/etc/arosa-acres
+TARGET=$STATE/web-target
+ADMIN=/run/arosa-web-front/admin.sock
+DEPLOY_ENV=/etc/arosa-acres-deploy.env
+IMAGE=$(sed -n 's/^AROSA_ACRES_IMAGE=//p' "$DEPLOY_ENV")
+[[ -n "$IMAGE" ]]
+port() { if [[ "$1" == blue ]]; then echo 18811; else echo 18812; fi; }
+case "$(cat "$TARGET" 2>/dev/null || true)" in
+  18811) LIVE=blue NEXT=green ;;
+  18812) LIVE=green NEXT=blue ;;
+  *) LIVE='' NEXT=blue ;;
+esac
+NEXT_PORT=$(port "$NEXT")
+front() { curl -fsS --max-time 5 --unix-socket "$ADMIN" http://front/; }
+front_target() { front | python3 -c 'import json,sys;print(json.load(sys.stdin)["target"])'; }
+# Plain requests in flight to a color; open event streams are not counted, their clients reconnect.
+front_requests() { front | python3 -c 'import json,sys;print(json.load(sys.stdin)["inflight"].get(sys.argv[1],{}).get("requests",0))' "$1"; }
+point_front() {
+  printf '%s\n' "$1" > "$TARGET.next"
+  mv -f "$TARGET.next" "$TARGET"
+  systemctl kill --kill-whom=main --signal=SIGHUP arosa-web-front.service
+  for _ in $(seq 1 20); do
+    [[ "$(front_target || true)" == "$1" ]] && return 0
+    sleep 0.5
+  done
+  return 1
+}
+# Leave everything as it was: the old color serving, the deploy file naming its image.
+# The app exits 1 on SIGTERM, so a planned stop would leave the old color marked failed.
+stop_color() {
+  systemctl stop "arosa-acres@$1.service"
+  systemctl reset-failed "arosa-acres@$1.service" 2>/dev/null || true
+}
+abandon() {
+  echo "$1" >&2
+  if [[ -n "$LIVE" ]]; then
+    point_front "$(port "$LIVE")" || true
+    grep '^AROSA_ACRES_IMAGE=' "$STATE/$LIVE.env" > "$DEPLOY_ENV"
+  fi
+  systemctl stop "arosa-acres@$NEXT.service"
+  exit 1
+}
+install -d -m 755 "$STATE"
+printf 'AROSA_ACRES_IMAGE=%s\nAROSA_ACRES_PORT=%s\n' "$IMAGE" "$NEXT_PORT" > "$STATE/$NEXT.env"
+echo "Starting $IMAGE as $NEXT on 127.0.0.1:$NEXT_PORT."
+systemctl restart "arosa-acres@$NEXT.service"
+HEALTHY=''
+for _ in $(seq 1 120); do
+  systemctl is-active --quiet "arosa-acres@$NEXT.service" || break
+  if curl -fsS --max-time 5 "http://127.0.0.1:$NEXT_PORT/healthz" >/dev/null 2>&1; then HEALTHY=1; break; fi
+  sleep 1
+done
+[[ -n "$HEALTHY" ]] || abandon "The $NEXT container did not pass its health check; ${LIVE:-nothing} keeps serving. See: journalctl -u arosa-acres@$NEXT"
+point_front "$NEXT_PORT" || abandon "The front did not switch to $NEXT."
+curl -fsS --max-time 10 http://127.0.0.1:18810/healthz >/dev/null || abandon "The site did not answer through the front after the switch."
+echo "Serving $NEXT."
+if [[ -n "$LIVE" ]]; then
+  # The longest plain request the app proxies runs about 5.5 minutes.
+  for _ in $(seq 1 340); do
+    [[ "$(front_requests "$(port "$LIVE")" || echo 0)" == 0 ]] && break
+    sleep 1
+  done
+  stop_color "$LIVE"
+  echo "Stopped $LIVE."
+fi

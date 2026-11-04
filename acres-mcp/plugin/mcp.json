@@ -1,0 +1,21 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "arosa": {
+      "type": "streamable-http",
+      "url": "https://mcp.witharosa.ai/mcp",
+      "extensions": {
+        "com.openai": {
+          "auth": {
+            "type": "oauth",
+            "client": {
+              "mode": "dcr"
+            },
+            "baseScopes": ["acres:read"],
+            "resource": "https://mcp.witharosa.ai/mcp"
+          }
+        }
+      }
+    }
+  }
+}

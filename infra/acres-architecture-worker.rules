@@ -1,0 +1,11 @@
+// Lets the research service's user start and stop architecture worker units, and nothing else
+// (bin/architecture-worker-unit). acres-deploy-research installs it as
+// /etc/polkit-1/rules.d/50-acres-architecture-worker.rules with RESEARCH_USER replaced by the user
+// acres-research runs as, the same user the units run as.
+polkit.addRule(function (action, subject) {
+  if (action.id == "org.freedesktop.systemd1.manage-units" && subject.user == "RESEARCH_USER" &&
+      action.lookup("unit").indexOf("acres-architecture-worker@") == 0 &&
+      ["start", "stop"].indexOf(action.lookup("verb")) >= 0) {
+    return polkit.Result.YES;
+  }
+});

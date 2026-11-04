@@ -1,0 +1,534 @@
+/* App shell: the main menu rail on every page, a top bar per page, and the chat, a right-hand
+   drawer beside every page. Layout lives here only;
+   components keep their own stylesheets. Monochrome tokens from styles.css. */
+:root {
+  --rail-w: 236px;
+  --rail-w-collapsed: 64px;
+  --topbar-h: 56px;
+  --dock-w: clamp(360px, 30vw, 440px);
+}
+
+/* ---------- Frame ---------- */
+body {
+  display: grid;
+  grid-template-columns: var(--rail-w) minmax(0, 1fr);
+  transition: grid-template-columns var(--dur-3) var(--ease);
+}
+body.sidebar-collapsed { grid-template-columns: var(--rail-w-collapsed) minmax(0, 1fr); }
+#workspace-loading { grid-column: 1 / -1; }
+/* The shell is exactly the viewport and clips whatever reaches past it, so the document never
+   scrolls: each page section below is the one scroll container. */
+.shell {
+  grid-column: 2;
+  display: grid;
+  height: 100dvh;
+  min-width: 0;
+  overflow: clip;
+  grid-template-columns: minmax(0, 1fr) 0;
+  grid-template-rows: var(--topbar-h) minmax(0, 1fr);
+  grid-template-areas: "top dock" "page dock";
+}
+body.chat-dock-open .shell { grid-template-columns: minmax(0, 1fr) var(--dock-w); }
+
+.topbar { grid-area: top; }
+.core-page,
+#home-listings {
+  grid-area: page;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+}
+.core-page[hidden], #home-listings[hidden] { display: none; }
+
+/* ---------- Main menu rail ---------- */
+.sidebar {
+  grid-column: 1;
+  grid-row: 1;
+  width: auto;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 10px 10px 12px;
+  background: var(--bg);
+  border-right: 1px solid var(--line);
+  overflow: hidden auto;
+  scrollbar-width: none;
+  transition: none;
+}
+.rail-head { display: flex; align-items: center; gap: 4px; min-height: 40px; margin: 0 0 14px; }
+.sidebar .brand { flex: 1; min-width: 44px; min-height: 44px; display: flex; align-items: center; gap: 10px; margin: 0; padding: 4px 6px; border-radius: var(--r-sm); font: 600 17px/1 var(--sans); letter-spacing: -0.02em; text-decoration: none; color: var(--ink); }
+.sidebar .brand-mark { width: 26px; height: 26px; }
+.rail-collapse, .sidebar-close { flex: none; min-width: 44px; min-height: 44px; color: var(--ink-faint); }
+.rail-collapse svg, .sidebar-close svg { width: 18px; height: 18px; }
+.sidebar-close { display: none; }
+
+.app-nav { display: grid; gap: 2px; }
+.app-nav a,
+.sidebar .nav-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 10px;
+  border-radius: var(--r-sm);
+  color: var(--ink-muted);
+  font: 500 13.5px/1.2 var(--sans);
+  text-align: left;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background var(--dur-1) ease-out, color var(--dur-1) ease-out;
+}
+.app-nav a svg, .sidebar .nav-item svg { flex: none; width: 18px; height: 18px; }
+.app-nav a:hover, .sidebar .nav-item:hover { background: var(--surface-2); color: var(--ink); }
+.app-nav a[aria-current="page"], .sidebar .nav-item[aria-current="page"] { background: var(--surface-2); color: var(--ink); }
+.app-nav a[aria-current="page"] svg { stroke-width: 2; }
+.sidebar .nav-item .count { margin-left: auto; min-width: 20px; padding: 1px 6px; border-radius: var(--r-pill); background: var(--surface-2); color: var(--ink-faint); font: 500 11px/16px var(--sans); text-align: center; font-variant-numeric: tabular-nums; }
+.sidebar .nav-item[hidden] { display: none; }
+
+/* The site section appears only on a site's pages. */
+.rail-site { display: none; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+body.view-site .rail-site { display: block; }
+body.view-modeling .rail-site { display: none; }
+.rail-site .site-nav-label { margin: 0 10px 4px; color: var(--ink-faint); font-size: 11px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
+.rail-site .site-nav-title { display: block; margin: 0 10px 10px; font-size: 13px; font-weight: 500; line-height: 1.4; overflow-wrap: anywhere; }
+.sidebar .workspace-tools { display: grid; gap: 2px; margin: 0; padding: 0; border: 0; }
+
+/* Pending jobs: research still running anywhere, and ones that just ended, each a link to its site. */
+.rail-jobs { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+.rail-jobs[hidden] { display: none; }
+.rail-jobs .site-nav-label { margin: 0 10px 4px; color: var(--ink-faint); font-size: 11px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
+.rail-jobs-list { display: grid; gap: 2px; }
+.sidebar .nav-item.rail-job { min-height: 44px; padding-block: 6px; }
+.rail-job-mark { flex: none; width: 10px; height: 10px; margin: 0 4px; border-radius: 50%; border: 2px solid var(--ink-faint); }
+.rail-job.is-running .rail-job-mark { border-color: var(--ink-faint) var(--ink-faint) var(--ink) var(--ink); animation: rail-job-spin 1s linear infinite; }
+.rail-job.is-done .rail-job-mark { border-color: var(--ink); background: var(--ink); }
+.rail-job.is-failed .rail-job-mark { border-color: var(--warning); }
+@keyframes rail-job-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .rail-job.is-running .rail-job-mark { animation: none; } }
+.rail-job-text { display: grid; min-width: 0; gap: 2px; }
+.rail-job-text strong, .rail-job-text small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rail-job-text strong { color: var(--ink); font-weight: 500; font-size: 13px; }
+.rail-job-text small { color: var(--ink-faint); font-size: 11.5px; font-weight: 400; }
+body.sidebar-collapsed .rail-jobs { margin-top: 12px; padding-top: 12px; }
+
+/* Recent conversations, on every page but the chat page, which lists them itself. A site's row opens
+   the site, any other the drawer. On a short rail the list gives up height, down to none, so the
+   menu's bottom group stays in view while All conversations still reaches every row; the list keeps
+   whole rows and fades its lower edge while it scrolls. */
+.rail-recent { display: flex; flex-direction: column; flex: 0 1 auto; min-height: calc(37px + 44px); margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+.rail-recent[hidden], body.sidebar-collapsed .rail-recent { display: none; }
+.rail-recent .site-nav-label { flex: none; margin: 0 10px 4px; color: var(--ink-faint); font-size: 11px; font-weight: 500; line-height: 16px; letter-spacing: 0.04em; text-transform: uppercase; }
+.rail-recent-list { display: grid; align-content: start; gap: 2px; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+.rail-recent-list.has-more { mask-image: linear-gradient(to bottom, #000 calc(100% - 24px), transparent); }
+.sidebar .nav-item.rail-recent-item { min-height: 44px; padding-block: 6px; }
+.sidebar .nav-item.rail-recent-item svg { width: 16px; height: 16px; color: var(--ink-faint); }
+.sidebar .nav-item.rail-recent-item[aria-current="true"] { background: var(--surface-2); color: var(--ink); }
+/* The list scrolls, so the focus ring sits inside the row where the list cannot clip it. */
+.sidebar .nav-item.rail-recent-item:focus-visible { outline-offset: -2px; }
+.rail-recent-text { display: grid; min-width: 0; gap: 2px; }
+.rail-recent-text strong, .rail-recent-text small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rail-recent-text strong { color: var(--ink); font-weight: 500; font-size: 13px; }
+.rail-recent-text small { color: var(--ink-faint); font-size: 11.5px; font-weight: 400; }
+.rail-spacer { flex: 1; min-height: 16px; }
+.rail-secondary { display: grid; gap: 2px; padding-bottom: 10px; }
+.sidebar .theme-toggle svg[hidden] { display: none; }
+
+.sidebar-bottom { margin: 0; padding: 10px 0 0; border-top: 1px solid var(--line); }
+.sidebar .workspace-card { display: flex; align-items: center; gap: 10px; padding: 4px 4px 0 6px; }
+.sidebar .workspace-logo { flex: none; width: 30px; height: 30px; border-radius: 50%; background: var(--surface-3); color: var(--ink); font: 600 12px var(--sans); }
+.sidebar .account-text { flex: 1; min-width: 0; }
+.sidebar .workspace-card strong, .sidebar .workspace-card small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sidebar .workspace-card strong { font-size: 12.5px; font-weight: 550; }
+.sidebar .workspace-card small { font-size: 11.5px; color: var(--ink-faint); }
+.sidebar #sign-out { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--r-sm); color: var(--ink-faint); }
+.sidebar #sign-out:hover { background: var(--surface-2); color: var(--ink); }
+.sidebar #sign-out svg { width: 17px; height: 17px; }
+.sidebar #sign-out.is-pending { width: auto; padding: 0 8px; font-size: 12px; white-space: nowrap; }
+
+/* Collapsed rail: icons only, names stay for assistive technology. */
+body.sidebar-collapsed .sidebar { width: auto; padding: 10px 10px 12px; border-right: 1px solid var(--line); }
+body.sidebar-collapsed .sidebar > * { visibility: visible; }
+body.sidebar-collapsed .rail-head { flex-direction: column; gap: 8px; }
+body.sidebar-collapsed .sidebar .brand { flex: none; justify-content: center; padding: 4px; }
+body.sidebar-collapsed .rail-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+body.sidebar-collapsed .app-nav a,
+body.sidebar-collapsed .sidebar .nav-item { justify-content: center; padding: 0; }
+body.sidebar-collapsed .sidebar .nav-item .count { display: none; }
+body.sidebar-collapsed .rail-site { margin-top: 12px; padding-top: 12px; }
+body.sidebar-collapsed .sidebar .workspace-card { flex-direction: column; padding: 4px 0 0; }
+
+/* ---------- Top bar ---------- */
+.topbar {
+  height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px 0 24px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+}
+.topbar .mobile-menu { display: none; }
+.topbar #conversation-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.topbar .top-actions { flex: none; display: flex; align-items: center; gap: 8px; margin: 0; }
+.topbar .top-actions > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--ink);
+  font: 500 13px var(--sans);
+  white-space: nowrap;
+}
+.topbar .top-actions > button:hover { background: var(--surface-2); }
+.topbar .top-actions > button[hidden] { display: none; }
+.topbar .top-actions svg { width: 16px; height: 16px; }
+/* Property & sources belongs where a property is in view: a site, and the chat. */
+/* Property context belongs to a site conversation, not to the listings chat or the sites list. */
+body.view-sites .context-toggle,
+body.listings-mode .context-toggle { display: none; }
+
+/* ---------- Chat drawer ---------- */
+.chat-panel {
+  grid-area: dock;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  border-left: 1px solid var(--line);
+  background: var(--surface);
+}
+body.chat-docked:not(.chat-dock-open) .chat-panel { display: none; }
+.chat-panel #main {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+}
+.chat-panel .composer-dock { flex: none; }
+
+.chat-panel-head {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 2px;
+  min-height: 60px;
+  padding: 0 6px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+/* The title over one line: the site the conversation belongs to, then whether it is saved. */
+.chat-panel-title { flex: 1; min-width: 0; display: grid; gap: 2px; padding: 0 6px; }
+.chat-panel-title > strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13.5px; font-weight: 550; }
+.chat-panel-meta { display: flex; align-items: baseline; gap: 6px; min-width: 0; color: var(--ink-faint); font: 400 11.5px/1.35 var(--sans); }
+.chat-attached { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat-panel-meta .saved-label { flex: none; white-space: nowrap; }
+.chat-panel-meta .saved-label::before { content: "·"; margin-right: 6px; }
+.chat-panel-meta .saved-label[hidden] { display: none; }
+.chat-panel-actions { flex: none; display: flex; align-items: center; gap: 0; }
+#chat-panel .chat-head-button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--ink-muted);
+}
+#chat-panel .chat-head-button:hover:not(:disabled) { background: var(--surface-2); color: var(--ink); }
+#chat-panel .chat-head-button:disabled { opacity: 0.4; }
+#chat-panel .chat-head-button[hidden] { display: none; }
+#chat-panel .chat-head-button[aria-pressed="true"] { background: var(--surface-2); color: var(--ink); }
+#chat-panel .chat-head-button svg { width: 18px; height: 18px; color: currentColor; }
+/* A running request: a breathing dot and one word, in place of the site and save line. */
+.chat-run-status { display: inline-flex; align-items: center; gap: 6px; width: fit-content; color: var(--ink-muted); font: 500 11.5px/1.35 var(--sans); }
+.chat-run-status[hidden] { display: none; }
+.chat-run-status i { width: 6px; height: 6px; border-radius: 50%; background: var(--success); animation: research-breathe 1.5s ease-in-out infinite; }
+.chat-panel-title:has(.chat-run-status:not([hidden])) .chat-panel-meta { display: none; }
+/* Expand widens the drawer up to what leaves the page a 480 px reading column beside the rail.
+   Below 1200 px that is barely wider than the drawer already is, so Expand is not offered. */
+@media (min-width: 1200px) {
+  body.chat-dock-wide { --dock-w: clamp(440px, calc(100vw - var(--rail-w) - 480px), 1040px); }
+  body.chat-dock-wide.sidebar-collapsed { --dock-w: clamp(440px, calc(100vw - var(--rail-w-collapsed) - 480px), 1040px); }
+}
+@media (max-width: 1199px) {
+  #chat-panel .chat-expand { display: none; }
+}
+.chat-back-label { display: none; }
+@media (max-width: 850px) {
+  #chat-panel .core-chat-close { width: auto; padding: 0 10px; }
+  #chat-panel .core-chat-close svg { display: none; }
+  #chat-panel .chat-back-label { display: inline; }
+}
+/* Property & sources heads the thread once it has a property or a cited source. A site's pages open
+   the panel from the rail; the sites list and the listings chat have none. */
+.chat-sources { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin: 0 0 18px; padding: 0 14px; border: 1px solid var(--line); border-radius: var(--r-pill); background: var(--surface); color: var(--ink-muted); font: 500 12.5px var(--sans); cursor: pointer; }
+.chat-sources:hover { background: var(--surface-2); color: var(--ink); }
+.chat-sources svg { width: 16px; height: 16px; }
+.chat-sources[hidden],
+body.view-site .chat-sources,
+body.view-sites .chat-sources,
+body.listings-mode .chat-sources { display: none; }
+
+.chat-panel .conversation { max-width: calc(var(--content-width) + 48px); padding: 18px 24px 24px; }
+body.chat-docked .chat-panel .conversation { padding: 14px 18px 20px; }
+body.chat-docked .composer-dock { max-width: none; padding: 10px 14px max(12px, env(safe-area-inset-bottom)); background: var(--surface); }
+body.chat-docked .composer-note { display: none; }
+body.chat-docked .core-chat-empty { margin: 8px 2px 0; font-size: 13.5px; line-height: 1.55; color: var(--ink-muted); }
+body.chat-docked :is(.listings-suggestions, .site-suggestions) { margin: 14px 2px 0; }
+body.chat-docked .listings-suggestions button { background: var(--bg); }
+
+/* Home without listings: the address entry and recent sites, with the chat drawer beside them. */
+.shell > .welcome { grid-area: page; max-width: none; min-height: 0; margin: 0; padding: clamp(40px, 12vh, 120px) max(24px, calc((100% - 720px) / 2)) 40px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; text-align: left; }
+.shell > .welcome[hidden] { display: none; }
+.welcome-mark { margin: 0 0 22px; }
+.welcome h1 { margin: 0 0 10px; font-size: clamp(28px, 3.2vw, 38px); font-weight: 600; letter-spacing: -0.03em; line-height: 1.1; }
+.welcome .intro { max-width: 56ch; margin: 0 0 28px; color: var(--ink-muted); font-size: 15px; line-height: 1.6; }
+.welcome-links { justify-content: flex-start; }
+.welcome > .session-notice { margin: 0 0 24px; }
+
+/* ---------- Desktop: no top bar; its controls live in the rail, the chat header and the ask bar ---------- */
+@media (min-width: 851px) {
+  :root { --topbar-h: 0px; }
+  .topbar { display: none; }
+}
+
+/* ---------- Home: the map and top deals fill the page ---------- */
+@media (min-width: 851px) {
+  body.listings-mode #home-listings { overflow: hidden; }
+  /* A column, not grid rows: the body takes the remaining height whichever siblings (the receipt,
+     the recent sites) are hidden, so the map and legend sit at their final size from first paint. */
+  body.listings-mode .listings { display: flex; flex-direction: column; height: 100%; padding: 18px 20px 16px 24px; gap: 12px; }
+  body.listings-mode .listings-body { flex: 1; min-height: 0; grid-template-rows: auto minmax(0, 1fr); gap: 10px; }
+  /* The map keeps at least 440px, so its tier legend stays on one line; the cards give up width first. */
+  body.listings-mode .listings-split { height: auto; min-height: 0; grid-template-columns: minmax(300px, 420px) minmax(440px, 1fr); gap: 14px; }
+  body.listings-mode .listings-results { padding-right: 6px; }
+  /* An open listing takes the page: the map leaves and the inspector reads as one wide column. */
+  body.listings-mode .listings.is-inspecting .listings-split { grid-template-columns: minmax(0, 1fr); }
+  body.listings-mode .listings.is-inspecting .listings-map-pane { display: none; }
+  body.listings-mode .listings.is-inspecting .listings-results { max-width: 1040px; width: 100%; margin-inline: auto; padding-right: 0; }
+  /* The list fills its pane while loading, so the recent sites under it start below the fold. */
+  body.listings-mode .listings-list { min-height: 100%; }
+  body.listings-mode .listings[data-view="map"] > .listings-body { grid-row: 4; }
+  body.listings-mode .listings[data-view="map"] > .listings-sites { display: none; }
+  @container (width < 754px) {
+    body.listings-mode .listings-split { grid-template-columns: minmax(0, 1fr); }
+    body.listings-mode .listings-map-pane { height: auto; }
+  }
+  /* Recent sites sit under the ranked list, so the map keeps the full height. */
+  body.listings-mode .listings > .listings-sites:empty { display: none; }
+}
+.listings-head { align-items: center; }
+.listings-results #home-sites { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+.listings-inspector:not([hidden]) ~ #home-sites { display: none; }
+.listings-results .home-sites-head h2 { font-size: 13px; }
+.listing-card { grid-template-columns: 112px minmax(0, 1fr); gap: 12px; padding: 8px; border-radius: var(--r-lg); }
+.listing-card-media { min-height: 104px; border-radius: var(--r-md); }
+.listing-card-figures { gap: 6px 10px; margin-top: 4px; }
+.listing-card-figures dd { font-size: 13.5px; }
+.listings-map-pane { border-radius: var(--r-lg); }
+
+/* ---------- Saved sites and a site ---------- */
+.core-parcel, .core-screen, .core-message, .core-loading { padding: 24px 32px 72px; }
+
+/* Menu items that other modules also style by id. */
+.sidebar .nav-item#wallet-button,
+.sidebar .nav-item#admin-button { min-height: 44px; padding: 0 10px; border: 0; background: transparent; font-size: 13.5px; transform: none; }
+.sidebar .nav-item#wallet-button:hover,
+.sidebar .nav-item#admin-button:hover { background: var(--surface-2); }
+.sidebar .nav-item#admin-button svg { width: 18px; height: 18px; stroke-width: 1.6; }
+
+/* Home filters stay on one line and scroll sideways; their panels open in the top layer. */
+@media (min-width: 851px) {
+  body.listings-mode .listings-filters { flex-wrap: nowrap; overflow-x: auto; margin: 0 -20px 0 -24px; padding: 2px 20px 4px 24px; scrollbar-width: none; mask-image: linear-gradient(90deg, transparent 0, #000 24px, #000 calc(100% - 32px), transparent 100%); }
+  body.listings-mode .listings-filters::-webkit-scrollbar { display: none; }
+  body.listings-mode .listings-filters > * { flex: none; }
+  /* Beside the place search the filters line up with the page edges and wrap rather than scroll,
+     so Costs stays in view. */
+  @container listings-head (min-width: 1100px) {
+    body.listings-mode .listings-head > .listings-filters { flex-wrap: wrap; overflow: visible; margin: 0; padding: 0; mask-image: none; }
+  }
+}
+
+/* Saved sites: a grid of site cards. */
+.core-screen { max-width: 1120px; }
+.core-screen-head .core-title { font-size: 26px; font-weight: 600; letter-spacing: -0.02em; }
+.core-screen-head .core-note { max-width: 60ch; }
+.core-sites-head h2 { font-size: 15px; font-weight: 600; }
+.core-site-list { grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 10px; }
+.core-site-list > :is(.core-empty, p) { grid-column: 1 / -1; }
+.core-site {
+  position: relative;
+  align-content: start;
+  gap: 4px;
+  min-height: 112px;
+  padding: 44px 16px 14px;
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  transition: border-color var(--dur-1) ease-out, background var(--dur-1) ease-out;
+}
+.core-site::before {
+  content: "";
+  position: absolute;
+  left: 16px;
+  top: 14px;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--r-xs);
+  background: var(--surface-3);
+  -webkit-mask: none;
+}
+.core-site::after {
+  content: "";
+  position: absolute;
+  left: 22px;
+  top: 19px;
+  width: 10px;
+  height: 12px;
+  background: var(--ink-muted);
+  clip-path: polygon(0 100%, 0 45%, 30% 45%, 30% 15%, 70% 15%, 70% 45%, 100% 45%, 100% 100%);
+}
+.core-site:hover { border-color: var(--line-strong); background: var(--surface); }
+.core-site strong { font-size: 14px; font-weight: 550; line-height: 1.35; }
+
+.core-parcel .core-title { letter-spacing: -0.02em; }
+/* The floor plan editor takes the page under its own header, which leads back to the site
+   (and the listing), names the page and folds the walkthrough out; the page title in the top
+   bar repeats it on phones, so the header's title stays for the desktop only. */
+@media (max-width: 850px) {
+  .core-plan-page .core-plan-head .core-title { display: none; }
+}
+
+/* ---------- Narrow screens ---------- */
+@media (max-width: 1100px) {
+  :root { --dock-w: clamp(340px, 38vw, 400px); }
+  .topbar .top-actions .context-label { display: none; }
+}
+@media (max-width: 850px) {
+  body, body.sidebar-collapsed { grid-template-columns: minmax(0, 1fr); }
+  .shell { grid-column: 1; }
+  body .shell,
+  body.chat-dock-open .shell { grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "page"; }
+  .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 40;
+    width: min(290px, 86vw);
+    padding-top: 12px;
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform var(--dur-3) var(--ease), visibility 0s linear var(--dur-3);
+  }
+  .sidebar.open { transform: none; visibility: visible; transition: transform var(--dur-3) var(--ease); box-shadow: var(--shadow-dialog); }
+  /* In the phone menu Recent keeps its full height and the whole menu scrolls. */
+  .rail-recent { flex: none; }
+  .rail-recent-list { overflow: visible; }
+  body.sidebar-collapsed .rail-label { position: static; width: auto; height: auto; overflow: visible; clip: auto; }
+  body.sidebar-collapsed .rail-head { flex-direction: row; }
+  body.sidebar-collapsed .app-nav a, body.sidebar-collapsed .sidebar .nav-item { justify-content: flex-start; padding: 0 10px; }
+  body.sidebar-collapsed .sidebar .workspace-card { flex-direction: row; }
+  .rail-collapse { display: none; }
+  .sidebar-close { display: inline-flex; }
+  .topbar { gap: 8px; padding: 0 10px 0 6px; }
+  .topbar .mobile-menu { display: inline-flex; min-width: 44px; min-height: 44px; }
+  .topbar .top-actions { gap: 6px; }
+  .topbar .top-actions > button { min-height: 38px; padding: 0 10px; }
+  /* The docked chat opens over the page. */
+  body.chat-dock-open .chat-panel { position: fixed; inset: 0; z-index: 30; border: 0; }
+  .shell > .welcome { padding: 32px 16px 24px; }
+  .listings-results #home-sites { display: none; }
+  .core-parcel, .core-screen, .core-message, .core-loading { padding: 18px 16px 56px; }
+}
+@media (max-width: 440px) {
+}
+@media (prefers-reduced-motion: reduce) {
+  body, .sidebar, .sidebar.open { transition: none; }
+}
+@media print {
+  .sidebar, .topbar, .chat-panel-head { display: none !important; }
+  body, .shell { display: block; height: auto; }
+}
+.skip-link {
+  position: fixed;
+  z-index: 100;
+  top: 8px;
+  left: 8px;
+  transform: translateY(-150%);
+  padding: 10px 14px;
+  border-radius: var(--r-sm);
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 14px;
+  font-weight: 600;
+}
+.skip-link:focus { transform: translateY(0); outline: 2px solid var(--bg); outline-offset: 2px; }
+@media (pointer: coarse) { .skip-link { display: inline-flex; align-items: center; min-height: 44px; } }
+.route-announcement { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Page navigation and drawer information stay available in the same shell. */
+.drawer-tabs { display:flex; flex:none; border-bottom:1px solid var(--line); }
+.drawer-tabs button { flex:1; min-height:44px; padding:8px; color:var(--ink-muted); background:transparent; border:0; border-bottom:2px solid transparent; }
+.drawer-tabs button[aria-selected="true"] { color:var(--ink); border-bottom-color:var(--accent); }
+.chat-panel .drawer-context { position:static; inset:auto; flex:1; width:auto; min-width:0; max-width:none; max-height:none; border:0; box-shadow:none; overflow:auto; }
+.chat-panel .drawer-context[hidden] { display:none; }
+.rail-sections { display:grid; gap:2px; }
+.rail-sections button { display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:44px; width:100%; text-align:left; padding:8px 12px; background:none; border:0; color:var(--ink-muted); }
+.rail-sections button[aria-current="location"] { color:var(--ink); background:var(--surface-2); }
+.rail-section-status { font-size:11px; }
+body.sidebar-collapsed .rail-sections { display:none; }
+.account-menu { display:block; position:relative; }
+.account-menu summary { display:flex; align-items:center; gap:10px; min-height:44px; cursor:pointer; list-style:none; }
+.account-menu summary::-webkit-details-marker { display:none; }
+.account-actions { position:fixed; z-index:50; bottom:68px; left:10px; right:auto; max-height:calc(100dvh - 80px); overflow-y:auto; padding:8px; border:1px solid var(--line); border-radius:var(--r-sm); background:var(--surface); box-shadow:var(--shadow-2); }
+.account-actions a,.account-actions button { display:flex; width:100%; min-height:44px; align-items:center; padding:8px; color:var(--ink); background:none; border:0; text-decoration:none; }
+.page-more { margin-left:auto; position:relative; }
+.page-more summary { min-width:44px; min-height:44px; display:grid; place-items:center; cursor:pointer; list-style:none; }
+.page-more-actions { position:absolute; z-index:20; right:0; min-width:210px; padding:8px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-sm); box-shadow:var(--shadow-2); }
+.page-more-actions button { display:block; width:100%; min-height:44px; padding:8px; border:0; background:none; color:var(--ink); text-align:left; }
+.site-update-receipt { margin:12px 20px; padding:12px; border:1px solid var(--line); border-radius:var(--r-sm); font-size:13px; }
+.site-update-receipt a { display:inline-flex; min-height:44px; align-items:center; margin-right:12px; }
+@media (min-width:851px) { .page-more { display:none; } }
+
+.drawer-context-open .conversation,.drawer-context-open .composer-dock { display:none; }
+.account-actions { width:220px; max-width:calc(100vw - 32px); right:auto; }
+.page-breadcrumbs .core-back::before,.core-plan-crumbs .core-back::before { content:none; }
+
+body.sidebar-collapsed .account-actions .rail-label { display:inline; position:static; width:auto; height:auto; overflow:visible; clip:auto; white-space:normal; }
+body.sidebar-collapsed .sidebar .account-actions .nav-item { justify-content:flex-start; padding:8px; }
+.sidebar .account-actions #sign-out { width:100%; height:auto; padding:8px; justify-content:flex-start; color:var(--ink); }
+.account-actions .nav-item,.account-actions .theme-toggle,.account-actions .sign-out { flex-direction:row; justify-content:flex-start; width:100%; min-height:44px; }
+.account-actions svg { flex:none; width:18px; height:18px; }
+.site-update-receipt button { min-height:44px; margin-right:8px; padding:8px 12px; border:1px solid var(--line); border-radius:var(--r-sm); background:var(--surface-2); color:var(--ink); }
+.chat-updated-chip { display:inline-flex; padding:3px 7px; border:1px solid var(--line); border-radius:var(--r-xs); font-size:11px; color:var(--ink-muted); }
+
+.rail-tooltip { position:fixed; z-index:100; pointer-events:none; padding:8px 12px; max-width:260px; border:1px solid var(--line); border-radius:var(--r-sm); background:var(--ink); color:var(--surface); font-size:13px; box-shadow:var(--shadow-2); }
+body.sidebar-collapsed .rail-recent { display:flex; flex:none; min-height:44px; padding:0; border:0; }
+body.sidebar-collapsed .rail-recent .rail-recent-list,body.sidebar-collapsed .rail-recent .site-nav-label { display:none; }
+
+@media (max-width:850px) {
+  body.sidebar-collapsed .rail-sections { display:grid; }
+  body.sidebar-collapsed .rail-recent .rail-recent-list { display:grid; }
+  body.sidebar-collapsed .rail-recent .site-nav-label { display:block; }
+}

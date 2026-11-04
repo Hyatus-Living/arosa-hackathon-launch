@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{var h=parent!==window&&parent.document.documentElement;if(h?h.classList.contains("dark"):localStorage.theme==="dark")document.documentElement.classList.add("dark")}catch(e){}</script>
+<title>Ask Arosa · Arosa example</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/app/styles.css">
+<link rel="stylesheet" href="/app/listings.css">
+<link rel="stylesheet" href="/app/surfaces.css">
+<link rel="stylesheet" href="/demo/demo.css">
+</head>
+<body class="demo demo-ask">
+<div class="ask-shell">
+  <main class="ask-scroll" id="main" aria-label="Conversation">
+    <section class="welcome" id="welcome">
+      <svg class="welcome-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="currentColor"/><path d="M8 24h4v-5h8v5h4V14h-4v-4h-4V6h-4v4H8z" fill="var(--bg)"/></svg>
+      <h1>Ask about 1234 Fulton St</h1>
+    </section>
+    <div id="messages"></div>
+  </main>
+  <div class="composer-dock" id="composer-dock">
+    <div class="listings-suggestions" id="suggestions"></div>
+    <form class="composer" id="composer">
+      <label for="prompt" class="sr-only">Ask about this property</label><textarea id="prompt" rows="1" maxlength="3000" placeholder="Ask a question or explore an idea…"></textarea>
+      <div class="composer-bottom">
+        <div class="composer-tools"><svg><use href="#pin" /></svg><span>Any US city</span></div>
+        <div class="composer-right"><button class="send-button" type="submit" aria-label="Send message"><svg><use href="#arrow" /></svg></button></div>
+      </div>
+    </form>
+  </div>
+</div>
+<dialog id="source-dialog" aria-labelledby="source-title">
+  <div class="dialog-header">
+    <div><span class="section-kicker">SOURCE</span><h2 id="source-title"></h2></div>
+    <button class="icon-button" id="close-dialog" aria-label="Close source"><svg><use href="#close" /></svg></button>
+  </div>
+  <div id="source-body"></div>
+  <div class="source-status"></div>
+</dialog>
+<script type="module" src="/demo/ask.js"></script>
+</body>
+</html>

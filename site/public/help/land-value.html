@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How does Arosa value the land? | Arosa Help</title>
+<meta name="description" content="How Arosa values land: what nearby development sites sold for, checked against recorded closings, and the residual a developer could pay at a target return.">
+<meta name="theme-color" content="#f9f9f9">
+<link rel="canonical" href="https://witharosa.ai/help/land-value">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site.css">
+<link rel="stylesheet" href="/help/help.css">
+<script>try{if(localStorage.theme==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav" id="nav">
+  <div class="wrap">
+    <nav class="bar" aria-label="Site">
+      <a class="brand" href="/" aria-label="Arosa home">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="currentColor"/><path d="M8 24h4v-5h8v5h4V14h-4v-4h-4V6h-4v4H8z" fill="var(--bg)"/></svg>
+        <span>Arosa</span>
+      </a>
+      <div class="right">
+        <a class="help-link" href="/help">Help</a>
+        <a class="btn btn-primary cta" href="https://build.witharosa.ai">Open the app</a>
+      </div>
+    </nav>
+  </div>
+</header>
+<main id="main" class="help">
+<nav class="crumbs" aria-label="Breadcrumb"><a href="/help">Help</a><span aria-hidden="true">/</span><span aria-current="page">Land value</span></nav>
+<h1>How does Arosa value the land?</h1>
+<p class="lead">Arosa&rsquo;s land value is what development sites near the lot sold for. Beside it, <em>A developer can pay</em> shows what a developer earning the target return at your costs could pay: a check on the price, worked out from the building.</p>
+<h2>What nearby development sites sold for</h2>
+<p>A development site sale is a recorded deed for one whole lot, of $250,000 or more, where a new-building or full-demolition filing followed within three years (or came at most 90 days before). Arosa takes up to the 15 nearest such sales within a mile of the lot (a mile and a half where a mile holds fewer than five, then two miles), recorded in the last 24 months, and prices each one per square foot of as-of-right buildable floor area on its own lot.</p>
+<ol>
+<li>Adjust each sale&rsquo;s price to this lot for four differences: the standing building against the buildable area (a building the buyer gets with the land), the floor area ratio (extra floor area sells at a falling rate per square foot), the existing apartments, and the lot&rsquo;s size (larger lots sell for less per square foot).</li>
+<li>Take the median of the adjusted prices, with nearer sales counting more.</li>
+<li>Add 19% on a corner lot, and take off 12.5% where the sales reach past a mile: buyers of lots that far from other sales paid less than those sales suggest. Then multiply by the lot&rsquo;s own as-of-right buildable floor area.</li>
+</ol>
+<p>The adjustments were measured on half of the development sites sold since January 2025 and tested on the other half. None is set by borough, ZIP code or address.</p>
+<p>The figure needs at least five sales within two miles. Where there are fewer, there is no nearby figure, and the land value is what a developer can pay. The site page names how many sales it used, how far away the farthest one is, and the price per buildable square foot.</p>
+<h3>How close it comes</h3>
+<p>Measured October 23, 2026 on 430 development sites sold from January 2025, set aside and never used to shape the method. Using only sales recorded before each site&rsquo;s own sale, 360 of them had five or more within a mile. For <strong>89%</strong> of those 360, the figure was within half to double the price the buyer paid. The median buyer paid 0.99 times it. Another 65 had five or more within two miles, and for <strong>78%</strong> of those the figure was within half to double. The other 5 had too few earlier sales nearby to give a figure. <a href="/accuracy#land">How it was measured</a>.</p>
+<h2>What a developer can pay</h2>
+<p>This is the residual: the most a developer could pay for the lot and still earn the target return on a new building, at your costs. Until you set your own, Arosa uses its defaults: hard cost from the published New York construction cost range, and a target of an 18% margin on a condo or a 7.25% yield on cost on a rental. It is the price that still works on paper, not a forecast of what the land will sell for. When it is less than buyers nearby are paying, the site page says so. Arosa makes no accuracy claim for it.</p>
+<ol>
+<li>For each building the lot could hold, and each exit (rental or condo), value the finished building. A rental is its net operating income divided by the target yield, after real estate taxes and 30% operating costs. A condo is its sales value less the target margin. Rents and sale prices start from the median for the lot&rsquo;s ZIP code, scaled up to new buildings by a measured premium.</li>
+<li>Divide by one plus the carry and financing rate, then subtract hard and soft cost.</li>
+<li>Multiply what is left per square foot by the building&rsquo;s floor area. The building that pays the most sets the residual.</li>
+<li>If nothing is left, the residual is $0. With a nearby figure the deal tier then stops at Good; without one the site gets no deal tier.</li>
+</ol>
+<p>Where there is a nearby figure, the <a href="/help/deal-tiers">deal tier</a> compares the ask with it, and what a developer can pay is the check beside the tier. Where there is none, the tier rests on what a developer can pay. The most a buyer could ask is the residual less the buyer&rsquo;s transfer tax and closing costs.</p>
+<h2>Inputs and how fresh they are</h2>
+<table class="tbl"><thead><tr><th scope="col">Input</th><th scope="col">Source</th><th scope="col">Freshness</th></tr></thead><tbody><tr><th scope="row">Nearby development site sales</th><td data-label="Source">ACRIS deeds for one whole lot of $250,000 or more, matched to Department of Buildings new-building and full-demolition filings on the same lot</td><td data-label="Freshness">Refreshed every night. The site page dates each sale.</td></tr><tr><th scope="row">Rents</th><td data-label="Source">Median asking rent per square foot in the lot&rsquo;s ZIP code from current listings, times a new-building premium: how much more buildings finished in the last 12 years rent for than the ZIP&rsquo;s median, each building counted once. Citywide it is 1.21, measured on 88 buildings. Brooklyn is 1.22, Manhattan 1.37 and Queens 1.16, and a ZIP with three or more such buildings has its own figure; the Bronx and Staten Island use the citywide figure. Where a ZIP has too few listings, a borough planning figure with no premium.</td><td data-label="Freshness">Listings refresh every six hours. Premiums measured October 23, 2026. Planning figures are dated.</td></tr><tr><th scope="row">Condo sale prices</th><td data-label="Source">Median price per square foot of recorded condo and co-op closings in the ZIP (NYC Department of Finance sales), at least five, times the same kind of premium for sale prices. Citywide it is 1.07, measured on 734 buildings. Brooklyn is 1.03, Manhattan 1.22 and Queens 1.04, and a ZIP with three or more such buildings has its own figure; the Bronx and Staten Island use the citywide figure. Asking prices are never used. Where a ZIP has too few closings, an analyst estimate by submarket with no premium.</td><td data-label="Freshness">Closings are loaded in batches. The basis line names the count, latest date and the premium.</td></tr><tr><th scope="row">Affordable rents</th><td data-label="Source">HPD affordable rent tables</td><td data-label="Freshness">Dated in the assumptions list.</td></tr><tr><th scope="row">Taxes</th><td data-label="Source">DOF income method, with the <span class="nb">485-x</span> exemption where it applies</td><td data-label="Freshness">Dated in the assumptions list.</td></tr><tr><th scope="row">Costs and returns</th><td data-label="Source">Yours. Arosa planning defaults until you change them.</td><td data-label="Freshness">Defaults are dated.</td></tr></tbody></table>
+<h2>What it does not cover</h2>
+<ul>
+<li>Tenant buyouts, environmental or soil conditions, and other facts specific to one site.</li>
+<li>Financing programs other than <span class="nb">485-x</span>.</li>
+<li>What a particular buyer would pay for strategic reasons.</li>
+</ul>
+<h2>How your own costs change it</h2>
+<p>Every cost and return in the residual is yours to change: hard and soft cost, carry, and the target yields and margins. Higher costs or higher required returns lower it. The nearby figure does not change with your costs; it is what buyers paid. If you enter a purchase price, the <a href="/help/budget">budget</a> uses it in place of the land value.</p>
+<h2>Common questions</h2>
+<h3>Why can a developer pay nothing?</h3>
+<p>At these rents, costs and returns the building is worth less than it costs to build, before any land price. It is most common where rents are low. It does not mean the land is worthless: the nearby figure shows what buyers paid for sites like it. Enter your own costs to see where the site starts to pay.</p>
+<h3>Why do the land value and what a developer can pay differ?</h3>
+<p>The land value is what buyers nearby paid. What a developer can pay is what a building pays back at the target return. When buyers pay more, they expect higher rents or prices, lower costs or a thinner return than the targets, or they plan more floor area than as of right. The gap is the question to answer before you bid.</p>
+<section class="more" aria-labelledby="more-h"><h2 id="more-h">Keep reading</h2><ul><li><a href="/help/deal-tiers">What do Great, Good and Fair mean?</a></li><li><a href="/help/budget">How is my development budget built?</a></li></ul></section>
+<p class="ask">Something unclear or wrong? Email <a href="mailto:michael@witharosa.ai">michael@witharosa.ai</a>.</p>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="bottom">
+      <span>© 2026 Arosa</span>
+      <span><a href="/help">Help</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/support">Support</a></span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

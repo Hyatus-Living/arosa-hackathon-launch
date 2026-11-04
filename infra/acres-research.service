@@ -1,0 +1,42 @@
+[Unit]
+Description=Acres NYC research backend
+After=network-online.target acres-secrets.service
+# Ordered after the secrets oneshot, which is enabled on its own, so the boot pulls secrets first.
+# Neither Wants nor Requires: restarting the secrets oneshot must not restart research, and a
+# research restart (every deploy) must not pull secrets again and wait for it.
+# Research reads secrets.json and the env files at start and knowledge.json on each use.
+Wants=network-online.target
+# The listener is acres-research.socket's, so a restart never refuses a connection. Stopping only
+# the service is not enough to keep research down: the socket starts it on the next connection.
+Requires=acres-research.socket
+After=acres-research.socket
+[Service]
+Type=simple
+User=openclaw
+Group=openclaw
+WorkingDirectory=/opt/acres-research
+Environment=HOME=/home/openclaw
+Environment=ACRES_KNOWLEDGE_CONFIG=/run/acres-secrets/knowledge.json
+Environment=XDG_RUNTIME_DIR=/run/user/1001
+Environment=ACRES_SECRETS_JSON=/run/acres-secrets/secrets.json
+EnvironmentFile=/home/openclaw/.openclaw/gateway.env
+EnvironmentFile=/run/acres-secrets/gateway-secrets.env
+# Runs as root before every start, after the previous process has exited: installs the release that
+# acres-deploy-research staged in /opt/acres-research/.next, if any (see acres-research-apply).
+ExecStartPre=+/usr/local/sbin/acres-research-apply
+ExecStart=/usr/local/bin/node /opt/acres-research/service.mjs
+Restart=on-failure
+RestartSec=5
+# SIGTERM drains (service.mjs): the process keeps serving, starts no new runs (they stay queued for
+# the next process) and lets in-flight runs finish on their own deadline, at most 20 minutes (the
+# drain waits 21.5). Signal only node so the Codex children it is still using keep running.
+KillMode=mixed
+TimeoutStopSec=23min
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/home/openclaw/.openclaw /tmp
+ProtectHome=read-only
+UMask=0077
+[Install]
+WantedBy=multi-user.target

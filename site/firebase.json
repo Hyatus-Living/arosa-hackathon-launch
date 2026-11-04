@@ -1,0 +1,19 @@
+{
+  "hosting": {
+    "site": "hyatus-openclaw",
+    "public": "public",
+    "ignore": ["firebase.json", ".firebaserc", "proxy", "experiments", "**/*.md", "build.mjs", "demo-sites.mjs"],
+    "cleanUrls": true,
+    "trailingSlash": false,
+    "rewrites": [
+      {"source": "/api/**", "run": {"serviceId": "arosa-site-proxy", "region": "us-central1"}}
+    ],
+    "headers": [
+      {"source": "**/*.@(css|js|svg|png)", "headers": [{"key": "Cache-Control", "value": "public, max-age=600, must-revalidate"}]},
+      {"source": "**", "headers": [
+        {"key": "X-Content-Type-Options", "value": "nosniff"},
+        {"key": "Referrer-Policy", "value": "strict-origin-when-cross-origin"}
+      ]}
+    ]
+  }
+}

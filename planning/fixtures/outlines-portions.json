@@ -1,0 +1,5544 @@
+{
+ "l-shaped-R7A-recovered": {
+  "schema": "acres.outlines/1",
+  "scheme": "as_of_right",
+  "frame": "acres_model_concept",
+  "units": "ft",
+  "lot": {
+   "exterior": [
+    [
+     0,
+     0
+    ],
+    [
+     40,
+     0
+    ],
+    [
+     40,
+     60
+    ],
+    [
+     80,
+     60
+    ],
+    [
+     80,
+     100
+    ],
+    [
+     0,
+     100
+    ]
+   ],
+   "holes": [],
+   "areaSqft": 5600,
+   "taxMapAreaSqft": 5600,
+   "widthFeet": 80,
+   "depthFeet": 100,
+   "type": "interior",
+   "source": "tax-lot",
+   "bbl": null,
+   "north": [
+    0,
+    1
+   ],
+   "note": "Lot lines come from the city's tax map, not a survey.",
+   "recordedAreaSqft": 5600
+  },
+  "streets": [
+   {
+    "side": "front",
+    "name": null,
+    "widthFeet": 60,
+    "wide": false
+   }
+  ],
+  "district": "R7A",
+  "residentialEquivalent": "R7A",
+  "specialDistricts": [],
+  "regime": "residential",
+  "form": "base",
+  "use": "residential",
+  "affordable": false,
+  "floorArea": {
+   "maxFar": 4.232,
+   "maxGrossSqft": 23699,
+   "grossPerZfa": 1.058,
+   "maxZfaSqft": 22400,
+   "sections": [
+    "ZR 23-22"
+   ]
+  },
+  "heightLimitFeet": 85,
+  "streetWall": {
+   "minBaseHeightFeet": 40,
+   "maxBaseHeightFeet": 75,
+   "streetRow": "narrow street",
+   "affordable": false,
+   "location": "At least 70% of the street wall within 10 ft of the street line up to the minimum base height",
+   "sections": [
+    "ZR 23-432",
+    "ZR 23-431",
+    "ZR 35-631"
+   ]
+  },
+  "setbacks": {
+   "aboveFeet": 75,
+   "depthFeet": {
+    "wide": 10,
+    "narrow": 15
+   },
+   "sections": [
+    "ZR 23-433"
+   ]
+  },
+  "coverage": {
+   "basePercent": 80,
+   "lotType": "interior",
+   "sections": [
+    "ZR 23-362"
+   ]
+  },
+  "yards": {
+   "rearYard": {
+    "requiredFeet": 20,
+    "above75FeetFeet": 30,
+    "sections": [
+     "ZR 23-342"
+    ]
+   },
+   "frontYard": {
+    "requiredFeet": 0,
+    "sections": [
+     "ZR 23-322"
+    ]
+   },
+   "sideYards": {
+    "requiredFeet": 0,
+    "sections": [
+     "ZR 23-335"
+    ]
+   }
+  },
+  "portions": null,
+  "storeys": [
+   {
+    "index": 0,
+    "label": "Ground",
+    "use": "residential",
+    "bottomFeet": 0,
+    "topFeet": 10.5,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 4000,
+    "zfaBudgetSqft": 3781,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft"
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 40,
+      "maxBaseFeet": 75,
+      "section": "ZR 23-432",
+      "text": "street wall up to 75 ft (ZR 23-432)"
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)"
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 800,
+       "minDimensionFeet": 20
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 20,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      0
+     ],
+     [
+      40,
+      0
+     ],
+     [
+      40,
+      60
+     ],
+     [
+      80,
+      60
+     ],
+     [
+      80,
+      80
+     ],
+     [
+      0,
+      80
+     ]
+    ]
+   },
+   {
+    "index": 1,
+    "label": "Level 2",
+    "use": "residential",
+    "bottomFeet": 10.5,
+    "topFeet": 21,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 4000,
+    "zfaBudgetSqft": 3781,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft"
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 40,
+      "maxBaseFeet": 75,
+      "section": "ZR 23-432",
+      "text": "street wall up to 75 ft (ZR 23-432)"
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)"
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 800,
+       "minDimensionFeet": 20
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 20,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      0
+     ],
+     [
+      40,
+      0
+     ],
+     [
+      40,
+      60
+     ],
+     [
+      80,
+      60
+     ],
+     [
+      80,
+      80
+     ],
+     [
+      0,
+      80
+     ]
+    ]
+   },
+   {
+    "index": 2,
+    "label": "Level 3",
+    "use": "residential",
+    "bottomFeet": 21,
+    "topFeet": 31.5,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 4000,
+    "zfaBudgetSqft": 3781,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft"
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 40,
+      "maxBaseFeet": 75,
+      "section": "ZR 23-432",
+      "text": "street wall up to 75 ft (ZR 23-432)"
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)"
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 800,
+       "minDimensionFeet": 20
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 20,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      0
+     ],
+     [
+      40,
+      0
+     ],
+     [
+      40,
+      60
+     ],
+     [
+      80,
+      60
+     ],
+     [
+      80,
+      80
+     ],
+     [
+      0,
+      80
+     ]
+    ]
+   },
+   {
+    "index": 3,
+    "label": "Level 4",
+    "use": "residential",
+    "bottomFeet": 31.5,
+    "topFeet": 42,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 4000,
+    "zfaBudgetSqft": 3781,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft"
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 40,
+      "maxBaseFeet": 75,
+      "section": "ZR 23-432",
+      "text": "street wall up to 75 ft (ZR 23-432)"
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)"
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 800,
+       "minDimensionFeet": 20
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 20,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      0
+     ],
+     [
+      40,
+      0
+     ],
+     [
+      40,
+      60
+     ],
+     [
+      80,
+      60
+     ],
+     [
+      80,
+      80
+     ],
+     [
+      0,
+      80
+     ]
+    ]
+   },
+   {
+    "index": 4,
+    "label": "Level 5",
+    "use": "residential",
+    "bottomFeet": 42,
+    "topFeet": 52.5,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 4000,
+    "zfaBudgetSqft": 3781,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft"
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 40,
+      "maxBaseFeet": 75,
+      "section": "ZR 23-432",
+      "text": "street wall up to 75 ft (ZR 23-432)"
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)"
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 800,
+       "minDimensionFeet": 20
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 20,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      0
+     ],
+     [
+      40,
+      0
+     ],
+     [
+      40,
+      60
+     ],
+     [
+      80,
+      60
+     ],
+     [
+      80,
+      80
+     ],
+     [
+      0,
+      80
+     ]
+    ]
+   },
+   {
+    "index": 5,
+    "label": "Level 6 (partial)",
+    "use": "residential",
+    "bottomFeet": 52.5,
+    "topFeet": 63,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 3699,
+    "zfaBudgetSqft": 3496,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft"
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 40,
+      "maxBaseFeet": 75,
+      "section": "ZR 23-432",
+      "text": "street wall up to 75 ft (ZR 23-432)"
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)"
+     },
+     {
+      "control": "max_area",
+      "areaSqft": 3699,
+      "section": "ZR 23-22",
+      "text": "partial storey holding the last 3699 sq ft of the floor area ratio"
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 800,
+       "minDimensionFeet": 20
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 20,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      0
+     ],
+     [
+      40,
+      0
+     ],
+     [
+      40,
+      60
+     ],
+     [
+      80,
+      60
+     ],
+     [
+      80,
+      76.2
+     ],
+     [
+      0,
+      76.2
+     ]
+    ]
+   }
+  ],
+  "reserveStoreys": [
+   {
+    "index": 6,
+    "label": "Level 7",
+    "use": "residential",
+    "bottomFeet": 63,
+    "topFeet": 73.5,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 4000,
+    "zfaBudgetSqft": 3781,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft"
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 40,
+      "maxBaseFeet": 75,
+      "section": "ZR 23-432",
+      "text": "street wall up to 75 ft (ZR 23-432)"
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)"
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 800,
+       "minDimensionFeet": 20
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 20,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      0
+     ],
+     [
+      40,
+      0
+     ],
+     [
+      40,
+      60
+     ],
+     [
+      80,
+      60
+     ],
+     [
+      80,
+      80
+     ],
+     [
+      0,
+      80
+     ]
+    ]
+   },
+   {
+    "index": 7,
+    "label": "Level 8",
+    "use": "residential",
+    "bottomFeet": 73.5,
+    "topFeet": 84,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 2600,
+    "zfaBudgetSqft": 2457,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 30,
+      "section": "ZR 23-342",
+      "text": "rear yard 30 ft"
+     },
+     {
+      "control": "setback",
+      "feet": {
+       "front": 15
+      },
+      "aboveFeet": 75,
+      "section": "ZR 23-433",
+      "text": "setback above the maximum base height (ZR 23-433)"
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)"
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 1200,
+       "minDimensionFeet": 30
+      },
+      "withoutWindows": {
+       "minAreaSqft": 300,
+       "minDimensionFeet": 15
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 30,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 300,
+       "minDimensionFeet": 15
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      15
+     ],
+     [
+      40,
+      15
+     ],
+     [
+      40,
+      60
+     ],
+     [
+      80,
+      60
+     ],
+     [
+      80,
+      70
+     ],
+     [
+      0,
+      70
+     ]
+    ]
+   }
+  ],
+  "metrics": {
+   "storeys": 6,
+   "heightFeet": 63,
+   "floorAreaSqft": 23699,
+   "far": 4.23,
+   "remainingFloorAreaSqft": 0,
+   "stoppedBy": "floor area ratio of 4.232"
+  },
+  "density": {
+   "maxUnits": 35,
+   "dwellingUnitFactor": 680,
+   "residentialFloorAreaSqft": 23699,
+   "sections": [
+    "ZR 23-52",
+    "ZR 12-10 (special density areas; Manhattan Core)"
+   ],
+   "note": "The maximum residential floor area permitted on the zoning lot divided by the dwelling unit factor (ZR 23-52); fractions of three-quarters or more count as a unit."
+  },
+  "parking": {
+   "required": null,
+   "communityDistrict": "302",
+   "transitZones": {
+    "inner": {
+     "zone": "inner",
+     "required": 0,
+     "sections": [
+      "ZR 25-211"
+     ],
+     "note": "No accessory parking is required for dwelling units created after December 5, 2024 in the Inner Transit Zone."
+    },
+    "outer": {
+     "zone": "outer",
+     "required": 0,
+     "standardPercent": 15,
+     "reducedPercent": 0,
+     "waiverSpaces": 15,
+     "waived": true,
+     "sections": [
+      "ZR 25-222"
+     ]
+    },
+    "beyond": {
+     "zone": "beyond",
+     "required": 0,
+     "standardPercent": 30,
+     "affordablePercent": 12,
+     "seniorPercent": 10,
+     "ancillaryPercent": 0,
+     "waiverSpaces": 15,
+     "waived": true,
+     "adjustment": "small-lot reduction",
+     "sections": [
+      "ZR 25-232"
+     ]
+    }
+   },
+   "sections": [
+    "ZR 25-211",
+    "ZR 25-222",
+    "ZR 25-232"
+   ],
+   "note": "Outside the Manhattan Core the requirement depends on the transit zone (Inner, Outer, or beyond the Greater Transit Zone); all three outcomes are reported; pass transitZone once the lot is located on the Greater Transit Zone map."
+  },
+  "label": "As of right",
+  "address": "Example",
+  "context": [],
+  "zoningFloorArea": {
+   "allowedFar": 4,
+   "allowedSqft": 22400,
+   "sections": [
+    "ZR 23-22"
+   ],
+   "optionSqft": 22400,
+   "optionFar": 4,
+   "affordableSqft": 0
+  },
+  "floorAreaRules": {
+   "verified": "2026-10-22",
+   "source": "https://zr.planning.nyc.gov/article-i/chapter-2/12-10",
+   "note": "Floor space counted as zoning floor area and the exclusions a schematic plan can show; the rest of the ZR 12-10 list (bulkheads, uncovered steps, low attics, open balconies and terraces, Fire Department storage, rooftop greenhouses, electrified buildings) is not drawn by the planning engine.",
+   "counted": [
+    {
+     "kind": "stair",
+     "rule": "Stairwells at each floor count, except the extra width excluded in buildings over 125 ft",
+     "section": "ZR 12-10 (floor area (b), exclusion (j))"
+    },
+    {
+     "kind": "elevator",
+     "rule": "Elevator shafts at each floor count",
+     "section": "ZR 12-10 (floor area (b))"
+    }
+   ],
+   "excluded": [
+    {
+     "kind": "cellar",
+     "rule": "Cellar space, except space used for dwelling purposes",
+     "share": 1,
+     "section": "ZR 12-10 (floor area exclusion (a))"
+    },
+    {
+     "kind": "mechanical",
+     "rule": "Accessory mechanical equipment and the minimum space for its maintenance and access",
+     "share": 1,
+     "section": "ZR 12-10 (floor area exclusion (h))"
+    },
+    {
+     "kind": "parking",
+     "rule": "Accessory off-street parking in group parking facilities no more than 23 ft above curb level",
+     "share": 1,
+     "maxTopFeet": 23,
+     "section": "ZR 12-10 (floor area exclusion (f))"
+    },
+    {
+     "kind": "amenity",
+     "rule": "Residential amenities accessible to residents (recreation, co-working, package and storage rooms, laundry, pet facilities), up to 5 percent of the building's residential floor area",
+     "share": 1,
+     "maxShareOfResidential": 0.05,
+     "section": "ZR 23-231"
+    },
+    {
+     "kind": "corridor",
+     "rule": "Half the floor space of a corridor that reaches the farthest dwelling unit door within 100 ft of the elevator core, or that has a balcony, 20 sq ft of daylight glazing, or ends at a unit of three or more bedrooms",
+     "share": 0.5,
+     "maxReachFeet": 100,
+     "section": "ZR 23-232"
+    },
+    {
+     "kind": "refuse",
+     "rule": "Refuse storage and disposal, up to 3 sq ft per dwelling unit",
+     "share": 1,
+     "maxSqftPerUnit": 3,
+     "section": "ZR 23-233"
+    },
+    {
+     "kind": "bicycle",
+     "rule": "Required enclosed bicycle parking, up to 15 sq ft per required space; one space per two dwelling units, waived at 10 units or fewer",
+     "share": 1,
+     "maxSqftPerRequiredSpace": 15,
+     "spacesPerUnit": 0.5,
+     "waivedAtOrBelowUnits": 10,
+     "section": "ZR 25-85, ZR 25-81, ZR 25-83"
+    }
+   ],
+   "multipleDwellingSection": "ZR 23-23"
+  },
+  "assumedExclusions": {
+   "amenityShare": 0.028,
+   "exteriorWallShare": 0.03,
+   "source": "Arosa planning assumption for the deal store; not from a published dataset or cost index; ZR 12-10 defines the exclusions, not these percentages"
+  },
+  "exteriorWallSection": "ZR 12-10 (qualifying exterior wall thickness)",
+  "program": {
+   "zfa": 22400,
+   "storeys": 6,
+   "units": 24,
+   "affordableZfa": 0
+  },
+  "checks": [
+   "Rear yard drawn as 20 ft up to 75 ft of height and 30 ft above, as curated from ZR 23-342; verify against the current text before relying on it.",
+   "Court minimums (ZR 23-352 inner courts, 23-353 outer courts) are reported in controls.courts and not carved from the drawn envelope; which courts a design needs depends on where legally required windows face."
+  ]
+ },
+ "split-100x100-R6-R7A": {
+  "schema": "acres.outlines/1",
+  "scheme": "as_of_right",
+  "frame": "acres_model_concept",
+  "units": "ft",
+  "lot": {
+   "exterior": [
+    [
+     0,
+     0
+    ],
+    [
+     100,
+     0
+    ],
+    [
+     100,
+     100
+    ],
+    [
+     0,
+     100
+    ]
+   ],
+   "holes": [],
+   "areaSqft": 10000,
+   "taxMapAreaSqft": 10000,
+   "widthFeet": 100,
+   "depthFeet": 100,
+   "type": "interior",
+   "source": "tax-lot",
+   "bbl": null,
+   "north": [
+    0,
+    1
+   ],
+   "note": "Lot lines come from the city's tax map, not a survey.",
+   "recordedAreaSqft": 10000
+  },
+  "streets": [
+   {
+    "side": "front",
+    "name": null,
+    "widthFeet": 60,
+    "wide": false
+   }
+  ],
+  "district": "R6",
+  "residentialEquivalent": "R6",
+  "specialDistricts": [],
+  "regime": "residential",
+  "form": "base",
+  "use": "residential",
+  "affordable": false,
+  "floorArea": {
+   "maxFar": 3.0682,
+   "maxGrossSqft": 30682,
+   "grossPerZfa": 1.058,
+   "maxZfaSqft": 29000,
+   "sections": [
+    "ZR 23-22",
+    "ZR 77-22"
+   ]
+  },
+  "heightLimitFeet": 85,
+  "streetWall": {
+   "minBaseHeightFeet": 30,
+   "maxBaseHeightFeet": 45,
+   "streetRow": "narrow street",
+   "affordable": false,
+   "location": "At least 70% of the street wall within 10 ft of the street line up to the minimum base height",
+   "sections": [
+    "ZR 23-432",
+    "ZR 23-431",
+    "ZR 35-631"
+   ]
+  },
+  "setbacks": {
+   "aboveFeet": 45,
+   "depthFeet": {
+    "wide": 10,
+    "narrow": 15
+   },
+   "sections": [
+    "ZR 23-433"
+   ]
+  },
+  "coverage": {
+   "basePercent": 80,
+   "lotType": "interior",
+   "sections": [
+    "ZR 23-362"
+   ]
+  },
+  "yards": {
+   "rearYard": {
+    "requiredFeet": 20,
+    "above75FeetFeet": 30,
+    "sections": [
+     "ZR 23-342"
+    ]
+   },
+   "frontYard": {
+    "requiredFeet": 0,
+    "sections": [
+     "ZR 23-322"
+    ]
+   },
+   "sideYards": {
+    "requiredFeet": 0,
+    "sections": [
+     "ZR 23-335"
+    ]
+   }
+  },
+  "portions": [
+   {
+    "index": 0,
+    "kind": "district",
+    "district": "R6",
+    "sharePercent": 55,
+    "parts": [
+     {
+      "exterior": [
+       [
+        40,
+        -10
+       ],
+       [
+        120,
+        -10
+       ],
+       [
+        120,
+        110
+       ],
+       [
+        50,
+        110
+       ]
+      ],
+      "holes": []
+     }
+    ],
+    "label": "R6 portion",
+    "minBaseHeightFeet": 30,
+    "maxBaseHeightFeet": 45,
+    "heightLimitFeet": 55,
+    "sections": [
+     "ZR 77-27",
+     "ZR 77-28"
+    ]
+   },
+   {
+    "index": 1,
+    "kind": "district",
+    "district": "R7A",
+    "sharePercent": 45,
+    "parts": [
+     {
+      "exterior": [
+       [
+        -20,
+        -10
+       ],
+       [
+        40,
+        -10
+       ],
+       [
+        50,
+        110
+       ],
+       [
+        -20,
+        110
+       ]
+      ],
+      "holes": []
+     }
+    ],
+    "label": "R7A portion",
+    "minBaseHeightFeet": 40,
+    "maxBaseHeightFeet": 75,
+    "heightLimitFeet": 85,
+    "sections": [
+     "ZR 77-27",
+     "ZR 77-28"
+    ]
+   }
+  ],
+  "storeys": [
+   {
+    "index": 0,
+    "label": "Ground",
+    "use": "residential",
+    "bottomFeet": 0,
+    "topFeet": 10.5,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 8000,
+    "zfaBudgetSqft": 7561,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft",
+      "portion": 1
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 40,
+      "maxBaseFeet": 75,
+      "section": "ZR 23-432",
+      "text": "street wall up to 75 ft (ZR 23-432)",
+      "portion": 1
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 1
+     },
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft",
+      "portion": 0
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 30,
+      "maxBaseFeet": 45,
+      "section": "ZR 23-432",
+      "text": "street wall up to 45 ft (ZR 23-432)",
+      "portion": 0
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 0
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 800,
+       "minDimensionFeet": 20
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 20,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      0
+     ],
+     [
+      100,
+      0
+     ],
+     [
+      100,
+      80
+     ],
+     [
+      0,
+      80
+     ]
+    ]
+   },
+   {
+    "index": 1,
+    "label": "Level 2",
+    "use": "residential",
+    "bottomFeet": 10.5,
+    "topFeet": 21,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 8000,
+    "zfaBudgetSqft": 7561,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft",
+      "portion": 1
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 40,
+      "maxBaseFeet": 75,
+      "section": "ZR 23-432",
+      "text": "street wall up to 75 ft (ZR 23-432)",
+      "portion": 1
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 1
+     },
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft",
+      "portion": 0
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 30,
+      "maxBaseFeet": 45,
+      "section": "ZR 23-432",
+      "text": "street wall up to 45 ft (ZR 23-432)",
+      "portion": 0
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 0
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 800,
+       "minDimensionFeet": 20
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 20,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      0
+     ],
+     [
+      100,
+      0
+     ],
+     [
+      100,
+      80
+     ],
+     [
+      0,
+      80
+     ]
+    ]
+   },
+   {
+    "index": 2,
+    "label": "Level 3",
+    "use": "residential",
+    "bottomFeet": 21,
+    "topFeet": 31.5,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 8000,
+    "zfaBudgetSqft": 7561,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft",
+      "portion": 1
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 40,
+      "maxBaseFeet": 75,
+      "section": "ZR 23-432",
+      "text": "street wall up to 75 ft (ZR 23-432)",
+      "portion": 1
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 1
+     },
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft",
+      "portion": 0
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 30,
+      "maxBaseFeet": 45,
+      "section": "ZR 23-432",
+      "text": "street wall up to 45 ft (ZR 23-432)",
+      "portion": 0
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 0
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 800,
+       "minDimensionFeet": 20
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 20,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      0
+     ],
+     [
+      100,
+      0
+     ],
+     [
+      100,
+      80
+     ],
+     [
+      0,
+      80
+     ]
+    ]
+   },
+   {
+    "index": 3,
+    "label": "Level 4 (partial)",
+    "use": "residential",
+    "bottomFeet": 31.5,
+    "topFeet": 42,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 6682,
+    "zfaBudgetSqft": 6316,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft",
+      "portion": 1
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 40,
+      "maxBaseFeet": 75,
+      "section": "ZR 23-432",
+      "text": "street wall up to 75 ft (ZR 23-432)",
+      "portion": 1
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 1
+     },
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft",
+      "portion": 0
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 30,
+      "maxBaseFeet": 45,
+      "section": "ZR 23-432",
+      "text": "street wall up to 45 ft (ZR 23-432)",
+      "portion": 0
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 0
+     },
+     {
+      "control": "max_area",
+      "areaSqft": 6682,
+      "section": "ZR 77-22",
+      "text": "partial storey holding the last 6682 sq ft of the floor area ratio"
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 800,
+       "minDimensionFeet": 20
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 20,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      0
+     ],
+     [
+      100,
+      0
+     ],
+     [
+      100,
+      66.8
+     ],
+     [
+      0,
+      66.8
+     ]
+    ]
+   }
+  ],
+  "reserveStoreys": [
+   {
+    "index": 4,
+    "label": "Level 5",
+    "use": "residential",
+    "bottomFeet": 42,
+    "topFeet": 52.5,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 7175,
+    "zfaBudgetSqft": 6782,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft",
+      "portion": 1
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 40,
+      "maxBaseFeet": 75,
+      "section": "ZR 23-432",
+      "text": "street wall up to 75 ft (ZR 23-432)",
+      "portion": 1
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 1
+     },
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft",
+      "portion": 0
+     },
+     {
+      "control": "setback",
+      "feet": {
+       "front": 15
+      },
+      "aboveFeet": 45,
+      "section": "ZR 23-433",
+      "text": "setback above the maximum base height (ZR 23-433)",
+      "portion": 0
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 0
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 800,
+       "minDimensionFeet": 20
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 20,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      0
+     ],
+     [
+      45,
+      0
+     ],
+     [
+      45,
+      15
+     ],
+     [
+      100,
+      15
+     ],
+     [
+      100,
+      80
+     ],
+     [
+      0,
+      80
+     ]
+    ]
+   },
+   {
+    "index": 5,
+    "label": "Level 6",
+    "use": "residential",
+    "bottomFeet": 52.5,
+    "topFeet": 63,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 3600,
+    "zfaBudgetSqft": 3403,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft",
+      "portion": 1
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 40,
+      "maxBaseFeet": 75,
+      "section": "ZR 23-432",
+      "text": "street wall up to 75 ft (ZR 23-432)",
+      "portion": 1
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 1
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 800,
+       "minDimensionFeet": 20
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 20,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      0
+     ],
+     [
+      45,
+      0
+     ],
+     [
+      45,
+      80
+     ],
+     [
+      0,
+      80
+     ]
+    ]
+   },
+   {
+    "index": 6,
+    "label": "Level 7",
+    "use": "residential",
+    "bottomFeet": 63,
+    "topFeet": 73.5,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 3600,
+    "zfaBudgetSqft": 3403,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft",
+      "portion": 1
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 40,
+      "maxBaseFeet": 75,
+      "section": "ZR 23-432",
+      "text": "street wall up to 75 ft (ZR 23-432)",
+      "portion": 1
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 1
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 800,
+       "minDimensionFeet": 20
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 20,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      0
+     ],
+     [
+      45,
+      0
+     ],
+     [
+      45,
+      80
+     ],
+     [
+      0,
+      80
+     ]
+    ]
+   },
+   {
+    "index": 7,
+    "label": "Level 8",
+    "use": "residential",
+    "bottomFeet": 73.5,
+    "topFeet": 84,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 2475,
+    "zfaBudgetSqft": 2339,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 30,
+      "section": "ZR 23-342",
+      "text": "rear yard 30 ft",
+      "portion": 1
+     },
+     {
+      "control": "setback",
+      "feet": {
+       "front": 15
+      },
+      "aboveFeet": 75,
+      "section": "ZR 23-433",
+      "text": "setback above the maximum base height (ZR 23-433)",
+      "portion": 1
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 1
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 1200,
+       "minDimensionFeet": 30
+      },
+      "withoutWindows": {
+       "minAreaSqft": 300,
+       "minDimensionFeet": 15
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 30,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 300,
+       "minDimensionFeet": 15
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      15
+     ],
+     [
+      45,
+      15
+     ],
+     [
+      45,
+      70
+     ],
+     [
+      0,
+      70
+     ]
+    ]
+   }
+  ],
+  "metrics": {
+   "storeys": 4,
+   "heightFeet": 42,
+   "floorAreaSqft": 30682,
+   "far": 3.07,
+   "remainingFloorAreaSqft": 0,
+   "stoppedBy": "floor area ratio of 3.0682"
+  },
+  "density": {
+   "maxUnits": 44,
+   "dwellingUnitFactor": 680,
+   "residentialFloorAreaSqft": 22000,
+   "sections": [
+    "ZR 23-52",
+    "ZR 12-10 (special density areas; Manhattan Core)",
+    "ZR 77-25"
+   ],
+   "note": "The sum of each portion's dwelling units (ZR 77-25): R6 55%, R7A 45%."
+  },
+  "parking": {
+   "required": null,
+   "communityDistrict": "302",
+   "transitZones": {
+    "inner": {
+     "zone": "inner",
+     "required": 0,
+     "sections": [
+      "ZR 25-211"
+     ],
+     "note": "No accessory parking is required for dwelling units created after December 5, 2024 in the Inner Transit Zone."
+    },
+    "outer": {
+     "zone": "outer",
+     "required": 0,
+     "standardPercent": 25,
+     "reducedPercent": 0,
+     "waiverSpaces": 15,
+     "waived": true,
+     "sections": [
+      "ZR 25-222"
+     ]
+    },
+    "beyond": {
+     "zone": "beyond",
+     "required": 18,
+     "standardPercent": 50,
+     "affordablePercent": 25,
+     "seniorPercent": 10,
+     "ancillaryPercent": 0,
+     "waiverSpaces": 10,
+     "waived": false,
+     "sections": [
+      "ZR 25-232"
+     ]
+    }
+   },
+   "sections": [
+    "ZR 25-211",
+    "ZR 25-222",
+    "ZR 25-232"
+   ],
+   "note": "Outside the Manhattan Core the requirement depends on the transit zone (Inner, Outer, or beyond the Greater Transit Zone); all three outcomes are reported; pass transitZone once the lot is located on the Greater Transit Zone map."
+  },
+  "label": "As of right",
+  "address": "Example",
+  "context": [],
+  "zoningFloorArea": {
+   "allowedFar": 3.01,
+   "allowedSqft": 30100,
+   "sections": [
+    "ZR 23-22",
+    "ZR 77-22"
+   ],
+   "optionSqft": 29000,
+   "optionFar": 2.9,
+   "affordableSqft": 0
+  },
+  "floorAreaRules": {
+   "verified": "2026-10-22",
+   "source": "https://zr.planning.nyc.gov/article-i/chapter-2/12-10",
+   "note": "Floor space counted as zoning floor area and the exclusions a schematic plan can show; the rest of the ZR 12-10 list (bulkheads, uncovered steps, low attics, open balconies and terraces, Fire Department storage, rooftop greenhouses, electrified buildings) is not drawn by the planning engine.",
+   "counted": [
+    {
+     "kind": "stair",
+     "rule": "Stairwells at each floor count, except the extra width excluded in buildings over 125 ft",
+     "section": "ZR 12-10 (floor area (b), exclusion (j))"
+    },
+    {
+     "kind": "elevator",
+     "rule": "Elevator shafts at each floor count",
+     "section": "ZR 12-10 (floor area (b))"
+    }
+   ],
+   "excluded": [
+    {
+     "kind": "cellar",
+     "rule": "Cellar space, except space used for dwelling purposes",
+     "share": 1,
+     "section": "ZR 12-10 (floor area exclusion (a))"
+    },
+    {
+     "kind": "mechanical",
+     "rule": "Accessory mechanical equipment and the minimum space for its maintenance and access",
+     "share": 1,
+     "section": "ZR 12-10 (floor area exclusion (h))"
+    },
+    {
+     "kind": "parking",
+     "rule": "Accessory off-street parking in group parking facilities no more than 23 ft above curb level",
+     "share": 1,
+     "maxTopFeet": 23,
+     "section": "ZR 12-10 (floor area exclusion (f))"
+    },
+    {
+     "kind": "amenity",
+     "rule": "Residential amenities accessible to residents (recreation, co-working, package and storage rooms, laundry, pet facilities), up to 5 percent of the building's residential floor area",
+     "share": 1,
+     "maxShareOfResidential": 0.05,
+     "section": "ZR 23-231"
+    },
+    {
+     "kind": "corridor",
+     "rule": "Half the floor space of a corridor that reaches the farthest dwelling unit door within 100 ft of the elevator core, or that has a balcony, 20 sq ft of daylight glazing, or ends at a unit of three or more bedrooms",
+     "share": 0.5,
+     "maxReachFeet": 100,
+     "section": "ZR 23-232"
+    },
+    {
+     "kind": "refuse",
+     "rule": "Refuse storage and disposal, up to 3 sq ft per dwelling unit",
+     "share": 1,
+     "maxSqftPerUnit": 3,
+     "section": "ZR 23-233"
+    },
+    {
+     "kind": "bicycle",
+     "rule": "Required enclosed bicycle parking, up to 15 sq ft per required space; one space per two dwelling units, waived at 10 units or fewer",
+     "share": 1,
+     "maxSqftPerRequiredSpace": 15,
+     "spacesPerUnit": 0.5,
+     "waivedAtOrBelowUnits": 10,
+     "section": "ZR 25-85, ZR 25-81, ZR 25-83"
+    }
+   ],
+   "multipleDwellingSection": "ZR 23-23"
+  },
+  "assumedExclusions": {
+   "amenityShare": 0.028,
+   "exteriorWallShare": 0.03,
+   "source": "Arosa planning assumption for the deal store; not from a published dataset or cost index; ZR 12-10 defines the exclusions, not these percentages"
+  },
+  "exteriorWallSection": "ZR 12-10 (qualifying exterior wall thickness)",
+  "program": {
+   "zfa": 29000,
+   "storeys": 5,
+   "units": 35,
+   "affordableZfa": 0
+  },
+  "districtPortions": [
+   {
+    "district": "R6",
+    "sharePercent": 55,
+    "maxFar": 2.2
+   },
+   {
+    "district": "R7A",
+    "sharePercent": 45,
+    "maxFar": 4
+   }
+  ],
+  "checks": [
+   "Split zoning lot: R6 on 55% (FAR 2.2), R7A on 45% (FAR 4) by the city's zoning map. The floor area ratio is the area-weighted 3.01 and may be placed anywhere on the lot (ZR 77-22); each portion keeps its own district's yards, heights and setbacks (ZR 77-27, 77-28); dwelling units are summed by portion (ZR 77-25) and residential parking weighted by area (ZR 77-321). The planning engine draws the mapped boundary; a lot that existed on December 15, 1961 may extend one district up to 25 ft across it (ZR 77-211).",
+   "R6: Rear yard drawn as 20 ft up to 75 ft of height and 30 ft above, as curated from ZR 23-342; verify against the current text before relying on it.",
+   "R6: Court minimums (ZR 23-352 inner courts, 23-353 outer courts) are reported in controls.courts and not carved from the drawn envelope; which courts a design needs depends on where legally required windows face.",
+   "R7A: Rear yard drawn as 20 ft up to 75 ft of height and 30 ft above, as curated from ZR 23-342; verify against the current text before relying on it.",
+   "R7A: Court minimums (ZR 23-352 inner courts, 23-353 outer courts) are reported in controls.courts and not carved from the drawn envelope; which courts a design needs depends on where legally required windows face."
+  ]
+ },
+ "deep-50x150-R8-wide-street": {
+  "schema": "acres.outlines/1",
+  "scheme": "as_of_right",
+  "frame": "acres_model_concept",
+  "units": "ft",
+  "lot": {
+   "exterior": [
+    [
+     0,
+     0
+    ],
+    [
+     50,
+     0
+    ],
+    [
+     50,
+     150
+    ],
+    [
+     0,
+     150
+    ]
+   ],
+   "holes": [],
+   "areaSqft": 7500,
+   "taxMapAreaSqft": 7500,
+   "widthFeet": 50,
+   "depthFeet": 150,
+   "type": "interior",
+   "source": "tax-lot",
+   "bbl": null,
+   "north": [
+    0,
+    1
+   ],
+   "note": "Lot lines come from the city's tax map, not a survey.",
+   "recordedAreaSqft": 7500
+  },
+  "streets": [
+   {
+    "side": "front",
+    "name": null,
+    "widthFeet": 100,
+    "wide": true
+   }
+  ],
+  "district": "R8",
+  "residentialEquivalent": "R8",
+  "specialDistricts": [],
+  "regime": "residential",
+  "form": "base",
+  "use": "residential",
+  "affordable": false,
+  "floorArea": {
+   "maxFar": 7.201453333333333,
+   "maxGrossSqft": 54011,
+   "grossPerZfa": 1.058,
+   "maxZfaSqft": 51050,
+   "sections": [
+    "ZR 23-22"
+   ]
+  },
+  "heightLimitFeet": 135,
+  "streetWall": {
+   "minBaseHeightFeet": 60,
+   "maxBaseHeightFeet": 95,
+   "streetRow": "wide street",
+   "affordable": false,
+   "location": "At least 70% of the street wall within 8 ft of the street line up to the minimum base height",
+   "sections": [
+    "ZR 23-432",
+    "ZR 23-431",
+    "ZR 35-631"
+   ]
+  },
+  "setbacks": {
+   "aboveFeet": 95,
+   "depthFeet": {
+    "wide": 10,
+    "narrow": 15
+   },
+   "sections": [
+    "ZR 23-433"
+   ]
+  },
+  "coverage": {
+   "basePercent": 80,
+   "lotType": "interior",
+   "sections": [
+    "ZR 23-362"
+   ]
+  },
+  "yards": {
+   "rearYard": {
+    "requiredFeet": 20,
+    "above75FeetFeet": 30,
+    "sections": [
+     "ZR 23-342"
+    ]
+   },
+   "frontYard": {
+    "requiredFeet": 0,
+    "sections": [
+     "ZR 23-322"
+    ]
+   },
+   "sideYards": {
+    "requiredFeet": 0,
+    "sections": [
+     "ZR 23-335"
+    ]
+   }
+  },
+  "portions": [
+   {
+    "index": 0,
+    "kind": "wide-street",
+    "inside": true,
+    "sides": [
+     "front"
+    ],
+    "withinFeet": 100,
+    "label": "Within 100 ft of a wide street",
+    "sharePercent": 66.7,
+    "row": "wide",
+    "minBaseHeightFeet": 60,
+    "maxBaseHeightFeet": 95,
+    "heightLimitFeet": 135,
+    "sections": [
+     "ZR 23-432",
+     "ZR 77-28"
+    ]
+   },
+   {
+    "index": 1,
+    "kind": "wide-street",
+    "inside": false,
+    "sides": [
+     "front"
+    ],
+    "withinFeet": 100,
+    "label": "Beyond 100 ft of a wide street",
+    "sharePercent": 33.3,
+    "row": "narrow",
+    "minBaseHeightFeet": 60,
+    "maxBaseHeightFeet": 85,
+    "heightLimitFeet": 115,
+    "sections": [
+     "ZR 23-432",
+     "ZR 77-28"
+    ]
+   }
+  ],
+  "storeys": [
+   {
+    "index": 0,
+    "label": "Ground",
+    "use": "residential",
+    "bottomFeet": 0,
+    "topFeet": 10.5,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 6000,
+    "zfaBudgetSqft": 5671,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft",
+      "portion": 0
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 60,
+      "maxBaseFeet": 95,
+      "section": "ZR 23-432",
+      "text": "street wall up to 95 ft (ZR 23-432)",
+      "portion": 0
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 0
+     },
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft",
+      "portion": 1
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 60,
+      "maxBaseFeet": 85,
+      "section": "ZR 23-432",
+      "text": "street wall up to 85 ft (ZR 23-432)",
+      "portion": 1
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 1
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 800,
+       "minDimensionFeet": 20
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 20,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      0
+     ],
+     [
+      50,
+      0
+     ],
+     [
+      50,
+      120
+     ],
+     [
+      0,
+      120
+     ]
+    ]
+   },
+   {
+    "index": 1,
+    "label": "Level 2",
+    "use": "residential",
+    "bottomFeet": 10.5,
+    "topFeet": 21,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 6000,
+    "zfaBudgetSqft": 5671,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft",
+      "portion": 0
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 60,
+      "maxBaseFeet": 95,
+      "section": "ZR 23-432",
+      "text": "street wall up to 95 ft (ZR 23-432)",
+      "portion": 0
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 0
+     },
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft",
+      "portion": 1
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 60,
+      "maxBaseFeet": 85,
+      "section": "ZR 23-432",
+      "text": "street wall up to 85 ft (ZR 23-432)",
+      "portion": 1
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 1
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 800,
+       "minDimensionFeet": 20
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 20,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      0
+     ],
+     [
+      50,
+      0
+     ],
+     [
+      50,
+      120
+     ],
+     [
+      0,
+      120
+     ]
+    ]
+   },
+   {
+    "index": 2,
+    "label": "Level 3",
+    "use": "residential",
+    "bottomFeet": 21,
+    "topFeet": 31.5,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 6000,
+    "zfaBudgetSqft": 5671,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft",
+      "portion": 0
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 60,
+      "maxBaseFeet": 95,
+      "section": "ZR 23-432",
+      "text": "street wall up to 95 ft (ZR 23-432)",
+      "portion": 0
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 0
+     },
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft",
+      "portion": 1
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 60,
+      "maxBaseFeet": 85,
+      "section": "ZR 23-432",
+      "text": "street wall up to 85 ft (ZR 23-432)",
+      "portion": 1
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 1
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 800,
+       "minDimensionFeet": 20
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 20,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      0
+     ],
+     [
+      50,
+      0
+     ],
+     [
+      50,
+      120
+     ],
+     [
+      0,
+      120
+     ]
+    ]
+   },
+   {
+    "index": 3,
+    "label": "Level 4",
+    "use": "residential",
+    "bottomFeet": 31.5,
+    "topFeet": 42,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 6000,
+    "zfaBudgetSqft": 5671,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft",
+      "portion": 0
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 60,
+      "maxBaseFeet": 95,
+      "section": "ZR 23-432",
+      "text": "street wall up to 95 ft (ZR 23-432)",
+      "portion": 0
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 0
+     },
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft",
+      "portion": 1
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 60,
+      "maxBaseFeet": 85,
+      "section": "ZR 23-432",
+      "text": "street wall up to 85 ft (ZR 23-432)",
+      "portion": 1
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 1
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 800,
+       "minDimensionFeet": 20
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 20,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      0
+     ],
+     [
+      50,
+      0
+     ],
+     [
+      50,
+      120
+     ],
+     [
+      0,
+      120
+     ]
+    ]
+   },
+   {
+    "index": 4,
+    "label": "Level 5",
+    "use": "residential",
+    "bottomFeet": 42,
+    "topFeet": 52.5,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 6000,
+    "zfaBudgetSqft": 5671,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft",
+      "portion": 0
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 60,
+      "maxBaseFeet": 95,
+      "section": "ZR 23-432",
+      "text": "street wall up to 95 ft (ZR 23-432)",
+      "portion": 0
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 0
+     },
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft",
+      "portion": 1
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 60,
+      "maxBaseFeet": 85,
+      "section": "ZR 23-432",
+      "text": "street wall up to 85 ft (ZR 23-432)",
+      "portion": 1
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 1
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 800,
+       "minDimensionFeet": 20
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 20,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      0
+     ],
+     [
+      50,
+      0
+     ],
+     [
+      50,
+      120
+     ],
+     [
+      0,
+      120
+     ]
+    ]
+   },
+   {
+    "index": 5,
+    "label": "Level 6",
+    "use": "residential",
+    "bottomFeet": 52.5,
+    "topFeet": 63,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 6000,
+    "zfaBudgetSqft": 5671,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft",
+      "portion": 0
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 60,
+      "maxBaseFeet": 95,
+      "section": "ZR 23-432",
+      "text": "street wall up to 95 ft (ZR 23-432)",
+      "portion": 0
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 0
+     },
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft",
+      "portion": 1
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 60,
+      "maxBaseFeet": 85,
+      "section": "ZR 23-432",
+      "text": "street wall up to 85 ft (ZR 23-432)",
+      "portion": 1
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 1
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 800,
+       "minDimensionFeet": 20
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 20,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      0
+     ],
+     [
+      50,
+      0
+     ],
+     [
+      50,
+      120
+     ],
+     [
+      0,
+      120
+     ]
+    ]
+   },
+   {
+    "index": 6,
+    "label": "Level 7",
+    "use": "residential",
+    "bottomFeet": 63,
+    "topFeet": 73.5,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 6000,
+    "zfaBudgetSqft": 5671,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft",
+      "portion": 0
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 60,
+      "maxBaseFeet": 95,
+      "section": "ZR 23-432",
+      "text": "street wall up to 95 ft (ZR 23-432)",
+      "portion": 0
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 0
+     },
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "text": "rear yard 20 ft",
+      "portion": 1
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 60,
+      "maxBaseFeet": 85,
+      "section": "ZR 23-432",
+      "text": "street wall up to 85 ft (ZR 23-432)",
+      "portion": 1
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 1
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 800,
+       "minDimensionFeet": 20
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 20,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      0
+     ],
+     [
+      50,
+      0
+     ],
+     [
+      50,
+      120
+     ],
+     [
+      0,
+      120
+     ]
+    ]
+   },
+   {
+    "index": 7,
+    "label": "Level 8",
+    "use": "residential",
+    "bottomFeet": 73.5,
+    "topFeet": 84,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 6000,
+    "zfaBudgetSqft": 5671,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 30,
+      "section": "ZR 23-342",
+      "text": "rear yard 30 ft",
+      "portion": 0
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 60,
+      "maxBaseFeet": 95,
+      "section": "ZR 23-432",
+      "text": "street wall up to 95 ft (ZR 23-432)",
+      "portion": 0
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 0
+     },
+     {
+      "control": "rear_yard",
+      "feet": 30,
+      "section": "ZR 23-342",
+      "text": "rear yard 30 ft",
+      "portion": 1
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 60,
+      "maxBaseFeet": 85,
+      "section": "ZR 23-432",
+      "text": "street wall up to 85 ft (ZR 23-432)",
+      "portion": 1
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 1
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 1200,
+       "minDimensionFeet": 30
+      },
+      "withoutWindows": {
+       "minAreaSqft": 300,
+       "minDimensionFeet": 15
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 30,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 300,
+       "minDimensionFeet": 15
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      0
+     ],
+     [
+      50,
+      0
+     ],
+     [
+      50,
+      120
+     ],
+     [
+      0,
+      120
+     ]
+    ]
+   },
+   {
+    "index": 8,
+    "label": "Level 9",
+    "use": "residential",
+    "bottomFeet": 84,
+    "topFeet": 94.5,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 6000,
+    "zfaBudgetSqft": 5671,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 30,
+      "section": "ZR 23-342",
+      "text": "rear yard 30 ft",
+      "portion": 0
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 60,
+      "maxBaseFeet": 95,
+      "section": "ZR 23-432",
+      "text": "street wall up to 95 ft (ZR 23-432)",
+      "portion": 0
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 0
+     },
+     {
+      "control": "rear_yard",
+      "feet": 30,
+      "section": "ZR 23-342",
+      "text": "rear yard 30 ft",
+      "portion": 1
+     },
+     {
+      "control": "setback",
+      "feet": {
+       "front": 10
+      },
+      "aboveFeet": 85,
+      "section": "ZR 23-433",
+      "text": "setback above the maximum base height (ZR 23-433)",
+      "portion": 1
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 1
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 1200,
+       "minDimensionFeet": 30
+      },
+      "withoutWindows": {
+       "minAreaSqft": 300,
+       "minDimensionFeet": 15
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 30,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 300,
+       "minDimensionFeet": 15
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      0
+     ],
+     [
+      50,
+      0
+     ],
+     [
+      50,
+      120
+     ],
+     [
+      0,
+      120
+     ]
+    ]
+   },
+   {
+    "index": 9,
+    "label": "Level 10 (partial)",
+    "use": "residential",
+    "bottomFeet": 94.5,
+    "topFeet": 105,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 11,
+    "zfaBudgetSqft": 10,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 30,
+      "section": "ZR 23-342",
+      "text": "rear yard 30 ft",
+      "portion": 0
+     },
+     {
+      "control": "setback",
+      "feet": {
+       "front": 10
+      },
+      "aboveFeet": 95,
+      "section": "ZR 23-433",
+      "text": "setback above the maximum base height (ZR 23-433)",
+      "portion": 0
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 0
+     },
+     {
+      "control": "rear_yard",
+      "feet": 30,
+      "section": "ZR 23-342",
+      "text": "rear yard 30 ft",
+      "portion": 1
+     },
+     {
+      "control": "setback",
+      "feet": {
+       "front": 10
+      },
+      "aboveFeet": 85,
+      "section": "ZR 23-433",
+      "text": "setback above the maximum base height (ZR 23-433)",
+      "portion": 1
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 1
+     },
+     {
+      "control": "max_area",
+      "areaSqft": 11,
+      "section": "ZR 23-22",
+      "text": "partial storey holding the last 11 sq ft of the floor area ratio"
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 1200,
+       "minDimensionFeet": 30
+      },
+      "withoutWindows": {
+       "minAreaSqft": 300,
+       "minDimensionFeet": 15
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 30,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 300,
+       "minDimensionFeet": 15
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      10
+     ],
+     [
+      50,
+      10
+     ],
+     [
+      50,
+      10.2
+     ],
+     [
+      0,
+      10.2
+     ]
+    ]
+   }
+  ],
+  "reserveStoreys": [
+   {
+    "index": 10,
+    "label": "Level 11",
+    "use": "residential",
+    "bottomFeet": 105,
+    "topFeet": 115.5,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 4500,
+    "zfaBudgetSqft": 4253,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 30,
+      "section": "ZR 23-342",
+      "text": "rear yard 30 ft",
+      "portion": 0
+     },
+     {
+      "control": "setback",
+      "feet": {
+       "front": 10
+      },
+      "aboveFeet": 95,
+      "section": "ZR 23-433",
+      "text": "setback above the maximum base height (ZR 23-433)",
+      "portion": 0
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 0
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 1200,
+       "minDimensionFeet": 30
+      },
+      "withoutWindows": {
+       "minAreaSqft": 300,
+       "minDimensionFeet": 15
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 30,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 300,
+       "minDimensionFeet": 15
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      10
+     ],
+     [
+      50,
+      10
+     ],
+     [
+      50,
+      100
+     ],
+     [
+      0,
+      100
+     ]
+    ]
+   },
+   {
+    "index": 11,
+    "label": "Level 12",
+    "use": "residential",
+    "bottomFeet": 115.5,
+    "topFeet": 126,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 4500,
+    "zfaBudgetSqft": 4253,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 30,
+      "section": "ZR 23-342",
+      "text": "rear yard 30 ft",
+      "portion": 0
+     },
+     {
+      "control": "setback",
+      "feet": {
+       "front": 10
+      },
+      "aboveFeet": 95,
+      "section": "ZR 23-433",
+      "text": "setback above the maximum base height (ZR 23-433)",
+      "portion": 0
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 80,
+      "section": "ZR 23-362",
+      "text": "80% lot coverage (ZR 23-362)",
+      "portion": 0
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 1200,
+       "minDimensionFeet": 30
+      },
+      "withoutWindows": {
+       "minAreaSqft": 300,
+       "minDimensionFeet": 15
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 30,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 300,
+       "minDimensionFeet": 15
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      10
+     ],
+     [
+      50,
+      10
+     ],
+     [
+      50,
+      100
+     ],
+     [
+      0,
+      100
+     ]
+    ]
+   }
+  ],
+  "metrics": {
+   "storeys": 10,
+   "heightFeet": 105,
+   "floorAreaSqft": 54011,
+   "far": 7.2,
+   "remainingFloorAreaSqft": 0,
+   "stoppedBy": "floor area ratio of 7.201453333333333"
+  },
+  "density": {
+   "maxUnits": null,
+   "dwellingUnitFactor": null,
+   "sections": [
+    "ZR 23-52",
+    "ZR 12-10 (special density areas; Manhattan Core)"
+   ],
+   "note": "No dwelling unit factor applies in the special density areas (Manhattan Core and the Special Downtown Brooklyn District); unit count is set by floor area, the building code and the market."
+  },
+  "parking": {
+   "required": 0,
+   "communityDistrict": "107",
+   "manhattanCore": true,
+   "maxResidentialSpaces": 28,
+   "residentialMaxPercentOfNewUnits": 35,
+   "maxRetailSpaces": 0,
+   "maxOtherNonResidentialSpaces": 0,
+   "maxNonResidentialSpaces": 0,
+   "sections": [
+    "ZR 13-10",
+    "ZR 13-11",
+    "ZR 13-12",
+    "ZR 12-10 (Manhattan Core)"
+   ],
+   "note": "No parking is required in the Manhattan Core; accessory parking is capped as of right and anything more needs a special permit."
+  },
+  "label": "As of right",
+  "address": "Example",
+  "context": [],
+  "zoningFloorArea": {
+   "allowedFar": 6.807,
+   "allowedSqft": 51053,
+   "sections": [
+    "ZR 23-22"
+   ],
+   "optionSqft": 51050,
+   "optionFar": 6.81,
+   "affordableSqft": 0
+  },
+  "floorAreaRules": {
+   "verified": "2026-10-22",
+   "source": "https://zr.planning.nyc.gov/article-i/chapter-2/12-10",
+   "note": "Floor space counted as zoning floor area and the exclusions a schematic plan can show; the rest of the ZR 12-10 list (bulkheads, uncovered steps, low attics, open balconies and terraces, Fire Department storage, rooftop greenhouses, electrified buildings) is not drawn by the planning engine.",
+   "counted": [
+    {
+     "kind": "stair",
+     "rule": "Stairwells at each floor count, except the extra width excluded in buildings over 125 ft",
+     "section": "ZR 12-10 (floor area (b), exclusion (j))"
+    },
+    {
+     "kind": "elevator",
+     "rule": "Elevator shafts at each floor count",
+     "section": "ZR 12-10 (floor area (b))"
+    }
+   ],
+   "excluded": [
+    {
+     "kind": "cellar",
+     "rule": "Cellar space, except space used for dwelling purposes",
+     "share": 1,
+     "section": "ZR 12-10 (floor area exclusion (a))"
+    },
+    {
+     "kind": "mechanical",
+     "rule": "Accessory mechanical equipment and the minimum space for its maintenance and access",
+     "share": 1,
+     "section": "ZR 12-10 (floor area exclusion (h))"
+    },
+    {
+     "kind": "parking",
+     "rule": "Accessory off-street parking in group parking facilities no more than 23 ft above curb level",
+     "share": 1,
+     "maxTopFeet": 23,
+     "section": "ZR 12-10 (floor area exclusion (f))"
+    },
+    {
+     "kind": "amenity",
+     "rule": "Residential amenities accessible to residents (recreation, co-working, package and storage rooms, laundry, pet facilities), up to 5 percent of the building's residential floor area",
+     "share": 1,
+     "maxShareOfResidential": 0.05,
+     "section": "ZR 23-231"
+    },
+    {
+     "kind": "corridor",
+     "rule": "Half the floor space of a corridor that reaches the farthest dwelling unit door within 100 ft of the elevator core, or that has a balcony, 20 sq ft of daylight glazing, or ends at a unit of three or more bedrooms",
+     "share": 0.5,
+     "maxReachFeet": 100,
+     "section": "ZR 23-232"
+    },
+    {
+     "kind": "refuse",
+     "rule": "Refuse storage and disposal, up to 3 sq ft per dwelling unit",
+     "share": 1,
+     "maxSqftPerUnit": 3,
+     "section": "ZR 23-233"
+    },
+    {
+     "kind": "bicycle",
+     "rule": "Required enclosed bicycle parking, up to 15 sq ft per required space; one space per two dwelling units, waived at 10 units or fewer",
+     "share": 1,
+     "maxSqftPerRequiredSpace": 15,
+     "spacesPerUnit": 0.5,
+     "waivedAtOrBelowUnits": 10,
+     "section": "ZR 25-85, ZR 25-81, ZR 25-83"
+    }
+   ],
+   "multipleDwellingSection": "ZR 23-23"
+  },
+  "assumedExclusions": {
+   "amenityShare": 0.028,
+   "exteriorWallShare": 0.03,
+   "source": "Arosa planning assumption for the deal store; not from a published dataset or cost index; ZR 12-10 defines the exclusions, not these percentages"
+  },
+  "exteriorWallSection": "ZR 12-10 (qualifying exterior wall thickness)",
+  "program": {
+   "zfa": 51050,
+   "storeys": 13,
+   "units": 80,
+   "affordableZfa": 0
+  },
+  "checks": [
+   "Rear yard drawn as 20 ft up to 75 ft of height and 30 ft above, as curated from ZR 23-342; verify against the current text before relying on it.",
+   "The 66.7% of the lot within 100 ft of a wide street takes the wide-street heights (base 60 to 95 ft, building 135 ft) and the rest the narrow-street heights (base 60 to 85 ft, building 115 ft) (ZR 23-432 notes 1 and 2, ZR 77-28).",
+   "Court minimums (ZR 23-352 inner courts, 23-353 outer courts) are reported in controls.courts and not carved from the drawn envelope; which courts a design needs depends on where legally required windows face."
+  ]
+ },
+ "corner-80x112-R7D-recovered": {
+  "schema": "acres.outlines/1",
+  "scheme": "max_bonus",
+  "frame": "acres_model_concept",
+  "units": "ft",
+  "lot": {
+   "exterior": [
+    [
+     0,
+     0.26
+    ],
+    [
+     80.25,
+     0
+    ],
+    [
+     80.25,
+     111.42
+    ],
+    [
+     0,
+     111.68
+    ]
+   ],
+   "holes": [],
+   "areaSqft": 8620,
+   "taxMapAreaSqft": 8941,
+   "widthFeet": 80.3,
+   "depthFeet": 111.7,
+   "type": "corner",
+   "source": "tax-lot",
+   "bbl": null,
+   "north": [
+    -0.1497,
+    0.9887
+   ],
+   "note": "Lot lines come from the city's tax map, not a survey.",
+   "recordedAreaSqft": 8620
+  },
+  "streets": [
+   {
+    "side": "front",
+    "name": "Myrtle Avenue",
+    "widthFeet": 75,
+    "wide": true
+   },
+   {
+    "side": "right",
+    "name": "Spencer Street",
+    "widthFeet": 50,
+    "wide": false
+   }
+  ],
+  "district": "R7D",
+  "residentialEquivalent": "R7D",
+  "specialDistricts": [],
+  "regime": "residential",
+  "form": "base",
+  "use": "residential",
+  "affordable": false,
+  "floorArea": {
+   "maxFar": 4.930255452436195,
+   "maxGrossSqft": 42499,
+   "grossPerZfa": 1.058,
+   "maxZfaSqft": 40169,
+   "sections": [
+    "ZR 23-22"
+   ]
+  },
+  "heightLimitFeet": 105,
+  "streetWall": {
+   "minBaseHeightFeet": 60,
+   "maxBaseHeightFeet": 85,
+   "streetRow": "wide street",
+   "affordable": false,
+   "location": "At least 70% of the street wall within 8 ft of the street line up to the minimum base height",
+   "sections": [
+    "ZR 23-432",
+    "ZR 23-431",
+    "ZR 35-631"
+   ]
+  },
+  "setbacks": {
+   "aboveFeet": 85,
+   "depthFeet": {
+    "wide": 10,
+    "narrow": 15
+   },
+   "sections": [
+    "ZR 23-433"
+   ]
+  },
+  "coverage": {
+   "basePercent": 100,
+   "lotType": "corner",
+   "sections": [
+    "ZR 23-362"
+   ]
+  },
+  "yards": {
+   "rearYard": {
+    "requiredFeet": 20,
+    "above75FeetFeet": 30,
+    "sections": [
+     "ZR 23-342"
+    ]
+   },
+   "frontYard": {
+    "requiredFeet": 0,
+    "sections": [
+     "ZR 23-322"
+    ]
+   },
+   "sideYards": {
+    "requiredFeet": 0,
+    "sections": [
+     "ZR 23-335"
+    ]
+   }
+  },
+  "portions": null,
+  "storeys": [
+   {
+    "index": 0,
+    "label": "Ground",
+    "use": "residential",
+    "bottomFeet": 0,
+    "topFeet": 10.5,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 8015,
+    "zfaBudgetSqft": 7576,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "cornerPortionFeet": 100,
+      "cornerSection": "ZR 23-344",
+      "text": "rear yard 20 ft"
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 60,
+      "maxBaseFeet": 85,
+      "section": "ZR 23-432",
+      "text": "street wall up to 85 ft (ZR 23-432)"
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 100,
+      "section": "ZR 23-362",
+      "text": "100% lot coverage (ZR 23-362)"
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 800,
+       "minDimensionFeet": 20
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 20,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      80.3,
+      0
+     ],
+     [
+      80.3,
+      100
+     ],
+     [
+      0,
+      100
+     ],
+     [
+      0,
+      0.3
+     ]
+    ]
+   },
+   {
+    "index": 1,
+    "label": "Level 2",
+    "use": "residential",
+    "bottomFeet": 10.5,
+    "topFeet": 21,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 8015,
+    "zfaBudgetSqft": 7576,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "cornerPortionFeet": 100,
+      "cornerSection": "ZR 23-344",
+      "text": "rear yard 20 ft"
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 60,
+      "maxBaseFeet": 85,
+      "section": "ZR 23-432",
+      "text": "street wall up to 85 ft (ZR 23-432)"
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 100,
+      "section": "ZR 23-362",
+      "text": "100% lot coverage (ZR 23-362)"
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 800,
+       "minDimensionFeet": 20
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 20,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      80.3,
+      0
+     ],
+     [
+      80.3,
+      100
+     ],
+     [
+      0,
+      100
+     ],
+     [
+      0,
+      0.3
+     ]
+    ]
+   },
+   {
+    "index": 2,
+    "label": "Level 3",
+    "use": "residential",
+    "bottomFeet": 21,
+    "topFeet": 31.5,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 8015,
+    "zfaBudgetSqft": 7576,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "cornerPortionFeet": 100,
+      "cornerSection": "ZR 23-344",
+      "text": "rear yard 20 ft"
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 60,
+      "maxBaseFeet": 85,
+      "section": "ZR 23-432",
+      "text": "street wall up to 85 ft (ZR 23-432)"
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 100,
+      "section": "ZR 23-362",
+      "text": "100% lot coverage (ZR 23-362)"
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 800,
+       "minDimensionFeet": 20
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 20,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      80.3,
+      0
+     ],
+     [
+      80.3,
+      100
+     ],
+     [
+      0,
+      100
+     ],
+     [
+      0,
+      0.3
+     ]
+    ]
+   },
+   {
+    "index": 3,
+    "label": "Level 4",
+    "use": "residential",
+    "bottomFeet": 31.5,
+    "topFeet": 42,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 8015,
+    "zfaBudgetSqft": 7576,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "cornerPortionFeet": 100,
+      "cornerSection": "ZR 23-344",
+      "text": "rear yard 20 ft"
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 60,
+      "maxBaseFeet": 85,
+      "section": "ZR 23-432",
+      "text": "street wall up to 85 ft (ZR 23-432)"
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 100,
+      "section": "ZR 23-362",
+      "text": "100% lot coverage (ZR 23-362)"
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 800,
+       "minDimensionFeet": 20
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 20,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      80.3,
+      0
+     ],
+     [
+      80.3,
+      100
+     ],
+     [
+      0,
+      100
+     ],
+     [
+      0,
+      0.3
+     ]
+    ]
+   },
+   {
+    "index": 4,
+    "label": "Level 5",
+    "use": "residential",
+    "bottomFeet": 42,
+    "topFeet": 52.5,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 8015,
+    "zfaBudgetSqft": 7576,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "cornerPortionFeet": 100,
+      "cornerSection": "ZR 23-344",
+      "text": "rear yard 20 ft"
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 60,
+      "maxBaseFeet": 85,
+      "section": "ZR 23-432",
+      "text": "street wall up to 85 ft (ZR 23-432)"
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 100,
+      "section": "ZR 23-362",
+      "text": "100% lot coverage (ZR 23-362)"
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 800,
+       "minDimensionFeet": 20
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 20,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      80.3,
+      0
+     ],
+     [
+      80.3,
+      100
+     ],
+     [
+      0,
+      100
+     ],
+     [
+      0,
+      0.3
+     ]
+    ]
+   },
+   {
+    "index": 5,
+    "label": "Level 6 (partial)",
+    "use": "residential",
+    "bottomFeet": 52.5,
+    "topFeet": 63,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 2426,
+    "zfaBudgetSqft": 2293,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "cornerPortionFeet": 100,
+      "cornerSection": "ZR 23-344",
+      "text": "rear yard 20 ft"
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 60,
+      "maxBaseFeet": 85,
+      "section": "ZR 23-432",
+      "text": "street wall up to 85 ft (ZR 23-432)"
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 100,
+      "section": "ZR 23-362",
+      "text": "100% lot coverage (ZR 23-362)"
+     },
+     {
+      "control": "max_area",
+      "areaSqft": 2426,
+      "section": "ZR 23-22",
+      "text": "partial storey holding the last 2426 sq ft of the floor area ratio"
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 800,
+       "minDimensionFeet": 20
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 20,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      80.3,
+      0
+     ],
+     [
+      80.3,
+      30.4
+     ],
+     [
+      0,
+      30.4
+     ],
+     [
+      0,
+      0.3
+     ]
+    ]
+   }
+  ],
+  "reserveStoreys": [
+   {
+    "index": 6,
+    "label": "Level 7",
+    "use": "residential",
+    "bottomFeet": 63,
+    "topFeet": 73.5,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 8015,
+    "zfaBudgetSqft": 7576,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 20,
+      "section": "ZR 23-342",
+      "cornerPortionFeet": 100,
+      "cornerSection": "ZR 23-344",
+      "text": "rear yard 20 ft"
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 60,
+      "maxBaseFeet": 85,
+      "section": "ZR 23-432",
+      "text": "street wall up to 85 ft (ZR 23-432)"
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 100,
+      "section": "ZR 23-362",
+      "text": "100% lot coverage (ZR 23-362)"
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 800,
+       "minDimensionFeet": 20
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 20,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 200,
+       "minDimensionFeet": 10
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      80.3,
+      0
+     ],
+     [
+      80.3,
+      100
+     ],
+     [
+      0,
+      100
+     ],
+     [
+      0,
+      0.3
+     ]
+    ]
+   },
+   {
+    "index": 7,
+    "label": "Level 8",
+    "use": "residential",
+    "bottomFeet": 73.5,
+    "topFeet": 84,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 8015,
+    "zfaBudgetSqft": 7576,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 30,
+      "section": "ZR 23-342",
+      "cornerPortionFeet": 100,
+      "cornerSection": "ZR 23-344",
+      "text": "rear yard 30 ft"
+     },
+     {
+      "control": "street_wall",
+      "minBaseFeet": 60,
+      "maxBaseFeet": 85,
+      "section": "ZR 23-432",
+      "text": "street wall up to 85 ft (ZR 23-432)"
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 100,
+      "section": "ZR 23-362",
+      "text": "100% lot coverage (ZR 23-362)"
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 1200,
+       "minDimensionFeet": 30
+      },
+      "withoutWindows": {
+       "minAreaSqft": 300,
+       "minDimensionFeet": 15
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 30,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 300,
+       "minDimensionFeet": 15
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      80.3,
+      0
+     ],
+     [
+      80.3,
+      100
+     ],
+     [
+      0,
+      100
+     ],
+     [
+      0,
+      0.3
+     ]
+    ]
+   },
+   {
+    "index": 8,
+    "label": "Level 9",
+    "use": "residential",
+    "bottomFeet": 84,
+    "topFeet": 94.5,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 5873,
+    "zfaBudgetSqft": 5551,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 30,
+      "section": "ZR 23-342",
+      "cornerPortionFeet": 100,
+      "cornerSection": "ZR 23-344",
+      "text": "rear yard 30 ft"
+     },
+     {
+      "control": "setback",
+      "feet": {
+       "front": 10,
+       "right": 15
+      },
+      "aboveFeet": 85,
+      "section": "ZR 23-433",
+      "text": "setback above the maximum base height (ZR 23-433)"
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 100,
+      "section": "ZR 23-362",
+      "text": "100% lot coverage (ZR 23-362)"
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 1200,
+       "minDimensionFeet": 30
+      },
+      "withoutWindows": {
+       "minAreaSqft": 300,
+       "minDimensionFeet": 15
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 30,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 300,
+       "minDimensionFeet": 15
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      10
+     ],
+     [
+      65.3,
+      10
+     ],
+     [
+      65.3,
+      100
+     ],
+     [
+      0,
+      100
+     ]
+    ]
+   },
+   {
+    "index": 9,
+    "label": "Level 10",
+    "use": "residential",
+    "bottomFeet": 94.5,
+    "topFeet": 105,
+    "heightFeet": 10.5,
+    "grossBudgetSqft": 5873,
+    "zfaBudgetSqft": 5551,
+    "shapedBy": [
+     {
+      "control": "rear_yard",
+      "feet": 30,
+      "section": "ZR 23-342",
+      "cornerPortionFeet": 100,
+      "cornerSection": "ZR 23-344",
+      "text": "rear yard 30 ft"
+     },
+     {
+      "control": "setback",
+      "feet": {
+       "front": 10,
+       "right": 15
+      },
+      "aboveFeet": 85,
+      "section": "ZR 23-433",
+      "text": "setback above the maximum base height (ZR 23-433)"
+     },
+     {
+      "control": "lot_coverage",
+      "percent": 100,
+      "section": "ZR 23-362",
+      "text": "100% lot coverage (ZR 23-362)"
+     }
+    ],
+    "courts": {
+     "inner": {
+      "withWindows": {
+       "minAreaSqft": 1200,
+       "minDimensionFeet": 30
+      },
+      "withoutWindows": {
+       "minAreaSqft": 300,
+       "minDimensionFeet": 15
+      },
+      "section": "ZR 23-352"
+     },
+     "outer": {
+      "withWindows": {
+       "minWidthFeet": 30,
+       "rule": "Width at least equal to depth, except any depth where the width is at least 20 ft at or below 75 ft or 30 ft above 75 ft"
+      },
+      "withoutWindows": {
+       "minAreaSqft": 300,
+       "minDimensionFeet": 15
+      },
+      "section": "ZR 23-353"
+     }
+    },
+    "footprint": [
+     [
+      0,
+      10
+     ],
+     [
+      65.3,
+      10
+     ],
+     [
+      65.3,
+      100
+     ],
+     [
+      0,
+      100
+     ]
+    ]
+   }
+  ],
+  "metrics": {
+   "storeys": 6,
+   "heightFeet": 63,
+   "floorAreaSqft": 42499,
+   "far": 4.93,
+   "remainingFloorAreaSqft": 0,
+   "stoppedBy": "floor area ratio of 4.930255452436195"
+  },
+  "density": {
+   "maxUnits": 62,
+   "dwellingUnitFactor": 680,
+   "residentialFloorAreaSqft": 42499,
+   "sections": [
+    "ZR 23-52",
+    "ZR 12-10 (special density areas; Manhattan Core)"
+   ],
+   "note": "The maximum residential floor area permitted on the zoning lot divided by the dwelling unit factor (ZR 23-52); fractions of three-quarters or more count as a unit."
+  },
+  "parking": {
+   "zone": "inner",
+   "required": 0,
+   "sections": [
+    "ZR 25-211",
+    "ZR 25-222",
+    "ZR 25-232"
+   ],
+   "note": "Computed for the inner transit zone (PLUTO transit zone).",
+   "transitZone": "inner",
+   "transitZoneSource": "PLUTO transit zone",
+   "communityDistrict": "303"
+  },
+  "label": "Most floor area",
+  "address": "Example",
+  "context": [
+   {
+    "polygon": [
+     [
+      -19.75,
+      3.15
+     ],
+     [
+      -0.23,
+      3.12
+     ],
+     [
+      -0.23,
+      64.4
+     ],
+     [
+      -19.78,
+      64.4
+     ]
+    ],
+    "height": 35.1
+   },
+   {
+    "polygon": [
+     [
+      -40.52,
+      3.15
+     ],
+     [
+      -19.75,
+      3.15
+     ],
+     [
+      -19.78,
+      64.4
+     ],
+     [
+      -40.52,
+      64.44
+     ]
+    ],
+    "height": 36.8
+   },
+   {
+    "polygon": [
+     [
+      -1.21,
+      113.09
+     ],
+     [
+      14.17,
+      113.09
+     ],
+     [
+      14.17,
+      137.83
+     ],
+     [
+      -19.46,
+      137.83
+     ],
+     [
+      -19.46,
+      113.09
+     ]
+    ],
+    "height": 16.7
+   },
+   {
+    "polygon": [
+     [
+      -59.48,
+      87.63
+     ],
+     [
+      -59.45,
+      3.18
+     ],
+     [
+      -40.52,
+      3.15
+     ],
+     [
+      -40.55,
+      106.82
+     ],
+     [
+      -59.48,
+      106.82
+     ]
+    ],
+    "height": 35.8
+   },
+   {
+    "polygon": [
+     [
+      -19.46,
+      137.83
+     ],
+     [
+      79.2,
+      137.76
+     ],
+     [
+      79.17,
+      187.63
+     ],
+     [
+      -19.49,
+      187.7
+     ]
+    ],
+    "height": 23.4
+   },
+   {
+    "polygon": [
+     [
+      -79.4,
+      3.18
+     ],
+     [
+      -59.45,
+      3.18
+     ],
+     [
+      -59.48,
+      64.44
+     ],
+     [
+      -79.4,
+      64.44
+     ]
+    ],
+    "height": 37.1
+   },
+   {
+    "polygon": [
+     [
+      -97.7,
+      3.22
+     ],
+     [
+      -79.4,
+      3.18
+     ],
+     [
+      -79.4,
+      64.44
+     ],
+     [
+      -97.74,
+      64.47
+     ]
+    ],
+    "height": 37.1
+   },
+   {
+    "polygon": [
+     [
+      -59.48,
+      87.63
+     ],
+     [
+      -59.51,
+      111.52
+     ],
+     [
+      -120.08,
+      111.55
+     ],
+     [
+      -120.08,
+      87.66
+     ]
+    ],
+    "height": 24.8
+   },
+   {
+    "polygon": [
+     [
+      228.15,
+      4.95
+     ],
+     [
+      228.64,
+      111.25
+     ],
+     [
+      130.28,
+      111.81
+     ],
+     [
+      129.79,
+      5.54
+     ]
+    ],
+    "height": 74
+   },
+   {
+    "polygon": [
+     [
+      -97.7,
+      3.22
+     ],
+     [
+      -97.74,
+      64.47
+     ],
+     [
+      -120.73,
+      64.47
+     ],
+     [
+      -120.7,
+      3.22
+     ]
+    ],
+    "height": 35.6
+   },
+   {
+    "polygon": [
+     [
+      -120.11,
+      136.81
+     ],
+     [
+      -120.08,
+      111.55
+     ],
+     [
+      -99.02,
+      111.55
+     ],
+     [
+      -94.03,
+      116.14
+     ],
+     [
+      -89.8,
+      111.55
+     ],
+     [
+      -70.87,
+      111.52
+     ],
+     [
+      -70.87,
+      119.29
+     ],
+     [
+      -67.39,
+      119.26
+     ],
+     [
+      -67.39,
+      130.28
+     ],
+     [
+      -70.87,
+      130.28
+     ],
+     [
+      -70.87,
+      136.06
+     ],
+     [
+      -91.04,
+      136.45
+     ],
+     [
+      -94.06,
+      133.04
+     ],
+     [
+      -98.1,
+      136.61
+     ]
+    ],
+    "height": 35.4
+   },
+   {
+    "polygon": [
+     [
+      -6,
+      -122.05
+     ],
+     [
+      15.26,
+      -122.01
+     ],
+     [
+      15.19,
+      -70.14
+     ],
+     [
+      -6.1,
+      -70.18
+     ]
+    ],
+    "height": 36
+   },
+   {
+    "polygon": [
+     [
+      79.17,
+      237.4
+     ],
+     [
+      -19.52,
+      237.43
+     ],
+     [
+      -19.49,
+      187.7
+     ],
+     [
+      79.17,
+      187.63
+     ]
+    ],
+    "height": 23
+   },
+   {
+    "polygon": [
+     [
+      130.28,
+      111.81
+     ],
+     [
+      228.64,
+      111.25
+     ],
+     [
+      228.87,
+      162.5
+     ],
+     [
+      130.51,
+      163.09
+     ]
+    ],
+    "height": 22.3
+   },
+   {
+    "polygon": [
+     [
+      15.26,
+      -122.01
+     ],
+     [
+      15.32,
+      -170.18
+     ],
+     [
+      55.81,
+      -170.18
+     ],
+     [
+      55.64,
+      -70.14
+     ],
+     [
+      15.19,
+      -70.14
+     ]
+    ],
+    "height": 17.4
+   },
+   {
+    "polygon": [
+     [
+      -17.19,
+      -146
+     ],
+     [
+      -17.19,
+      -156.33
+     ],
+     [
+      -5.97,
+      -156.33
+     ],
+     [
+      -6.1,
+      -70.18
+     ],
+     [
+      -24.93,
+      -70.18
+     ],
+     [
+      -24.8,
+      -146.13
+     ]
+    ],
+    "height": 34.4
+   },
+   {
+    "polygon": [
+     [
+      55.81,
+      -170.18
+     ],
+     [
+      55.81,
+      -183.3
+     ],
+     [
+      79.04,
+      -183.3
+     ],
+     [
+      78.87,
+      -70.11
+     ],
+     [
+      55.64,
+      -70.14
+     ]
+    ],
+    "height": 32.3
+   },
+   {
+    "polygon": [
+     [
+      228.15,
+      4.95
+     ],
+     [
+      247.93,
+      4.86
+     ],
+     [
+      248.43,
+      111.12
+     ],
+     [
+      228.64,
+      111.25
+     ]
+    ],
+    "height": 28
+   },
+   {
+    "polygon": [
+     [
+      -123.59,
+      166.47
+     ],
+     [
+      -123.72,
+      137.27
+     ],
+     [
+      -56.46,
+      135.86
+     ],
+     [
+      -54.23,
+      314.47
+     ],
+     [
+      -122.34,
+      314.57
+     ]
+    ],
+    "height": 44
+   },
+   {
+    "polygon": [
+     [
+      247.93,
+      4.86
+     ],
+     [
+      266.8,
+      4.76
+     ],
+     [
+      265.26,
+      111.02
+     ],
+     [
+      248.43,
+      111.12
+     ]
+    ],
+    "height": 27.2
+   },
+   {
+    "polygon": [
+     [
+      135.66,
+      213.16
+     ],
+     [
+      167.62,
+      212.96
+     ],
+     [
+      170.05,
+      217.62
+     ],
+     [
+      172.44,
+      212.93
+     ],
+     [
+      198.52,
+      212.8
+     ],
+     [
+      198.72,
+      258.53
+     ],
+     [
+      135.89,
+      258.89
+     ]
+    ],
+    "height": 61
+   },
+   {
+    "polygon": [
+     [
+      130.51,
+      163.09
+     ],
+     [
+      329.79,
+      161.94
+     ],
+     [
+      330.02,
+      212.04
+     ],
+     [
+      130.74,
+      213.19
+     ]
+    ],
+    "height": 17.5
+   },
+   {
+    "polygon": [
+     [
+      56.17,
+      262.2
+     ],
+     [
+      79.07,
+      262.04
+     ],
+     [
+      79.36,
+      312.01
+     ],
+     [
+      -19.75,
+      312.73
+     ],
+     [
+      -20.01,
+      267.81
+     ],
+     [
+      -16.37,
+      267.78
+     ],
+     [
+      -16.4,
+      262.73
+     ]
+    ],
+    "height": 16
+   },
+   {
+    "polygon": [
+     [
+      266.8,
+      4.76
+     ],
+     [
+      285.3,
+      4.66
+     ],
+     [
+      285.79,
+      110.93
+     ],
+     [
+      265.26,
+      111.02
+     ]
+    ],
+    "height": 21.5
+   },
+   {
+    "polygon": [
+     [
+      -207.19,
+      127
+     ],
+     [
+      -173.36,
+      126.94
+     ],
+     [
+      -173.36,
+      147.11
+     ],
+     [
+      -207.19,
+      147.18
+     ]
+    ],
+    "height": 31.8
+   },
+   {
+    "polygon": [
+     [
+      228.64,
+      111.25
+     ],
+     [
+      329.56,
+      110.66
+     ],
+     [
+      329.79,
+      161.94
+     ],
+     [
+      228.87,
+      162.5
+     ]
+    ],
+    "height": 16.6
+   },
+   {
+    "polygon": [
+     [
+      -218.01,
+      127.03
+     ],
+     [
+      -239.04,
+      127.07
+     ],
+     [
+      -239.07,
+      108.07
+     ],
+     [
+      -173.36,
+      107.94
+     ],
+     [
+      -173.36,
+      126.94
+     ]
+    ],
+    "height": 31.8
+   },
+   {
+    "polygon": [
+     [
+      285.6,
+      71.59
+     ],
+     [
+      285.3,
+      4.66
+     ],
+     [
+      304.49,
+      4.53
+     ],
+     [
+      304.82,
+      74.08
+     ],
+     [
+      285.6,
+      74.21
+     ]
+    ],
+    "height": 36.1
+   },
+   {
+    "polygon": [
+     [
+      -120.31,
+      -183.17
+     ],
+     [
+      -120.14,
+      -283.96
+     ],
+     [
+      -19.19,
+      -283.92
+     ],
+     [
+      -19.26,
+      -258.1
+     ],
+     [
+      -27.23,
+      -258.1
+     ],
+     [
+      -27.33,
+      -208.66
+     ],
+     [
+      -31.56,
+      -208.66
+     ],
+     [
+      -31.59,
+      -183.14
+     ],
+     [
+      -24.74,
+      -183.14
+     ],
+     [
+      -24.93,
+      -70.18
+     ],
+     [
+      -120.51,
+      -70.21
+     ]
+    ],
+    "height": 47.8
+   },
+   {
+    "polygon": [
+     [
+      229.33,
+      -159.81
+     ],
+     [
+      229.36,
+      -71.13
+     ],
+     [
+      130.12,
+      -71
+     ],
+     [
+      130.12,
+      -171.49
+     ],
+     [
+      142.85,
+      -171.49
+     ],
+     [
+      142.85,
+      -194.13
+     ],
+     [
+      130.12,
+      -194.13
+     ],
+     [
+      130.09,
+      -268.24
+     ],
+     [
+      218.64,
+      -268.37
+     ],
+     [
+      218.67,
+      -194.23
+     ],
+     [
+      229.33,
+      -194.26
+     ]
+    ],
+    "height": 76
+   },
+   {
+    "polygon": [
+     [
+      135.47,
+      266.63
+     ],
+     [
+      200.2,
+      266.8
+     ],
+     [
+      200.03,
+      312.07
+     ],
+     [
+      135.3,
+      311.88
+     ]
+    ],
+    "height": 63
+   },
+   {
+    "polygon": [
+     [
+      -221.62,
+      168.54
+     ],
+     [
+      -173.33,
+      168.44
+     ],
+     [
+      -173.33,
+      187.07
+     ],
+     [
+      -221.62,
+      187.17
+     ]
+    ],
+    "height": 30.7
+   },
+   {
+    "polygon": [
+     [
+      -214.53,
+      168.5
+     ],
+     [
+      -241.37,
+      168.57
+     ],
+     [
+      -241.37,
+      147.24
+     ],
+     [
+      -173.36,
+      147.11
+     ],
+     [
+      -173.33,
+      168.44
+     ]
+    ],
+    "height": 46.3
+   },
+   {
+    "polygon": [
+     [
+      -194.06,
+      -116.7
+     ],
+     [
+      -194.06,
+      -122.83
+     ],
+     [
+      -170.18,
+      -122.87
+     ],
+     [
+      -170.18,
+      -69.49
+     ],
+     [
+      -194.06,
+      -69.49
+     ]
+    ],
+    "height": 36.9
+   },
+   {
+    "polygon": [
+     [
+      329.46,
+      91.04
+     ],
+     [
+      329.56,
+      110.66
+     ],
+     [
+      285.79,
+      110.93
+     ],
+     [
+      285.6,
+      74.21
+     ],
+     [
+      306.27,
+      74.08
+     ],
+     [
+      306.17,
+      54.36
+     ],
+     [
+      329.3,
+      54.23
+     ]
+    ],
+    "height": 59.8
+   },
+   {
+    "polygon": [
+     [
+      -19.85,
+      315.58
+     ],
+     [
+      -1.94,
+      315.45
+     ],
+     [
+      -1.8,
+      336.58
+     ],
+     [
+      -19.72,
+      336.68
+     ]
+    ],
+    "height": 14.4
+   },
+   {
+    "polygon": [
+     [
+      304.49,
+      4.53
+     ],
+     [
+      323.46,
+      4.43
+     ],
+     [
+      329.1,
+      9.55
+     ],
+     [
+      329.3,
+      53.12
+     ],
+     [
+      304.72,
+      53.28
+     ]
+    ],
+    "height": 49
+   },
+   {
+    "polygon": [
+     [
+      -219.72,
+      -116.67
+     ],
+     [
+      -194.06,
+      -116.7
+     ],
+     [
+      -194.06,
+      -69.49
+     ],
+     [
+      -219.72,
+      -69.46
+     ]
+    ],
+    "height": 21.7
+   },
+   {
+    "polygon": [
+     [
+      278.38,
+      -159.88
+     ],
+     [
+      331.04,
+      -159.84
+     ],
+     [
+      331,
+      -77.49
+     ],
+     [
+      322.51,
+      -70.44
+     ],
+     [
+      229.36,
+      -71.13
+     ],
+     [
+      229.33,
+      -159.81
+     ]
+    ],
+    "height": 36
+   },
+   {
+    "polygon": [
+     [
+      -54.1,
+      314.27
+     ],
+     [
+      -53.41,
+      337.27
+     ],
+     [
+      -122.8,
+      337.43
+     ],
+     [
+      -122.34,
+      314.57
+     ]
+    ],
+    "height": 25
+   }
+  ],
+  "zoningFloorArea": {
+   "allowedFar": 4.66,
+   "allowedSqft": 40169,
+   "sections": [
+    "ZR 23-22"
+   ],
+   "optionSqft": 40169,
+   "optionFar": 4.66,
+   "affordableSqft": 40169
+  },
+  "floorAreaRules": {
+   "verified": "2026-10-22",
+   "source": "https://zr.planning.nyc.gov/article-i/chapter-2/12-10",
+   "note": "Floor space counted as zoning floor area and the exclusions a schematic plan can show; the rest of the ZR 12-10 list (bulkheads, uncovered steps, low attics, open balconies and terraces, Fire Department storage, rooftop greenhouses, electrified buildings) is not drawn by the planning engine.",
+   "counted": [
+    {
+     "kind": "stair",
+     "rule": "Stairwells at each floor count, except the extra width excluded in buildings over 125 ft",
+     "section": "ZR 12-10 (floor area (b), exclusion (j))"
+    },
+    {
+     "kind": "elevator",
+     "rule": "Elevator shafts at each floor count",
+     "section": "ZR 12-10 (floor area (b))"
+    }
+   ],
+   "excluded": [
+    {
+     "kind": "cellar",
+     "rule": "Cellar space, except space used for dwelling purposes",
+     "share": 1,
+     "section": "ZR 12-10 (floor area exclusion (a))"
+    },
+    {
+     "kind": "mechanical",
+     "rule": "Accessory mechanical equipment and the minimum space for its maintenance and access",
+     "share": 1,
+     "section": "ZR 12-10 (floor area exclusion (h))"
+    },
+    {
+     "kind": "parking",
+     "rule": "Accessory off-street parking in group parking facilities no more than 23 ft above curb level",
+     "share": 1,
+     "maxTopFeet": 23,
+     "section": "ZR 12-10 (floor area exclusion (f))"
+    },
+    {
+     "kind": "amenity",
+     "rule": "Residential amenities accessible to residents (recreation, co-working, package and storage rooms, laundry, pet facilities), up to 5 percent of the building's residential floor area",
+     "share": 1,
+     "maxShareOfResidential": 0.05,
+     "section": "ZR 23-231"
+    },
+    {
+     "kind": "corridor",
+     "rule": "Half the floor space of a corridor that reaches the farthest dwelling unit door within 100 ft of the elevator core, or that has a balcony, 20 sq ft of daylight glazing, or ends at a unit of three or more bedrooms",
+     "share": 0.5,
+     "maxReachFeet": 100,
+     "section": "ZR 23-232"
+    },
+    {
+     "kind": "refuse",
+     "rule": "Refuse storage and disposal, up to 3 sq ft per dwelling unit",
+     "share": 1,
+     "maxSqftPerUnit": 3,
+     "section": "ZR 23-233"
+    },
+    {
+     "kind": "bicycle",
+     "rule": "Required enclosed bicycle parking, up to 15 sq ft per required space; one space per two dwelling units, waived at 10 units or fewer",
+     "share": 1,
+     "maxSqftPerRequiredSpace": 15,
+     "spacesPerUnit": 0.5,
+     "waivedAtOrBelowUnits": 10,
+     "section": "ZR 25-85, ZR 25-81, ZR 25-83"
+    }
+   ],
+   "multipleDwellingSection": "ZR 23-23"
+  },
+  "assumedExclusions": {
+   "amenityShare": 0.028,
+   "exteriorWallShare": 0.03,
+   "source": "Arosa planning assumption for the deal store; not from a published dataset or cost index; ZR 12-10 defines the exclusions, not these percentages"
+  },
+  "exteriorWallSection": "ZR 12-10 (qualifying exterior wall thickness)",
+  "program": {
+   "zfa": 40169,
+   "storeys": 6,
+   "units": 50,
+   "affordableZfa": 40169
+  },
+  "checks": [
+   "Rear yard drawn as 20 ft up to 75 ft of height and 30 ft above, as curated from ZR 23-342; verify against the current text before relying on it.",
+   "Corner lot: no rear yard is drawn within the corner portion, within 100 ft of each intersecting street line (ZR 12-10, ZR 23-344); beyond it the rear yard is kept along the lines facing the rear. A side lot line beyond 100 ft of the street it meets counts as a rear lot line (ZR 23-344), which needs no rear yard where it meets an adjoining side lot line; the tax map does not say which, so the yard is kept. The planning engine checks the 135 degree angle on the lot polygon.",
+   "Court minimums (ZR 23-352 inner courts, 23-353 outer courts) are reported in controls.courts and not carved from the drawn envelope; which courts a design needs depends on where legally required windows face.",
+   "Split lot: M1-1 has no curated bulk rules, so the lot is outlined under R7D alone; read that district's rules for its portion."
+  ]
+ }
+}

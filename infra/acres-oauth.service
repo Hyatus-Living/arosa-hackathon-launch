@@ -1,0 +1,13 @@
+[Unit]
+Description=Export the ChatGPT subscription token for the Acres services
+After=network-online.target acres-secrets.service
+Wants=network-online.target acres-secrets.service
+Before=acres-research.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/acres-pull-oauth
+TimeoutStartSec=2min
+
+[Install]
+WantedBy=multi-user.target
