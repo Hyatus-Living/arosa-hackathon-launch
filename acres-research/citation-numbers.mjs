@@ -16,7 +16,7 @@ const SITE_SUBJECT = /^(?:(?:the|this|its|(?:the|this) (?:lot|site|property|parc
 const RATE = /\b(?:per|hourly|daily|nightly|weekly|monthly|quarterly|annual|annually|yearly)\b|\//i;
 const canonicalUnit = unit => /units?|apartments?/i.test(unit) ? 'units' : /square|sq|^sf$/i.test(unit) ? 'sqft' : /feet|^ft$/i.test(unit) ? 'feet' : /store|stori/i.test(unit) ? 'stories' : /percent|%/i.test(unit) ? 'percent' : /far/i.test(unit) ? 'far' : 'usd';
 const unquoted = text => String(text).replace(/^\s*>.*$/gm, '').replace(/"[^"\n]*"|“[^”\n]*”|‘[^’\n]*’|'[^'\n]*'/g, ' ');
-const clean = text => unquoted(text).replace(/\[\d+(?:\s*,\s*\d+)*\]/g, '').replace(/[*_`]/g, '').trim();
+const clean = text => unquoted(text).replace(/\[\d+(?:\s*,\s*\d+)*\]/g, '').replace(/[*_`]/g, '').replace(/\s+/g, ' ').trim();
 const normalize = text => text.toLowerCase().replace(/\s+/g, ' ').replace(/[.!?;]+$/, '').trim();
 
 function amount(raw, scale = '') {

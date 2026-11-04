@@ -463,9 +463,9 @@ redeploy of the previous modules:
 
 ### Installer and deploy module list
 
-The research installer is `infra/acres-deploy-research` (invoked by
-`infra/acres-deploy-research.service` when `infra/acres-deploy-research.path` sees
-`.deploy-research`, requested via `scripts/deploy-research.sh`). Its module allowlist is the
+The research installer is `infra/acres-deploy-research`, installed administratively and
+invoked through operator SSH and sudo by `scripts/deploy-research.sh`. It verifies and
+exports the exact operator-selected commit; the workspace path trigger is retired. Its module allowlist is the
 `for FILE in research.mjs service.mjs codex.mjs tools.mjs composio.mjs trace.mjs store.mjs
 project-state.mjs manager.mjs generated-ui.mjs knowledge.mjs … proforma.mjs` loop near the
 top of that script, plus `skills/creative-zoning/SKILL.md` installed separately. **This

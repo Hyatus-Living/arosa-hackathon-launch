@@ -156,7 +156,7 @@ export function validateCitations(answer,sources){
     const tokens=claimTokens(cleanSentence);
     if(tokens.length<2&&!SUBSTANTIVE_CLAIM_RE.test(cleanSentence))continue;
     const citedSources=ids.map(id=>byId.get(id)).filter(Boolean);
-    const checkable=citedSources.filter(s=>typeof s.text==='string'&&s.text.trim().length>=25&&s.text.trim()!=='{}'&&!/^(\s*Evidence page \d+\.\s*)+$/i.test(s.text));
+    const checkable=citedSources.filter(s=>typeof s.text==='string'&&s.text.trim().length>=25&&s.text.trim()!=='{}'&&!/^\s*(?:Evidence page \d+\.\s*)+$/i.test(s.text));
     if(!checkable.length)continue;
     const contradiction=numericCitationContradiction(cleanSentence,checkable);
     if(contradiction){failures.push({message:`Numeric citation contradiction: ${contradiction} Correct the figure or cite the matching scenario.`,code:'NUMERIC_CITATION_CONTRADICTION',claim:cleanSentence.slice(0,400),sourceIds:ids,clean:cleanSentence});continue;}

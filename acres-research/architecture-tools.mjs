@@ -18,7 +18,10 @@ import {PLAN_SCHEMA,DEFAULTS,detectRooms,validatePlan,exportPlan,nearestWall,wal
 // Short-term and furnished rental platforms and their analytics are never plan sources.
 const EXCLUDED = /(^|\.)(airbnb\.[a-z.]+|muscache\.com|insideairbnb\.com|mashvisor\.com|vacasa\.com|evolve\.com|vrbo\.com|homeaway\.[a-z.]+|booking\.com|expedia\.[a-z.]+|hotels\.com|tripadvisor\.[a-z.]+|furnishedfinder\.com|blueground\.com|sonder\.com|airdna\.co|zeusliving\.com|kasa\.com|mindtheapp\.com|anyplace\.com|outsite\.co)$|furnished|corporatehousing/;
 export function excludedSource(url) {
-  try { return EXCLUDED.test(new URL(url).hostname.toLowerCase()); } catch { return true; }
+  try {
+    const hostname = new URL(url).hostname.toLowerCase();
+    return hostname.length > 253 || hostname.split('.').some(label => label.length > 63) || EXCLUDED.test(hostname);
+  } catch { return true; }
 }
 
 const decoded = value => { try { return decodeURIComponent(value); } catch { return value; } };

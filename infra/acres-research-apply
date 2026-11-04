@@ -13,7 +13,7 @@ PREVIOUS=$RELEASES/previous
 [[ -d "$NEXT" ]] || exit 0
 mapfile -d '' FILES < <(cd "$NEXT" && find opt -type f -print0)
 for FILE in "${FILES[@]}"; do
-  [[ "$FILE" == opt/acres-research/* || "$FILE" == opt/app-starter/* || "$FILE" == opt/planning/* ]]
+  [[ "$FILE" == opt/acres-research/* || "$FILE" == opt/app-starter/* || "$FILE" == opt/planning/* || "$FILE" == opt/scripts/ledger-sync.mjs ]]
 done
 rm -rf "$PREVIOUS.partial"
 for FILE in "${FILES[@]}"; do

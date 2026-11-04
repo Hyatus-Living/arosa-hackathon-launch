@@ -1,5 +1,5 @@
 import {runCodex} from './codex.mjs';
-import {createResearchTools,savedPageIndex,subjectResearchGuidance} from './tools.mjs';
+import {createResearchTools,researchWebBoundary,savedPageIndex,subjectResearchGuidance} from './tools.mjs';
 import {generatedUiTool,generatedUiContent} from './generated-ui.mjs';
 import {createConceptTools} from './concepts.mjs';
 import {createGoogleMaps,createPlacesTools} from './places.mjs';
@@ -62,13 +62,13 @@ function makeAux({emit,secrets,tools,progress,ui,priorState=null,shared=null,dea
   // Live parcel lookups (current zoning map, mapped streets, MIH area, filed existing ZFA), shared by
   // the envelope and entitlement tools and memoized per BBL for the run.
   const parcelLookups=createParcelLookups();
-  const zoningTools=createConfiguredZoningTools(secrets,getEffectiveProperty,tools.record,ledger,parcelLookups);
+  const zoningTools=createConfiguredZoningTools(secrets,getEffectiveProperty,tools.recordProviderSource,ledger,parcelLookups);
   const marketTools=createMarketTools({emit,record:tools.record,getProperty:getEffectiveProperty,getMaxDwellingUnits:()=>{const env=selected('envelope',zoningTools.envelope);return env?.summary?.maxDwellingUnits??env?.density?.maxUnits??null;},initialMarket:priorState?.market||null,initialProgram:priorState?.program||null,dealStoreAccess:dealStore,ledger,listingContext});
   // The run owner's budget line shares for line-item pro formas, or null for the defaults.
   const budgetSplits=()=>{if(!dealStore?.account)return null;const s=openMarketStore({readOnly:true});if(!s)return null;try{return s.getUserDealSettings(dealStore.account).budgetSplits;}finally{s.close();}};
   const proFormaTools=createProFormaTools({emit,getMarket:()=>marketTools.effectiveMarket,ledger,record:tools.record,getBudgetSplits:budgetSplits});
   const planningTools=createPlanningTools({planningDir:secrets.ACRES_PLANNING_DIR||undefined,emit});
-  const entitlementTools=createEntitlementTools({getProperty:getEffectiveProperty,getSameBlock:()=>tools.sameBlockContext,enabled:secrets.ENABLE_CURATED_ZONING===true,emit,record:tools.record,lookups:parcelLookups});
+  const entitlementTools=createEntitlementTools({getProperty:getEffectiveProperty,getSameBlock:()=>tools.sameBlockContext,enabled:secrets.ENABLE_CURATED_ZONING===true,emit,record:tools.recordProviderSource,lookups:parcelLookups});
   const storeSchemes=new Map();
   const feasibilityTools=createFeasibilityTools({emit,getMarket:()=>marketTools.effectiveMarket,ledger,record:tools.record,getStoreOptions:()=>storeSchemes.get(getEffectiveProperty()?.bbl)??null});
   // Keeping the building: holding, renovating and renting, or renovating and selling what stands on the lot.
@@ -76,8 +76,8 @@ function makeAux({emit,secrets,tools,progress,ui,priorState=null,shared=null,dea
   const assemblyTools=createAssemblyTools({findParcel:(bbl)=>tools.execute('acres_find_property',{bbl}),planningDir:secrets.ACRES_PLANNING_DIR||undefined,emit});
   // The subject lot's registered rent-stabilized count comes from the deal store's monthly copy.
   const rentStabilizedLookup=bbl=>{const s=openMarketStore({readOnly:true});if(!s)return null;try{return s.lookupRentStabilizedUnits(bbl);}finally{s.close();}};
-  const nycRecordsTools=createNycPublicRecordsTools({getProperty:getEffectiveProperty,record:tools.record,emit,rentStabilizedLookup});
-  const municipalRecordsTools=createMunicipalRecordsTools({record:tools.record,emit});
+  const nycRecordsTools=createNycPublicRecordsTools({getProperty:getEffectiveProperty,record:tools.recordProviderSource,emit,rentStabilizedLookup});
+  const municipalRecordsTools=createMunicipalRecordsTools({record:tools.recordProviderSource,emit});
   const ledgerTools=createDevelopmentLedgerTools({getProperty:getEffectiveProperty,record:tools.record,emit,nearbyLand});
   const tradePressTools=createTradePressTools({getProperty:getEffectiveProperty,record:tools.record,emit});
   const precedentTools=createPrecedentTools({getProperty:getEffectiveProperty,record:tools.record});
@@ -307,7 +307,10 @@ function makeAux({emit,secrets,tools,progress,ui,priorState=null,shared=null,dea
     if(pending.read.error)return {...result,recordsNote:`NYC public records for BBL ${pending.bbl} could not be read (${pending.read.error.message}); call acres_nyc_public_records if the answer needs them.`};
     return {...result,recordsDigest:nycRecordsTools.citeDigest(pending.read.digest),recordsGuidance:RECORDS_DIGEST_GUIDANCE};
   };
-  aux.execute=async(name,args)=>withSubjectRecords(name,await dispatch(name,args));
+  aux.execute=async(name,args)=>{
+    shared?.webBoundary?.before(name,args);
+    return withSubjectRecords(name,await dispatch(name,args));
+  };
   const dispatch=async(name,args)=>{
     throwIfCancelled();
     if(conceptTools.handlers[name])return runSpecialist(name,()=>conceptTools.handlers[name](args));
@@ -564,6 +567,7 @@ export async function research(input,secrets,progress=()=>{},emit=()=>{},onContr
 export const SAVED_SOURCE_LIMIT=20;
 
 async function researchRun({message, userMessage = message, history = [], userHistory = null, propertyBbl, project = {}, priorState = null, memories = [], meter = null, composio = null, authorName = null, dealStore = {read: false, sync: false}, architecture = null, listingContext = null, alerts = null, savedSources = () => []}, secrets, progress, emit, onControl, agent, controller) {
+  const webBoundary=researchWebBoundary(userMessage);
   if (researchMode(secrets)!=='lanes') {
     // Lead mode (default): one agent with full discretion. Core evidence and
     // property tools are direct, as are the NYC records and zoning compute when
@@ -573,7 +577,8 @@ async function researchRun({message, userMessage = message, history = [], userHi
     // The agent sees which saved sources it can open again, most cited first and capped so the
     // prompt stays small on large sites; their text is read only when it opens one.
     const saved=savedSources().slice(0,SAVED_SOURCE_LIMIT);
-    const shared={sources:[],retrievedParcels:new Map(),seenKnowledge:new Set(),calls:0,subjectBbl:propertyBbl||priorState?.property?.bbl||null,savedPages:savedPageIndex(saved)};
+    for (const source of saved) webBoundary.remember(source.url);
+    const shared={webBoundary,sources:[],retrievedParcels:new Map(),seenKnowledge:new Set(),calls:0,subjectBbl:propertyBbl||priorState?.property?.bbl||null,savedPages:savedPageIndex(saved)};
     if(saved.length)project={...project,savedSources:saved.map(({title,url,offset,fetchedAt,fields})=>({title,url,...(offset?{offset}:{}),retrievedAt:fetchedAt,fields}))};
     const tools = createResearchTools(secrets, progress, meter, composio, shared);
     const ui=[];
@@ -667,13 +672,13 @@ async function researchRun({message, userMessage = message, history = [], userHi
   // Legacy lanes mode (RESEARCH_MODE=lanes): the pre-registry fixed pipeline,
   // retained only so evals can compare it against lead mode on identical
   // prompts. Three charter lanes over one shared citation pool, then a judge.
-  const shared={sources:[],retrievedParcels:new Map(),seenKnowledge:new Set()};
+  const shared={webBoundary,sources:[],retrievedParcels:new Map(),seenKnowledge:new Set()};
   const ui=[];
   const controls=makeControls(onControl,controller);
   try{
     const laneRuns=LANES.map(async lane=>{
       const tools=createResearchTools(secrets,progress,meter,composio,shared);
-      const aux=makeAux({emit,secrets,dealStore,listingContext,tools,progress,ui,plans:architecture,meter,alerts});
+      const aux=makeAux({emit,secrets,dealStore,listingContext,tools,progress,ui,shared,plans:architecture,meter,alerts});
       const allowed=new Set(lane.tools);
       const definitions=[...tools.definitions,...aux.definitions].filter(d=>allowed.has(d.name));
       tools.offer(definitions.map(d=>d.name));
@@ -691,11 +696,11 @@ async function researchRun({message, userMessage = message, history = [], userHi
     const lanes=await Promise.all(laneRuns);
     if(lanes.every(l=>l.status==='failed'))throw new Error(lanes[0].error||'Every research lane failed. Please retry.');
     const judgeTools=createResearchTools(secrets,progress,meter,composio,shared);
-    const judgeAux=makeAux({emit,secrets,dealStore,listingContext,tools:judgeTools,progress,ui,plans:architecture,meter,alerts});
+    const judgeAux=makeAux({emit,secrets,dealStore,listingContext,tools:judgeTools,progress,ui,shared,plans:architecture,meter,alerts});
     const judgeAllowed=new Set(JUDGE_TOOLS);
     const judgeDefinitions=judgeTools.definitions.filter(d=>judgeAllowed.has(d.name));
     judgeTools.offer(judgeDefinitions.map(d=>d.name));
-    const judgeExecute=async(name,args)=>{if(name===generatedUiTool.name)return judgeAux.execute(name,args);if(!judgeAllowed.has(name))throw new Error('This tool is unavailable to the judge.');return judgeTools.execute(name,args);};
+    const judgeExecute=async(name,args)=>{if(name===generatedUiTool.name)return judgeAux.execute(name,args);if(!judgeAllowed.has(name))throw new Error('This tool is unavailable to the judge.');return judgeAux.execute(name,args);};
     emit('judge.started',{lanes:lanes.map(l=>({id:l.id,status:l.status})),sources:shared.sources.length});
     const answer=await meteredAgent({agent,meter,label:'judge',callArgs:{message:judgePacket({question:message,lanes,sources:shared.sources}),history:[],userHistory,propertyBbl,project,memories,authorName,secrets,dynamicTools:[...judgeDefinitions,generatedUiTool],execute:judgeExecute,emit:(e,d)=>emit(e,{...d,lane:'judge'}),onControl:controls.register(),instructions:judgeInstructions(),effort:'high',deadlineMs:240000,includeSkill:false,validateAnswer:text=>validateCitations(text,shared.sources),getSources:()=>shared.sources}});
     emit('judge.completed',{sources:shared.sources.length});

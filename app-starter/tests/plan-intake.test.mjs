@@ -413,3 +413,9 @@ test('room labels show only what fits the room at the zoom, so a floor of 60 roo
   assert.equal(roomLabel(room('Unit 12 living and kitchen', 4.5, 6, 'living'), 4), null, 'too small even for the number');
   assert.deepEqual(roomLabel(room('Living / dining', 7, 4), 40), {name: 'Living / dining', area: true}, 'an apartment plan reads as before');
 });
+
+test('an oversized SVG transform fails before primitive extraction', () => {
+  const svg = '<svg viewBox="0 0 10 10"><g transform="' + 'translate(0) '.repeat(100)
+    + '"><line x1="0" y1="0" x2="1" y2="1"/></g></svg>';
+  assert.throws(() => extractPrimitives(sanitizeSvg(svg, deps).svg, deps), /transform is too long/);
+});

@@ -69,10 +69,10 @@ test('readable downgrades and alternate grants remain live until the final read 
   f.store.removeGrant(owner,f.conversation.id,'account',viewer);f.project('team-readable-project');f.delta('team-readable-run');await contains(project,'team-readable-project');await contains(run,'team-readable-run');
   f.store.removeTeamMember(owner,team.id,viewer);f.project('finally-private-project');f.delta('finally-private-run');await closed(project);await closed(run);
 });
-test('attached-conversation ownership preserves project read scope without restoring original-run access',{timeout:5000},async t=>{
+test('an attached conversation keeps neither project nor original-run streams open after revocation',{timeout:5000},async t=>{
   const f=await setup(t);f.store.createConversation(viewer,{projectId:f.conversation.projectId});const project=await f.open('project'),run=await f.open('run');
-  f.store.removeGrant(owner,f.conversation.id,'account',viewer);assert.equal(f.store.projectAccess(viewer,f.conversation.projectId),'viewer');assert.equal(f.store.access(viewer,f.conversation.id),null);
-  f.project('project-scope-retained');f.delta('original-run-private');await contains(project,'project-scope-retained');await closed(run);
+  f.store.removeGrant(owner,f.conversation.id,'account',viewer);assert.equal(f.store.projectAccess(viewer,f.conversation.projectId),null);assert.equal(f.store.access(viewer,f.conversation.id),null);
+  f.project('private-project-update');f.delta('original-run-private');await closed(project);await closed(run);
 });
 test('a revoked run stream cannot read or replay a gapped cache before the new live event',{timeout:5000},async t=>{
   const f=await setup(t),run=await f.open('run');f.store.event(f.run.id,'tool.progress',{probe:'missed-private-event'});

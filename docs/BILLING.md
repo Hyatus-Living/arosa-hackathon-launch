@@ -97,7 +97,7 @@ The Cloud Run wallet validates that the research backend is billing-enabled with
 1. Run `npm run check`, `npm test`, and `npm --prefix app-starter run build`.
 2. Push `builder/prepaid-wallet`; an authorized maintainer must review and squash-merge the signed review PR.
 3. An administrator must install the updated fixed research installer (`infra/acres-deploy-research`), which adds `wallet.mjs` to its explicit allowlist. Updating the repository copy does not update the running installer. Prepare Firestore access, Stripe secrets, private metering policy and approved webhook delivery separately; do not put secrets in the repository or shared chat.
-4. Pull merged main; request research deployment, verify `.deploy-research-result`, then deploy `app-starter`. Its Docker build now uses the repository root to include the shared wallet module; only explicit app files enter the image. Keep IAP, minimum instances 0 and maximum 2.
+4. Pull merged main; run the operator research deployment, verify the SSH result and live `/healthz` revision, then deploy `app-starter`. Its Docker build now uses the repository root to include the shared wallet module; only explicit app files enter the image. Keep IAP, minimum instances 0 and maximum 2.
 5. In Stripe test mode verify signed-in wallet isolation, real Checkout and webhook crediting, duplicate delivery, concurrent paid calls, estimated/reported labels, actual provider usage, timeout/restart holds, partial/full refunds and disputes. Verify the live protected app/API before enabling live payments. Unit tests do not establish live payment readiness.
 
 ## Reconciliation

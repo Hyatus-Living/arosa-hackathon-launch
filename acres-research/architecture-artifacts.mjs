@@ -8,6 +8,7 @@
 // See docs/architecture-jobs.md.
 import {createHash,randomUUID} from 'node:crypto';
 import {throwIfCancelled} from './execution-context.mjs';
+import {assertRoomPolygonLimits} from './plan-intake.mjs';
 import {verifyFile,assertVerifiedFile} from './artifact-io.mjs';
 import {createReadStream,lstatSync,mkdirSync,readFileSync,renameSync,rmSync,writeFileSync} from 'node:fs';
 import {join} from 'node:path';
@@ -118,6 +119,7 @@ export function validatePlan(doc) {
   doc.openings.forEach((opening, i) => {
     if (!ids.walls.has(opening.wallId)) throw bad(`openings[${i}].wallId does not name a wall in this plan.`);
   });
+  assertRoomPolygonLimits(doc.rooms);
   return doc;
 }
 

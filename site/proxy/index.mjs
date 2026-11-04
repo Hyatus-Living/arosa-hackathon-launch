@@ -1,3 +1,4 @@
+import {isIP} from 'node:net';
 // Same-origin API bridge deployed as a Cloud Run service. Firebase Hosting rewrites /api/** here.
 // Public paths pass through to the app; every other /api path redirects there.
 import http from 'node:http';
@@ -20,11 +21,23 @@ const server = http.createServer(async (req, res) => {
   }
   try {
     const headers = {};
-    // The app checks Origin exactly and rate-limits on the first forwarded IP.
     if (req.headers.origin) headers.origin = req.headers.origin;
     if (req.headers['content-type']) headers['content-type'] = req.headers['content-type'];
-    const xff = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
-    if (xff) headers['x-forwarded-for'] = xff;
+    if (url.pathname === '/api/public/beta-apply') {
+      const secret = process.env.AROSA_SITE_PROXY_SECRET || '';
+      // Cloud Run appends the observed peer at the right end. Never use a
+      // caller-supplied leftmost entry; local/direct servers use the socket.
+      const client = process.env.K_SERVICE
+        ? String(req.headers['x-forwarded-for'] || '').split(',').at(-1).trim()
+        : String(req.socket.remoteAddress || '').replace(/^::ffff:/, '');
+      if (secret.length < 32 || !isIP(client)) {
+        res.writeHead(503, {'content-type': 'application/json'});
+        res.end(JSON.stringify({error: 'The application form is not configured.'}));
+        return;
+      }
+      headers['x-arosa-site-proxy-key'] = secret;
+      headers['x-arosa-client-ip'] = client;
+    }
     let body;
     if (req.method !== 'GET' && req.method !== 'HEAD') {
       const chunks = [];

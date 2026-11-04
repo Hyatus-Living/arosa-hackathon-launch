@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
+import {z} from 'zod';
 import {readFileSync} from 'node:fs';
 import {parseHTML} from 'linkedom';
 import {filterPopoverPosition,bindFilterPopover} from '../public/filter-popover.js';
@@ -267,16 +268,45 @@ test('a conversation opened from Recent over a site neither receives the site pa
   c.state={id:null,projectId:null,access:null};assert.equal(c.dockOnSite(),true,'a new chat on the site is the site chat');
   c.route={view:'home'};c.state={id:'conv_other',projectId:null,access:'viewer'};assert.equal(c.dockOnSite(),true,'off a site, the dock is the chat');
 });
-test('a site page request with another conversation open brings the site conversation back and sends there',async()=>{
+function followUpListener() {
   const start=source.indexOf('document.addEventListener("acres-follow-up", (e) => {'),end=source.indexOf('\n});',start)+4;
   assert.ok(start>0);
+  return source.slice(start,end);
+}
+test('a generated suggestion fills the composer, preserves existing drafts and waits for a user send', async () => {
+  const {document, CustomEvent} = parseHTML('<textarea id="prompt"></textarea>');
+  const prompt = document.querySelector('#prompt'), sent = [];
+  const context = vm.createContext({document, CustomEvent, z, state: {}, dockOnSite: () => true,
+    navigator: {userActivation: {isActive: true}}, $: () => prompt, send: text => sent.push(text),
+    historyView: {close() {}}, setChatDock() {}, save() {}, updateInput() {}, toast() {}});
+  vm.runInContext(followUpListener(), context);
+  const renderer = readFileSync(new URL('../frontend/generated-ui.jsx', import.meta.url), 'utf8');
+  const bridge = renderer.slice(renderer.indexOf('const functions='), renderer.indexOf('const csp='));
+  const suggest = vm.runInContext(bridge + "functions.find(fn => fn.name === 'sendPrompt').handler", context);
+  await suggest({text: 'Compare options'});
+  assert.equal(prompt.value, 'Compare options');
+  assert.equal(context.state.draft, prompt.value);
+  await suggest({text: 'Another suggestion'});
+  assert.equal(prompt.value, 'Compare options');
+  assert.deepEqual(sent, []);
+});
+
+test('the app frame policy allows local previews and excludes external navigation', () => {
+  const {document} = parseHTML(html);
+  const policy = document.querySelector('head meta[http-equiv="Content-Security-Policy"]').content;
+  const directive = policy.split(';').map(line => line.trim().split(/\s+/)).find(parts => parts[0] === 'frame-src');
+  assert.deepEqual(directive.slice(1).sort(), ["'self'", 'blob:']);
+});
+
+test('a site page request with another conversation open brings the site conversation back and sends there',async()=>{
+  const handler=followUpListener();
   const run=async(state)=>{
     const sent=[],attached=[];
     const c=siteBinding({route:{view:'site',projectId:'site_1'},state,session:{},canSend:()=>true,siteAttach:Promise.resolve(),toast(){},
       followUpMessage:ref=>'Draft '+ref.field,queuePlanNote:d=>sent.push(['note',d.planNote]),send:async text=>{sent.push([text,c.state.id]);},
       attachProjectConversation:async projectId=>{attached.push(projectId);c.state={id:'conv_site',projectId,access:'owner'};},
       document:{addEventListener:(name,fn)=>{c.listener=fn;}}});
-    vm.runInContext(source.slice(start,end),c);
+    vm.runInContext(handler,c);
     c.listener({detail:{ref:{conversation:'x',field:'architecture',action:'draft'}}});
     await new Promise(setImmediate);
     c.listener({detail:{projectId:'site_1',planNote:{kind:'revision'}}});

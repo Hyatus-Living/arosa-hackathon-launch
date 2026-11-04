@@ -208,3 +208,19 @@ test('a refused render charge stops a rendered read, while a static direct read 
   const out=await fixtureFetcher(cfSecrets,zr.request,{meterRender:refuse})({url:'https://zr.planning.nyc.gov/article-ii/chapter-3/23-22'});
   assert.equal(out.method,'direct');assert.deepEqual(zr.calls,{cloudflare:0,direct:1});
 });
+
+test('navigation removal recognizes the complete breadcrumb heading after a near match', () => {
+  const content = '## Breadcrumb\nBody';
+  assert.equal(cleanFetchedMarkdown('[Skip to main content]\n## Breadcrumbs menu\n' + content), content);
+  assert.equal(cleanFetchedMarkdown(content + '\n[Skip to main content]'), content + '\n[Skip to main content]');
+});
+
+test('the rendered page keeps its full text while its display title is bounded', async () => {
+  const heading = '[Guide](https://example.com) ' + 'Chapter '.repeat(60);
+  const text = '# ' + heading.trim() + '\nBody';
+  const read = await fixtureFetcher(cfSecrets, async () =>
+    new Response(JSON.stringify({success: true, result: text})))({url: 'https://example.com/guide'});
+  assert.equal(read.text, text);
+  assert.match(read.title, /^Guide Chapter/);
+  assert.ok(read.title.length <= 300);
+});

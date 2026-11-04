@@ -12,7 +12,7 @@ The operator recovery bundle contains the root-only `/etc/arosa-buzz.env`, `/var
 
 The pinned upstream harness publishes typing, turn liveness, and terminal failure notices in the request's conversation, including a reauthentication hint for an expired OAuth login. Keep these features enabled. If shared sign-in expires, Michael should sign in again through the dedicated Codex home. If plan capacity is exhausted, wait for the account's limit reset; do not substitute an API key or another user's credentials.
 
-The container runs without root, a Docker socket, host administration credentials, mail storage, or other OpenClaw workspaces. It mounts the Arosa checkout and its existing repository-specific SSH credential. The root filesystem is read-only. The persistent home is `/var/lib/arosa-buzz`; the agent environment is `/etc/arosa-buzz.env`, mode `0600`. Neither belongs in Git. Michael remains the Buzz agent owner.
+The container runs without root, a Docker socket, host administration credentials, mail storage, or other OpenClaw workspaces. It mounts the Arosa checkout read-only and its existing repository-specific SSH credential. Editing requires a separate agent-owned working directory; deployment requires an operator SSH and sudo session. The root filesystem is read-only. The persistent home is `/var/lib/arosa-buzz`; the agent environment is `/etc/arosa-buzz.env`, mode `0600`. Neither belongs in Git. Michael remains the Buzz agent owner.
 
 The adapter uses a dedicated ChatGPT sign-in under `/var/lib/arosa-buzz/.codex`. It consumes that account's plan limits. It does not use an OpenAI API key or the Hyatus model gateway.
 

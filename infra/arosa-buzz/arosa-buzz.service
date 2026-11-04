@@ -9,7 +9,7 @@ StartLimitBurst=5
 [Service]
 Type=simple
 ExecStartPre=-/usr/bin/docker rm arosa-buzz
-ExecStart=/usr/bin/docker run --rm --init --name arosa-buzz --user 1001:1001 --read-only --cap-drop ALL --security-opt no-new-privileges --pids-limit 384 --memory 8g --cpus 3 --log-opt max-size=10m --log-opt max-file=3 --tmpfs /tmp:rw,nosuid,size=512m --env-file /etc/arosa-buzz.env --mount type=bind,src=/var/lib/arosa-buzz,dst=/home/arosa --mount type=bind,src=/srv/arosa,dst=/workspace/acres --mount type=bind,src=/var/lib/arosa/git-credentials,dst=/run/acres-git,readonly arosa-buzz:0.5.28-codex-2.2.2
+ExecStart=/usr/bin/docker run --rm --init --name arosa-buzz --user 1001:1001 --read-only --cap-drop ALL --security-opt no-new-privileges --pids-limit 384 --memory 8g --cpus 3 --log-opt max-size=10m --log-opt max-file=3 --tmpfs /tmp:rw,nosuid,size=512m --env-file /etc/arosa-buzz.env --mount type=bind,src=/var/lib/arosa-buzz,dst=/home/arosa --mount type=bind,src=/srv/arosa,dst=/workspace/acres,readonly --mount type=bind,src=/var/lib/arosa/git-credentials,dst=/run/acres-git,readonly arosa-buzz:0.5.28-codex-2.2.2
 ExecStop=/usr/bin/docker stop --time 60 arosa-buzz
 Restart=on-failure
 RestartSec=10

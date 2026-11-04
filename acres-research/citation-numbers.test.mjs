@@ -149,3 +149,11 @@ test('a computed figure is compared only when the claim is about the site itself
   assert.ok(numericCitationContradiction('In the As of right option, the land value is $12 million.',[options]),'a named scenario is compared with its own record');
   assert.equal(numericCitationContradiction('In the Most floor area option, the land value is $12 million.',[options]),null);
 });
+
+test('long whitespace in numeric labels preserves the meaning of the citation', () => {
+  const evidence = [source('{"metrics":{"far":4}}')];
+  const gap = ' '.repeat(2000);
+  assert.equal(numericCitationContradiction('FAR' + gap + 'is 4.', evidence), null);
+  assert.ok(numericCitationContradiction('FAR' + gap + 'is 5.', evidence));
+  assert.equal(numericCitationContradiction('FAR' + gap + 'is unknown.', evidence), null);
+});

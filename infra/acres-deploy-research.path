@@ -1,7 +1,0 @@
-[Unit]
-Description=Watch for an Acres research deployment request
-[Path]
-PathExists=/srv/arosa/.deploy-research
-Unit=acres-deploy-research.service
-[Install]
-WantedBy=multi-user.target

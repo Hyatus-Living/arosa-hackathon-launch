@@ -67,6 +67,13 @@ test('excludedSource refuses short-term and furnished rental platforms only',()=
     assert.equal(excludedSource(url),false,url);
 });
 
+test('plan discovery rejects hostnames above DNS length limits', () => {
+  const label = 'a'.repeat(63);
+  assert.equal(excludedSource('https://' + label + '.com'), false);
+  assert.equal(excludedSource('https://' + label + 'a.com'), true);
+  assert.equal(excludedSource('https://' + Array(4).fill(label).join('.')), true);
+});
+
 test('draftPlan lays rectangles out as one wall per shared edge, named rooms and placed openings',()=>{
   const plan=draftPlan({...twoRooms,name:'Unit 4B'});
   assert.equal(plan.walls.length,5,'two rooms share their middle wall and their long walls merge');

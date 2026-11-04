@@ -131,6 +131,54 @@ export function savedPageIndex(sources = []) {
   return pages;
 }
 
+// One boundary per user turn, shared by the lead, children and judge. Only structured
+// results below may grant a URL. Retrieved text, lane charters and model output cannot.
+export function researchWebBoundary(userMessage) {
+  const addresses = new Set();
+  let readExternal = false;
+  function remember(value) {
+    if (publicUrl(value)) addresses.add(new URL(value).href);
+  }
+  for (const [value] of String(userMessage).matchAll(/https:\/\/[^\s<>"'\x60]+/gi)) {
+    remember(value);
+    remember(value.replace(/[)\].,!?:;]+$/, ''));
+  }
+  function requireUrl(value) {
+    if (publicUrl(value)) {
+      const url = new URL(value);
+      if (addresses.has(url.href)) return;
+      if (/^#page=[1-9]\d{0,5}$/i.test(url.hash)) {
+        url.hash = '';
+        if (addresses.has(url.href)) return;
+      }
+    }
+    throw new Error('Use an exact HTTPS link from the user, search results, saved sources or source registry. Search for the page first.');
+  }
+  function before(name, args = {}) {
+    const write = WEB_SENSITIVE_TOOLS.has(name) || (name === 'acres_manage_alerts' && args.op !== 'list');
+    if (readExternal && write) throw new Error('This turn has read external content. Ask the user to request this action in a fresh turn with the exact target and any link, before reading external sources.');
+    if (name === 'acres_find_floor_plan' && args.url) requireUrl(args.url);
+    if (name === 'acres_attach_drawing') {
+      requireUrl(args.url);
+      if (args.foundOn) requireUrl(args.foundOn);
+    }
+    // Mark at dispatch, before the first await, including when other lanes are active.
+    if (EXTERNAL_READ_TOOLS.has(name)) readExternal = true;
+  }
+  return {remember, requireUrl, before};
+}
+
+const WEB_SENSITIVE_TOOLS = new Set(['acres_attach_drawing', 'acres_save_plan', 'acres_render_plan',
+  'acres_import_pascal_scene', 'acres_refresh_knowledge', 'acres_execute_tool']);
+const EXTERNAL_READ_TOOLS = new Set(['acres_fetch_url', 'acres_fanout_search', 'acres_execute_tool',
+  'acres_search_knowledge', 'acres_get_knowledge_source', 'acres_find_floor_plan', 'acres_view_drawing',
+  'acres_find_property', 'acres_set_subject', 'acres_nearby_properties', 'acres_nyc_public_records',
+  'acres_municipal_parcel_records', 'acres_development_ledger', 'acres_trade_press', 'acres_far_precedents',
+  'acres_nearby_places', 'acres_market_comps', 'acres_search_deal_store']);
+
+// These providers have a known, fixed API or an explicit full-URL argument.
+// A generic read-only action can also accept a hostname, path or webhook separately.
+const scopedRemoteTools = new Set([...exaTools, 'FIRECRAWL_SCRAPE', 'COMPOSIO_SEARCH_FETCH_URL_CONTENT']);
 export function createResearchTools(secrets, progress = () => {}, meter = null, sessions = null, shared = null) {
   // Parallel lanes pass one shared pool so citation IDs and the run-wide call budget
   // stay server-assigned and enforced across concurrent children.
@@ -218,7 +266,11 @@ export function createResearchTools(secrets, progress = () => {}, meter = null, 
     }
     for (const child of Object.values(value)) if (typeof child === 'object') collect(child);
   }
-  const {findProperty:rawFindProperty,nearby,sameBlock}=createParcelOperations({request:json,record:evidence,onParcel:(bbl,row)=>retrievedParcels.set(bbl,row)});
+  function recordProviderSource(source) {
+    shared?.webBoundary?.remember(source.url);
+    return evidence(source);
+  }
+  const {findProperty:rawFindProperty,nearby,sameBlock}=createParcelOperations({request:json,record:recordProviderSource,onParcel:(bbl,row)=>retrievedParcels.set(bbl,row)});
   async function findProperty(args) {
     const out = await rawFindProperty(args);
     const jid = out?.jurisdiction?.jurisdiction || out?.jurisdiction?.id;
@@ -236,7 +288,8 @@ export function createResearchTools(secrets, progress = () => {}, meter = null, 
     if(settled.every(s=>s.status==='rejected'))throw firstErr;
     const options=settled.flatMap((s,i)=>s.status==='fulfilled'?Object.entries(s.value.tool_schemas??{}).filter(([slug])=>i===1 || exaTools.has(slug)).map(([slug,schema])=>({slug,schema,session:ids[i]})):[]);
     const unique=[...new Map(options.map(t=>[t.slug,t])).values()].slice(0,10);
-    const tools=await Promise.all(unique.map(async tool=>{
+    const allowedOptions=shared?.webBoundary?unique.filter(t=>scopedRemoteTools.has(t.slug)):unique;
+    const tools=await Promise.all(allowedOptions.map(async tool=>{
       const meta=await paidJson(`${root}/tools/${tool.slug}?toolkit_versions=latest&include_pricing=true`,{headers:headers()},'composio','composio_metadata');
       const allowed=exaTools.has(tool.slug) || (meta.tags.includes('readOnlyHint') && !meta.tags.includes('destructiveHint') && (meta.no_auth===true || meta.instant?.supported===true));
       if (!allowed) return null;
@@ -255,12 +308,31 @@ export function createResearchTools(secrets, progress = () => {}, meter = null, 
     const tool=discovered.get(slug);
     if (!tool) throw new Error('Discover this tool before executing it. Only public research tools are available.');
     validateUrls(args);
+    if (shared?.webBoundary) {
+      const check = shared.webBoundary.requireUrl;
+      if (slug === 'EXA_GET_CONTENTS_ACTION') {
+        if (!Array.isArray(args.ids) || !args.ids.length) throw new Error('Provide the discovered URLs in ids.');
+        args.ids.forEach(check);
+        args = {ids:args.ids, text:true};
+      } else if (slug === 'EXA_SEARCH') {
+        args = {query:args.query, numResults:args.numResults};
+      } else if (slug === 'EXA_FIND_SIMILAR') {
+        check(args.url);
+        args = {url:args.url, numResults:args.numResults};
+      } else {
+        check(args.url);
+        args = {url:args.url};
+      }
+    }
     if (args.actions?.length || args.headers || args.cookies) throw new Error('Browser actions and custom authentication are unavailable in public research.');
     if (slug==='EXA_SEARCH' || slug==='EXA_FIND_SIMILAR') {
       args={...args,numResults:Math.min(args.numResults??5,8),contents:args.contents??{text:{maxCharacters:12000}}};
     }
     if (slug==='EXA_GET_CONTENTS_ACTION' && args.text===undefined) args={...args,text:true};
     const result=await paidJson(router(tool.session,'/execute'),{method:'POST',headers:headers(),body:JSON.stringify({tool_slug:slug,arguments:args})},exaTools.has(slug)?'exa':'composio',slug);
+    if (slug === 'EXA_SEARCH' || slug === 'EXA_FIND_SIMILAR') {
+      for (const row of result.data?.results || result.data?.data?.results || []) shared?.webBoundary?.remember(row.url || row.id);
+    }
     collect(result.data);
     return {data:result.data,sources:sources.map(s=>({id:s.id,title:s.title,url:s.url})),instantCharge:result.instant_charge};
   }
@@ -321,6 +393,7 @@ export function createResearchTools(secrets, progress = () => {}, meter = null, 
         meterWrap(deepseekProvider(secrets),'deepseek','DEEPSEEK_SEARCH'),
       ];
       const out=await fanoutSearch({query,providers,limit:12});
+      for (const row of out.results) shared?.webBoundary?.remember(row.url);
       const directSources=[];
       const citationByUrl=new Map();
       if(jevRoute?.directPullSourceIds?.length&&localItems.length){
@@ -382,6 +455,7 @@ export function createResearchTools(secrets, progress = () => {}, meter = null, 
   const fetchKey = (url,requiresPdf) => `${requiresPdf||isPdfUrl(url)?'pdf':'document'}:${pageKey(url)}`;
   async function fetchDocument(url,requiresPdf) {
     throwIfCancelled();
+    shared?.webBoundary?.requireUrl(url);
     const key=fetchKey(url,requiresPdf);
     let flight=fetchesInFlight.get(key);
     if(!flight){
@@ -389,7 +463,7 @@ export function createResearchTools(secrets, progress = () => {}, meter = null, 
       fetchesInFlight.set(key,flight);
       flight.promise=withExecutionSignal(combinedSignal(shared?.signal,flight.controller.signal),async()=>{
         try{
-          const doc=await fetchUrlDirect({url,requirePdf:requiresPdf});
+          const doc=await fetchUrlDirect({url:pageKey(url),requirePdf:requiresPdf});
           throwIfCancelled();
           if(doc.url)fetchedPages.set(doc.url,doc);
           if(!fetchedPages.has(pageKey(url))||doc.pdfPages)fetchedPages.set(pageKey(url),doc);
@@ -552,7 +626,7 @@ export function createResearchTools(secrets, progress = () => {}, meter = null, 
     definition('acres_fanout_search','Run one discovery query across every configured search provider in parallel (saved knowledge, Serper/Google, Exa, DeepSeek) and return one deduplicated, authority-ranked URL list with snippets. Prefer this for finding sources; snippets are not citable evidence. Fetch relied-on URLs with acres_fetch_url.',{query:{type:'string'},city:{type:'string',description:'Optional jurisdiction identifier such as US-NY-NYC or US-TX-AUSTIN; defaults to the detected jurisdiction or US-NY-NYC.'}},['query']),
     definition('acres_fetch_url','Read one public HTTPS URL and record citable text, using saved knowledge when available. For PDFs use a physical page number starting at 1, or a #page=N URL. A PDF find match returns its physical page. Character offsets are local to a selected PDF page; otherwise they address the full document. A URL in the project\'s savedSources, read at its listed offset without find, page or live, returns the text saved with the site and its age at no fetch cost. Pass live:true when the question needs current figures or the saved text is too old for it.',{url:{type:'string'},live:{type:'boolean',description:'Read the current page even when the project\'s savedSources hold this URL.'},offset:{type:'integer',minimum:0,description:'Character offset in the document or selected PDF page.'},find:{type:'string',description:'Section number or phrase to find in the document or selected PDF page.'},page:{type:'integer',minimum:1,description:'Physical PDF page number, starting at 1; printed labels may differ.'}},['url']),
   ];
-  const handlers={...createKnowledgeHandlers({record:evidence,seen:seenKnowledge,getCity:()=>detectedCity,getProperty:()=>property||shared?.subjectProperty||null}),...createRegistryHandlers({getCity:()=>detectedCity}),...createZoningFactsHandlers({getCity:()=>detectedCity}),acres_find_property:findProperty,acres_set_subject:setSubject,acres_nearby_properties:nearby,acres_discover_tools:discover,acres_execute_tool:executeTool,acres_fanout_search:fanout,acres_fetch_url:fetchUrl};
+  const handlers={...createKnowledgeHandlers({record:recordProviderSource,seen:seenKnowledge,getCity:()=>detectedCity,getProperty:()=>property||shared?.subjectProperty||null}),...createRegistryHandlers({getCity:()=>detectedCity}),...createZoningFactsHandlers({getCity:()=>detectedCity}),acres_find_property:findProperty,acres_set_subject:setSubject,acres_nearby_properties:nearby,acres_discover_tools:discover,acres_execute_tool:executeTool,acres_fanout_search:fanout,acres_fetch_url:fetchUrl};
   // Tools the calling agent can actually run (host-built and, in a lane, allowed),
   // so budget steers never name a tool that would only fail. Nothing is named
   // until the caller offers its tool set.
@@ -626,7 +700,7 @@ export function createResearchTools(secrets, progress = () => {}, meter = null, 
     return {sourceId:s.id,url:s.url,title:s.title,method:'saved-source',retrievedAt:s.fetchedAt,ageDays,offset,totalCharacters:total,nextOffset,text,truncated:nextOffset!==null,...(s.pdf?{pdf:s.pdf}:{}),savedWith:saved.fields,
       note:`Text recorded ${ageDays} day${ageDays===1?'':'s'} ago, when this source was read for the saved site. Cite this source ID for claims from it. Call again with live:true when the question needs current figures or this text is too old for it; use find or nextOffset for text it does not hold.`};
   }
-  return {definitions,sources,record:evidence,consumeCall,annotate,offer(names){offered=new Set(names);},unlockReserve(){budget.reserveUnlocked=true;},get budget(){return {...budgetState(),exhausted:budget.exhausted};},get property(){return property;},get sameBlockContext(){return sameBlockContext;},get detectedCity(){return detectedCity;},async execute(name,args){
+  return {definitions,sources,record:evidence,recordProviderSource,consumeCall,annotate,offer(names){offered=new Set(names);},unlockReserve(){budget.reserveUnlocked=true;},get budget(){return {...budgetState(),exhausted:budget.exhausted};},get property(){return property;},get sameBlockContext(){return sameBlockContext;},get detectedCity(){return detectedCity;},async execute(name,args){
     throwIfCancelled();
     if (!handlers[name]) throw new Error('This tool is unavailable.');
     const fetchArg=name==='acres_fetch_url'&&typeof args?.url==='string';
@@ -649,6 +723,9 @@ export function createResearchTools(secrets, progress = () => {}, meter = null, 
       if(reread)budget.freeRereads--;
       error.charged=!cacheHit;
       throw error;
+    }
+    if (name === 'acres_search_source_registry') {
+      for (const row of result.results) for (const point of row.accessPoints) shared?.webBoundary?.remember(point.url);
     }
     if(fetchArg&&result.findMatched===false){
       if(chargedCategory){budget.used[chargedCategory]--;if(shared)shared.calls--;}
