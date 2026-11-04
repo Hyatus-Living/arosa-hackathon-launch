@@ -13,6 +13,15 @@ import {createResearchServer} from './service.mjs';
 
 const alice='a'.repeat(24),admin='c'.repeat(24);
 
+function metaAnswer(text,inputTokens,outputTokens) {
+  const events=[
+    {type:'response.created',response:{id:'feedback-response'}},
+    {type:'response.output_item.done',item:{type:'message',id:'feedback-message',content:[{type:'output_text',text}]}},
+    {type:'response.completed',response:{id:'feedback-response',usage:{input_tokens:inputTokens,output_tokens:outputTokens}}},
+  ];
+  return new Response(events.map(event=>`data: ${JSON.stringify(event)}\n\n`).join(''),{headers:{'content-type':'text/event-stream'}});
+}
+
 function storeFixture(t) {
   const dir=mkdtempSync(join(tmpdir(),'acres-feedback-'));
   const store=new ChatStore(join(dir,'chat.sqlite'));
@@ -139,6 +148,57 @@ test('a reply that is not the JSON asked for gets one corrected retry before the
   assert.match(seen[1].correction,/one JSON object/);
   replies=['not json','still not json'];
   await assert.rejects(feedback.send(alice,session.id,'The home page'),{status:502});
+});
+
+test('default HTTP feedback uses Meta, records each retry once and never touches the user wallet',async t=>{
+  const store=storeFixture(t),requests=[],logs=[];
+  new BetaTesters(store).grant('tester@example.com','operator@example.com',1);
+  let walletCalls=0;
+  const wallet=new Proxy({},{get(){walletCalls++;throw new Error('Feedback must not use a user wallet.');}});
+  const nativeFetch=globalThis.fetch;
+  t.mock.method(console,'log',value=>logs.push(JSON.parse(value)));
+  t.mock.method(globalThis,'fetch',async(url,init)=>{
+    assert.equal(url,'https://api.meta.ai/v1/responses');
+    requests.push(JSON.parse(init.body));
+    return requests.length===1?metaAnswer('not valid JSON',100,20):
+      metaAnswer('{"done":false,"reply":"Which page were you on?"}',200,40);
+  });
+  const server=createResearchServer({secrets:{RESEARCH_TOKEN:'test',MODEL_API_KEY:'fixture-key',META_MODEL:'muse-spark-1.3'},store,
+    execute:async()=>{throw new Error('Feedback must not create a research run.');},maps:null,wallet});
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  t.after(async()=>{server.closeAllConnections();await new Promise(resolve=>server.close(resolve));});
+  const response=await nativeFetch(`http://127.0.0.1:${server.address().port}/feedback`,{method:'POST',
+    headers:{authorization:'Bearer test','x-acres-account':alice,'x-acres-email':'tester@example.com','content-type':'application/json'},
+    body:JSON.stringify({text:'The map went blank'})});
+  assert.equal(response.status,201);
+  const session=await response.json();
+  assert.equal(session.messages.at(-1).text,'Which page were you on?');
+  assert.equal(requests.length,2);
+  assert.ok(requests.every(request=>request.model==='muse-spark-1.3'&&!request.tools));
+  assert.match(requests[1].input[0].content[0].text,/correction/);
+  const completed=logs.filter(entry=>entry.event==='operator_agent'&&entry.phase==='completed');
+  assert.equal(completed.length,2,'the adapter repeats cumulative usage at completion; only one record per attempt is logged');
+  assert.deepEqual(completed.map(entry=>[entry.attempt,entry.usage.inputTokens,entry.usage.outputTokens]),[[1,100,20],[2,200,40]]);
+  assert.equal(new Set(completed.map(entry=>entry.usageStreamId)).size,2);
+  assert.ok(completed.every(entry=>entry.sessionId===session.id&&entry.costOwner==='operator'&&entry.provider==='meta'
+    &&entry.model==='muse-spark-1.3'&&entry.usageSemantics==='cumulative'&&entry.outcome==='completed'));
+  assert.equal(logs.filter(entry=>entry.event==='operator_agent'&&entry.phase==='started').length,2);
+  assert.equal(walletCalls,0);
+  assert.equal(store.one('SELECT count(*) n FROM runs').n,0);
+});
+
+test('Meta feedback rejects missing keys and unsupported models before dispatch while retaining the retryable transcript',async t=>{
+  let requests=0;
+  t.mock.method(globalThis,'fetch',async()=>{requests++;throw new Error('No provider request is expected.');});
+  for(const secrets of [{},{MODEL_API_KEY:'fixture-key',META_MODEL:'muse-wonder-full'}]) {
+    const feedback=new Feedback(storeFixture(t),{secrets});
+    await assert.rejects(feedback.start(alice,null,{text:'The map went blank'}),/MODEL_API_KEY|eligible Muse Code subscription/);
+    const [session]=feedback.list();
+    assert.equal(session.status,'open');
+    assert.equal(feedback.get(session.id).messages[0].text,'The map went blank');
+    assert.equal(feedback.replying.size,0);
+  }
+  assert.equal(requests,0);
 });
 
 test('admins grant beta access over HTTP; beta testers send feedback that admins can read, without using a research run',async t=>{

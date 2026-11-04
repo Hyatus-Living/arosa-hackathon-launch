@@ -45,7 +45,9 @@ Muse Spark can run the registered research and architectural tools. Set `RESEARC
 
 SAM 3.1 selections guide Muse Image illustrations. Editable plans and geometric checks remain separate from generated imagery. The Blender worker executes deterministic scripts against plan-derived IFC and produces editable artifacts; it is not a desktop computer-use agent.
 
-Provider migration is not yet complete: optional listing/CRM deep research uses Gemini, feedback and the scheduled improvement judge retain Codex, and some retrieval uses Exa/Firecrawl. These paths are disclosed in the [submission guide](docs/hackathon/index.html). Do not describe the whole live product as exclusively Meta-powered.
+Jev is retained for decision and selection tasks, including listing-filter interpretation and knowledge-source routing. Its role is disclosed alongside Meta rather than presenting Arosa as exclusively Meta-powered.
+
+Listing and CRM deep research still use Gemini in this source. Feedback and the scheduled improvement judge use Meta, with operator-owned usage logging. Data retrieval continues through configured services such as Exa and Firecrawl. The [submission guide](docs/hackathon/index.html) records the remaining migration and live verification steps.
 
 ## Verify
 

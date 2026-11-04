@@ -4,6 +4,7 @@ import {pathToFileURL} from 'node:url';
 import {ChatStore} from './store.mjs';
 import {KnowledgeStore} from './knowledge.mjs';
 import {runCodex} from './codex.mjs';
+import {runMeta,resolveMetaModel} from './meta.mjs';
 import {dreamJudgeInstructions} from './instructions.mjs';
 import {isAuthoritativeSourceUrl,inferQueryJurisdiction,inferUrlJurisdiction,NYC_JURISDICTION} from './jurisdiction.mjs';
 import {COMPUTE_TOOL_NAMES} from './capabilities.mjs';
@@ -679,13 +680,20 @@ export function capturedJudgeSources(sources=[],{charBudget=60000}={}){
   return packet(low);
 }
 
-// Cost attribution: the judge calls runCodex directly on the system ChatGPT subscription
-// (subscription OAuth in codex.mjs), exactly as an unmetered research turn does. User wallets are
-// charged only through createUsageMeter in manager.mjs, which the dream cycle never constructs,
-// so judging can never debit a run owner's wallet; the marginal cost is the operator's flat
-// subscription. That is why the scheduled cycle may default the judge on (acres-dream.service).
-export function createCodexJudge({secrets,agent=runCodex}){
+// Judging is operator-owned activity. Log the final cumulative usage once per attempt;
+// the dream cycle never constructs a user-wallet meter or assigns a price to these tokens.
+function createJudge({secrets,agent}){
   return async({run,signals,scores})=>{
+    const usageStreamId=randomUUID();
+    let usage;
+    const emit=(event,data)=>{
+      if(event==='billing.usage')usage=data;
+      else if(event==='billing.agent.started'||event==='billing.agent.completed') {
+        const completed=event==='billing.agent.completed';
+        console.log(JSON.stringify({event:'operator_agent',purpose:'dream-judge',costOwner:'operator',runId:run.id,attemptId:usageStreamId,
+          provider:agent.provider,...(completed?usage:{}),...data,phase:completed?'completed':'started'}));
+      }
+    };
     const packet={
       question:run.input,
       status:run.status,
@@ -712,18 +720,30 @@ export function createCodexJudge({secrets,agent=runCodex}){
       includeSkill:false,
       label:'dream-judge',
       deadlineMs:120000,
+      usageStreamId,emit,
     });
     return parseJudgeReply(reply);
   };
 }
 
-// DREAM_JUDGE=off (code default, for ad-hoc/local runs) scores heuristically; DREAM_JUDGE=codex
-// adds the model judge. The scheduled cycle sets DREAM_JUDGE=codex (infra/acres-dream.service).
-export function dreamJudgeFromEnv(env=process.env,{agent=runCodex,loadSecrets=()=>JSON.parse(readFileSync(env.RESEARCH_SECRETS_PATH||'/etc/acres-research/secrets.json','utf8'))}={}){
+export function createCodexJudge({secrets,agent=runCodex}){
+  return createJudge({secrets,agent});
+}
+
+export function createMetaJudge({secrets,agent=runMeta}){
+  if(!secrets.MODEL_API_KEY)throw new Error('The Meta dream judge requires MODEL_API_KEY.');
+  resolveMetaModel(secrets.META_MODEL);
+  return createJudge({secrets,agent});
+}
+
+// Local runs default to heuristic scoring. The scheduled cycle selects Meta; an explicit
+// codex setting remains available for an existing installation during migration.
+export function dreamJudgeFromEnv(env=process.env,{agent,loadSecrets=()=>JSON.parse(readFileSync(env.RESEARCH_SECRETS_PATH||'/etc/acres-research/secrets.json','utf8'))}={}){
   const mode=env.DREAM_JUDGE||'off';
   if(mode==='off')return null;
+  if(mode==='meta')return createMetaJudge({secrets:loadSecrets(),agent});
   if(mode==='codex')return createCodexJudge({secrets:loadSecrets(),agent});
-  throw new Error(`Unknown DREAM_JUDGE: ${mode}. Use off or codex.`);
+  throw new Error(`Unknown DREAM_JUDGE: ${mode}. Use off, meta or codex.`);
 }
 
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
@@ -735,7 +755,7 @@ if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
   let judge=null,judgeMode=process.env.DREAM_JUDGE||'off';
   try{judge=dreamJudgeFromEnv(process.env);}
   catch(err){
-    if(judgeMode!=='codex')throw err;
+    if(!['meta','codex'].includes(judgeMode))throw err;
     judgeMode='off';
     console.error(JSON.stringify({event:'dream_judge_unavailable',error:String(err?.message||err).slice(0,200)}));
   }

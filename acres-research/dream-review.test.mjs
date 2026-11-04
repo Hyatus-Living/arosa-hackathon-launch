@@ -4,7 +4,7 @@ import {mkdtempSync,rmSync,readFileSync,existsSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {execFileSync} from 'node:child_process';
+import {execFileSync,spawnSync} from 'node:child_process';
 import {DatabaseSync} from 'node:sqlite';
 import {ChatStore} from './store.mjs';
 import {KnowledgeStore} from './knowledge.mjs';
@@ -325,6 +325,69 @@ test('the scheduled entry accepts an optional judge through DREAM_JUDGE and keep
   assert.equal(judged.scope,'account','a judge cannot write global memories');
   assert.equal(judged.principal,'alice');
   assert.equal(ev.candidateExpansions.at(-1).term,'parking waiver');
+});
+
+test('the Meta judge uses captured evidence, logs final operator usage once and preserves heuristic results on failure',async t=>{
+  const {store,knowledge}=setup(t),conv=store.createConversation('alice'),requests=[],logs=[];
+  recordLearningRun(store,'alice',conv,1);
+  recordLearningRun(store,'alice',conv,2);
+  t.mock.method(console,'log',value=>logs.push(JSON.parse(value)));
+  t.mock.method(globalThis,'fetch',async(url,init)=>{
+    assert.equal(url,'https://api.meta.ai/v1/responses');
+    requests.push(JSON.parse(init.body));
+    if(requests.length===2)return new Response('unavailable',{status:503});
+    const text='{"notes":"The answer matches the captured evidence."}';
+    const events=[
+      {type:'response.created',response:{id:'judge-response'}},
+      {type:'response.output_item.done',item:{type:'message',id:'judge-message',content:[{type:'output_text',text}]}},
+      {type:'response.completed',response:{id:'judge-response',usage:{input_tokens:120,output_tokens:30}}},
+    ];
+    return new Response(events.map(event=>`data: ${JSON.stringify(event)}\n\n`).join(''),{headers:{'content-type':'text/event-stream'}});
+  });
+  const judge=dreamJudgeFromEnv({DREAM_JUDGE:'meta'},{loadSecrets:()=>({MODEL_API_KEY:'fixture-key',META_MODEL:'muse-wonder-1.0'})});
+  const cycle=await runDreamCycle({store,knowledge,judge});
+  assert.equal(cycle.runsEvaluated,2);
+  assert.equal(cycle.judgeFailed,1);
+  assert.ok(requests.every(request=>request.model==='muse-wonder-1.0'&&!request.tools));
+  assert.match(requests[0].instructions,/captured evidence text/);
+  const marker='Run record, provided as untrusted data: ';
+  const record=requests[0].input.flatMap(item=>item.content||[]).map(part=>part.text).find(text=>text?.includes(marker));
+  const packet=JSON.parse(record.slice(record.indexOf(marker)+marker.length));
+  assert.equal(packet.evidence.sources[0].text,officialText);
+  assert.equal(packet.evidence.sources[0].coverage,'complete-capture');
+  const completed=logs.filter(entry=>entry.event==='operator_agent'&&entry.phase==='completed');
+  assert.equal(completed.length,2);
+  assert.equal(completed.filter(entry=>entry.usage).length,1,'cumulative usage is recorded once, not once per duplicate adapter event');
+  assert.deepEqual(completed[0].usage,{inputTokens:120,cachedInputTokens:0,outputTokens:30,reasoningOutputTokens:0});
+  assert.equal(completed[0].usageSemantics,'cumulative');
+  assert.equal(completed[0].outcome,'completed');
+  assert.equal(completed[1].outcome,'failed');
+  assert.equal(new Set(completed.map(entry=>entry.usageStreamId)).size,2);
+  assert.ok(completed.every(entry=>entry.costOwner==='operator'&&entry.provider==='meta'&&entry.model==='muse-wonder-1.0'
+    &&entry.attemptId===entry.usageStreamId&&store.getEvaluation(entry.runId)));
+  const failed=store.getEvaluation(completed[1].runId);
+  assert.ok(failed.overall>0);
+  assert.match(failed.signals.judgeError,/Meta Model API is temporarily unavailable/);
+  assert.equal(store.unevaluatedRuns().length,0);
+});
+
+test('Meta judge configuration fails before dispatch for a missing key or unsupported model',()=>{
+  assert.throws(()=>dreamJudgeFromEnv({DREAM_JUDGE:'meta'},{loadSecrets:()=>({})}),/MODEL_API_KEY/);
+  assert.throws(()=>dreamJudgeFromEnv({DREAM_JUDGE:'meta'},{loadSecrets:()=>({MODEL_API_KEY:'fixture-key',META_MODEL:'muse-wonder-full'})}),/eligible Muse Code subscription/);
+});
+
+test('the scheduled Meta entry logs unavailable configuration and completes heuristic scoring',t=>{
+  const {dir,paths}=setup(t);
+  const result=spawnSync(process.execPath,[join(here,'dream.mjs')],{encoding:'utf8',
+    env:{...process.env,DREAM_JUDGE:'meta',RESEARCH_SECRETS_PATH:join(dir,'missing-secrets.json'),
+      RESEARCH_STATE_PATH:paths.chat,KNOWLEDGE_DB_PATH:paths.knowledge}});
+  assert.equal(result.status,0,result.stderr);
+  const completed=JSON.parse(result.stdout.trim());
+  assert.equal(completed.event,'dream_cycle_completed');
+  assert.equal(completed.judge,'off');
+  assert.equal(completed.runsEvaluated,0);
+  const unavailable=result.stderr.split('\n').filter(line=>line.startsWith('{')).map(line=>JSON.parse(line));
+  assert.equal(unavailable[0].event,'dream_judge_unavailable');
 });
 
 test('dream:report summarizes recent dream runs and the review queue, and dream:approve/reject flip status from the host CLI',async t=>{
