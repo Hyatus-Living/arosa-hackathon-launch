@@ -36,11 +36,11 @@ Arosa-authored source and documentation are copyright 2026 Hyatus Living and its
 
 Third-party packages, Pascal, Blender, Bonsai, SAM, fonts, datasets and visual assets retain their own licenses and attribution. See [LICENSES.md](LICENSES.md), the included asset credits and package notices. Arosa's MIT grant does not relicense those components, API services or model outputs.
 
-The submission must identify the actual contributors and accurately describe the demonstrated implementation. The current provider migration and live-capability status are documented in the [submission guide](docs/hackathon/index.html).
+The [Astoria walkthrough](README.md#try-the-astoria-study) links the submitted film and gives the steps for exploring a property.
 
 ## Demo film
 
-The film “One more home, with Muse” combines real Arosa interface views and saved Muse outputs with separately labeled cinematic concepts generated using Veo 3.1. Those generated interiors illustrate the housing story; they are not recordings of the application renderer or verified building geometry. Narration uses Gemini 3.8 Flash TTS through OpenRouter, with an original synthesized score.
+The submitted film [Arosa: One More Home | Built with Muse](https://www.youtube.com/watch?v=gMufeJYi64Y) combines real Arosa interface views and saved Muse outputs with separately labeled cinematic concepts generated using Veo 3.1. Those generated interiors illustrate the housing story; they are not recordings of the application renderer or verified building geometry. Narration uses Gemini 3.8 Flash TTS through OpenRouter, with an original synthesized score.
 
 The [English transcript](docs/hackathon/narration.txt) centers on Muse Spark research, editable planning, independent design and underwriting, the bounded Muse Wonder Full edit, and Muse Image concept illustration.
 
