@@ -37,3 +37,11 @@ Arosa-authored source and documentation are copyright 2026 Hyatus Living and its
 Third-party packages, Pascal, Blender, Bonsai, SAM, fonts, datasets and visual assets retain their own licenses and attribution. See [LICENSES.md](LICENSES.md), the included asset credits and package notices. Arosa's MIT grant does not relicense those components, API services or model outputs.
 
 The submission must identify the actual contributors and accurately describe the demonstrated implementation. The current provider migration and live-capability status are documented in the [submission guide](docs/hackathon/index.html).
+
+## Demo film
+
+The film “One more home, with Muse” combines real Arosa interface views and saved Muse outputs with separately labeled cinematic concepts generated using Veo 3.1. Those generated interiors illustrate the housing story; they are not recordings of the application renderer or verified building geometry. Narration uses Gemini 3.8 Flash TTS through OpenRouter, with an original synthesized score.
+
+The [English transcript](docs/hackathon/narration.txt) centers on Muse Spark research, editable planning, independent design and underwriting, the bounded Muse Wonder Full edit, and Muse Image concept illustration.
+
+New York housing-completion comparisons are annual averages calculated from the NYC Rent Guidelines Board’s [2026 Housing Supply Report, Appendix 4](https://rentguidelinesboard.cityofnewyork.us/wp-content/uploads/2026/05/2026-HSR.pdf#page=33): 17,005.7 homes in 1970–1979, 10,436.7 in 1980–1989, and 27,702 in 2016–2025. They count completions, not net housing growth. Rent-burden figures come from the [2026 Income and Affordability Study](https://rentguidelinesboard.cityofnewyork.us/wp-content/uploads/2026/04/2026-IA.pdf), using 2024 ACS data: 51.6% of NYC renter households spend at least 30% of income on gross rent, including utilities; 28.8% spend at least half.
