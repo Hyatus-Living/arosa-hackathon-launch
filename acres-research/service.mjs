@@ -66,7 +66,7 @@ export function researchEngine(secrets,runner=research) {
     return runner(input,runSecrets,progress,emit,onControl,engines[workflow]==='meta'?runMeta:runCodex);
   };
 }
-export function createResearchServer({secrets,store,execute=researchEngine(secrets),wallet=null,mcp=null,sessions=null,maps=createGoogleMaps(secrets),marketStoreFactory=openMarketStore,architecture:architectureOptions=null,filterDecider,traceRoot,investigationProvider,investigationRecords,release=null,feedbackAgent=runCodex,crmEnrichment,visualFetch=fetch}) {
+export function createResearchServer({secrets,store,execute=researchEngine(secrets),wallet=null,mcp=null,sessions=null,maps=createGoogleMaps(secrets),marketStoreFactory=openMarketStore,architecture:architectureOptions=null,filterDecider,traceRoot,investigationProvider,investigationRecords,release=null,feedbackAgent=runMeta,crmEnrichment,visualFetch=fetch}) {
 if(secrets.MCP_SERVICE_TOKEN&&(typeof secrets.MCP_SERVICE_TOKEN!=='string'||secrets.MCP_SERVICE_TOKEN.length<32))throw new Error('The MCP private API requires a strong separate service credential.');
 if(secrets.MCP_SERVICE_TOKEN&&secrets.MCP_SERVICE_TOKEN===secrets.RESEARCH_TOKEN)throw new Error('The MCP private API must use a separate service credential.');
 // Architecture plans, their drawings and processing jobs; absent when the service is not configured for them.

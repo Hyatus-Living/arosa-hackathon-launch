@@ -1,5 +1,5 @@
-// Local dry run of the dream model judge against fixture run data. No Codex, wallet or network:
-// a stub agent stands in for runCodex, so this exercises createCodexJudge -> evaluateRun ->
+// Local dry run of the dream model judge against fixture run data. No provider, wallet or network:
+// a stub agent stands in for runMeta, so this exercises dreamJudgeFromEnv -> evaluateRun ->
 // runDreamCycle (including the judge-failure heuristic fallback) against throwaway stores.
 //   node scripts/dream-judge-dry-run.mjs
 import {mkdtempSync,rmSync} from 'node:fs';
@@ -7,7 +7,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {ChatStore} from '../acres-research/store.mjs';
 import {KnowledgeStore} from '../acres-research/knowledge.mjs';
-import {createCodexJudge,runDreamCycle} from '../acres-research/dream.mjs';
+import {dreamJudgeFromEnv,runDreamCycle} from '../acres-research/dream.mjs';
 
 const dir=mkdtempSync(join(tmpdir(),'acres-dream-dry-run-'));
 const store=new ChatStore(join(dir,'chat.sqlite'));
@@ -32,7 +32,7 @@ try{
     if(agentCalls.length===2)throw new Error('stub judge outage');
     return '```json\n{"notes":"Fixture answer is supported by the captured ZR text.","memories":[{"scope":"global","category":"judge-insight","rule":"Confirm the affordability bonus percentage in the operative zoning text before underwriting it.","confidence":0.9}],"expansions":[{"term":"uap bouns","expansion":"universal affordability preference ZR 23-22"}]}\n```';
   };
-  const judge=createCodexJudge({secrets:{CODEX_BIN:'/bin/false'},agent});
+  const judge=dreamJudgeFromEnv({DREAM_JUDGE:'meta'},{loadSecrets:()=>({MODEL_API_KEY:'fixture-only'}),agent});
 
   const cycle=await runDreamCycle({store,knowledge,judge});
   const [ev]=cycle.evaluations;

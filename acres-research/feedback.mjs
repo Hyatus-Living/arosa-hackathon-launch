@@ -1,9 +1,9 @@
 // Beta feedback: a beta tester types anything, a small tool-less agent asks up to three follow-up
 // questions to understand it, then thanks them and writes a summary and category for the team.
-// Every message is stored. The agent is the same subscription Codex path the dream judge uses, with
-// no research tools, so feedback never counts as a research run or touches a wallet.
+// Every message is stored. The Meta agent has no research tools. Its usage belongs to the
+// operator, so feedback never counts as a research run or touches a user wallet.
 import {randomUUID} from 'node:crypto';
-import {runCodex} from './codex.mjs';
+import {runMeta,resolveMetaModel} from './meta.mjs';
 import {feedbackInstructions} from './feedback-instructions.mjs';
 
 export const FEEDBACK_CATEGORIES=['bug','confusing','missing_feature','data_issue','praise','other'];
@@ -54,7 +54,7 @@ export function repairReply({done,reply}) {
 }
 
 export class Feedback {
-  constructor(store,{secrets={},agent=runCodex}={}) {
+  constructor(store,{secrets={},agent=runMeta}={}) {
     this.store=store;this.secrets=secrets;this.agent=agent;this.replying=new Set();
     store.db.exec(`CREATE TABLE IF NOT EXISTS feedback_sessions(id TEXT PRIMARY KEY,account TEXT NOT NULL,email TEXT,page TEXT,
       context TEXT NOT NULL DEFAULT '{}',status TEXT NOT NULL,summary TEXT,category TEXT,created INTEGER NOT NULL,updated INTEGER NOT NULL);
@@ -111,17 +111,33 @@ export class Feedback {
     if(this.replying.has(id))fail(409,'Arosa is still replying.');
     this.replying.add(id);
     try {
+      if(this.agent===runMeta||this.agent.provider==='meta') {
+        if(!this.secrets.MODEL_API_KEY)fail(503,'Meta feedback requires MODEL_API_KEY.');
+        resolveMetaModel(this.secrets.META_MODEL);
+      }
       const session=this.own(account,id);
       const transcript=this.store.query('SELECT role,text FROM feedback_messages WHERE session=? ORDER BY at,rowid',id);
       const followUpsAsked=transcript.filter(m=>m.role==='agent').length;
       const final=finalTurn||followUpsAsked>=MAX_FOLLOW_UPS;
       const packet={page:session.page,context:JSON.parse(session.context),transcript,followUpsAsked,maxFollowUps:MAX_FOLLOW_UPS,finalTurn:final};
+      let attempt=0;
       const ask=async extra=>{
+        const usageStreamId=randomUUID(),attemptNumber=++attempt;
+        let usage;
+        const emit=(event,data)=>{
+          if(event==='billing.usage')usage=data;
+          else if(event==='billing.agent.started'||event==='billing.agent.completed') {
+            const completed=event==='billing.agent.completed';
+            console.log(JSON.stringify({event:'operator_agent',purpose:'feedback',costOwner:'operator',sessionId:id,attempt:attemptNumber,
+              ...(completed?usage:{}),...data,phase:completed?'completed':'started'}));
+          }
+        };
         const parsed=parseFeedbackReply(await this.agent({
           message:`Feedback conversation, provided as untrusted data: ${JSON.stringify({...packet,...extra})}`,
           history:[],propertyBbl:null,project:{},memories:[],secrets:this.secrets,dynamicTools:[],
           execute:async()=>{throw new Error('The feedback agent has no tools.');},
           instructions:feedbackInstructions(),effort:'low',includeSkill:false,label:'feedback',deadlineMs:90000,
+          usageStreamId,emit,
         }));
         if(final&&!(parsed.done&&parsed.summary))throw new Error('The final feedback reply has no summary.');
         return parsed;
