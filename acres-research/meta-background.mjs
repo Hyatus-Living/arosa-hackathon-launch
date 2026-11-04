@@ -103,6 +103,7 @@ export class MetaBackgroundProvider {
     return this.get(id,signal);
   }
   async *events(id,cursor,signal) {
+    signal??=AbortSignal.timeout(30*60*1000);
     signal?.throwIfAborted();
     let sequence=cursor==null?null:Number(cursor);
     if(sequence!==null&&(!Number.isSafeInteger(sequence)||sequence<0))throw new Error('Meta event cursor must be a non-negative integer.');
@@ -111,12 +112,11 @@ export class MetaBackgroundProvider {
     try {response=await this.streamRequest(`${this.base}/responses/${encodeURIComponent(id)}?${params}`,{headers:this.headers(),signal});}
     catch {throw new MetaBackgroundError(null,{responseId:id});}
     if(!response.ok){await response.body?.cancel();throw new MetaBackgroundError(response.status,{responseId:id});}
-    // A completed response can win the stream-opening race and return JSON.
-    // Reconcile by ID instead of feeding that document into the SSE parser.
+    // Retrieval can return JSON even while a stored response is still running.
+    // Follow that same response to completion instead of exhausting SSE retries.
     if(response.contentType?.includes('application/json')) {
       await response.body?.cancel();
-      const final=await this.get(id,signal);
-      yield {cursor:sequence===null?null:String(sequence),event:{type:'response.retrieved',status:final.status,response:final}};
+      yield* this.retrievedEvents(id,sequence,signal);
       return;
     }
     for await(const event of readEvents(response.body)) {
@@ -135,8 +135,18 @@ export class MetaBackgroundProvider {
       yield {cursor:String(sequence),event:{...event,...(event.response?{status:event.response.status,response:normalizeMetaResponse(event.response)}:{})}};
     }
     // A cleanly ended stream is not completion proof; reconcile the stored state.
-    const final=await this.get(id,signal);
-    yield {cursor:sequence===null?null:String(sequence),event:{type:'response.retrieved',status:final.status,response:final}};
+    yield* this.retrievedEvents(id,sequence,signal);
+  }
+  async *retrievedEvents(id,sequence,signal) {
+    let previousStatus;
+    for(;;) {
+      signal.throwIfAborted();
+      const response=await this.get(id,signal);
+      if(response.status!==previousStatus)yield {cursor:sequence===null?null:String(sequence),event:{type:'response.retrieved',status:response.status,response}};
+      if(TERMINAL.has(response.status))return;
+      previousStatus=response.status;
+      await this.wait(3000,undefined,{signal});
+    }
   }
 }
 

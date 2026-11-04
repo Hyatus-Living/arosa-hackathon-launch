@@ -20,6 +20,31 @@ test('stream completion races returning JSON reconcile by ID and retain the curs
   assert.equal(events[0].event.status,'completed');assert.equal(events[0].event.response.output_text,'Saved answer');
 });
 
+test('JSON and clean empty streams wait for the original active response without spending reconnect attempts',async()=>{
+  for(const jsonMode of [true,false]){
+    let gets=0,streams=0,waits=0;
+    const provider=new MetaBackgroundProvider(secrets,{
+      streamRequest:async()=>{streams++;return jsonMode?{...stream([]),contentType:'application/json'}:stream([]);},
+      fetch:async(url,options)=>{assert.equal(options.method,'GET');assert.ok(url.endsWith('/resp_1'));return json(response(++gets<8?'in_progress':'completed'));},
+      wait:async(ms,_value,{signal})=>{assert.equal(ms,3000);signal.throwIfAborted();waits++;}
+    });
+    const events=await collect(provider.events('resp_1','4',signal()));
+    assert.equal(streams,1);assert.equal(gets,8);assert.equal(waits,7);
+    assert.deepEqual(events.map(item=>[item.cursor,item.event.status]),[['4','in_progress'],['4','completed']]);
+  }
+});
+
+test('active JSON retrieval respects the caller cancellation and preserves the response identity',async()=>{
+  const controller=new AbortController();let gets=0;
+  const provider=new MetaBackgroundProvider(secrets,{
+    streamRequest:async()=>({...stream([]),contentType:'application/json'}),
+    fetch:async()=>{gets++;return json(response('in_progress'));},
+    wait:async(_ms,_value,{signal})=>{controller.abort(new Error('deadline reached'));signal.throwIfAborted();}
+  });
+  await assert.rejects(collect(provider.events('resp_1',null,controller.signal)),/deadline reached/);
+  assert.equal(gets,1);
+});
+
 test('create dispatches one stored background response with hosted search evidence',async()=>{
   const requests=[];
   const provider=new MetaBackgroundProvider({...secrets,META_BASE_URL:'https://meta.example/v1/'},{fetch:async(url,options)=>{requests.push({url,options,body:JSON.parse(options.body)});return json(response('queued'));}});
