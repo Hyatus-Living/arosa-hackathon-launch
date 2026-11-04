@@ -4,8 +4,8 @@ Materials by IFC class (exterior wall faces as facade, the rest plaster), a floo
 kind, and simple furniture in rooms that are close to rectangular, placed against the wall away from the
 room's windows. Room volumes become clear, so the dollhouse shows what is inside them. Nothing here moves
 or adds building geometry: finishes and furniture are separate meshes parented to their room, so the
-manifest, collision and counts stay those of the IFC, and the browser hides and highlights them with
-their room.
+manifest, collision and counts stay those of the IFC. Coplanar roof and exterior-wall finishes retain
+the source face boundaries and openings, and follow their source element in the viewer.
 """
 
 import math
@@ -14,6 +14,10 @@ import re
 import bmesh
 import bpy
 from mathutils import Vector
+from shapely import constrained_delaunay_triangles
+from shapely.geometry import Polygon
+from shapely.geometry.polygon import orient
+from shapely.ops import unary_union
 
 # name: (base colour, roughness, metallic, alpha)
 MATERIALS = {
@@ -284,6 +288,108 @@ def slab_faces(obj):
         poly.material_index = 2 if z < -0.7 else 0 if z > 0.7 else 1
 
 
+
+def _dot(a, b):
+    return sum(x * y for x, y in zip(a, b))
+
+
+def _sub(a, b):
+    return tuple(x - y for x, y in zip(a, b))
+
+
+def _unit(vector):
+    length = math.sqrt(_dot(vector, vector))
+    return tuple(value / length for value in vector)
+
+
+def facade_side(normal, vertices):
+    """Finish broad sides of straight walls, never jambs or endcaps that narrow an opening."""
+    ring = hull([(point[0], point[1]) for point in vertices])
+    if len(ring) < 3:
+        return False
+    frame = Frame(ring)
+    return (frame.half_u > 2 * frame.half_v and area(ring) >= frame.area * 0.99
+            and abs(normal[2]) < 0.1 and abs(_dot(normal[:2], frame.u)) < 0.01)
+
+
+def coplanar_finishes(faces):
+    """Union each element's face coverage in its plane and storey, retaining openings and selection ownership."""
+    groups = []
+    for face in faces:
+        points, normal = face["points"], _unit(face["normal"])
+        group = next((group for group in groups
+                      if group["kind"] == face["kind"] and group["level"] == face["level"]
+                      and group["owner"] == face["owner"]
+                      and _dot(group["normal"], normal) > 1 - 1e-8
+                      and max(abs(_dot(group["normal"], _sub(point, group["origin"])))
+                              for point in points) < 1e-5), None)
+        if group is None:
+            u = _unit(_sub(points[1], points[0]))
+            v = (normal[1] * u[2] - normal[2] * u[1], normal[2] * u[0] - normal[0] * u[2],
+                 normal[0] * u[1] - normal[1] * u[0])
+            group = {"kind": face["kind"], "level": face["level"], "owner": face["owner"],
+                     "normal": normal, "u": u, "v": v, "origin": points[0], "polygons": []}
+            groups.append(group)
+        group["polygons"].append(Polygon([(_dot(_sub(point, group["origin"]), group["u"]),
+                                           _dot(_sub(point, group["origin"]), group["v"])) for point in points]))
+    result = []
+    for group in groups:
+        coverage = unary_union(group["polygons"])
+        triangles = constrained_delaunay_triangles(coverage)
+        if not math.isclose(sum(triangle.area for triangle in triangles.geoms), coverage.area, abs_tol=1e-7):
+            raise ValueError("Presentation finish triangulation changed source face coverage")
+        vertices, indices = [], []
+        lift = 0.012 if group["kind"] == "roof" else 0.003
+        for triangle in triangles.geoms:
+            indices.append(tuple(range(len(vertices), len(vertices) + 3)))
+            for x, y in list(orient(triangle, sign=1).exterior.coords)[:3]:
+                vertices.append(tuple(group["origin"][i] + x * group["u"][i] + y * group["v"][i]
+                                      + lift * group["normal"][i] for i in range(3)))
+        result.append({"kind": group["kind"], "level": group["level"], "owner": group["owner"],
+                       "vertices": vertices, "faces": indices, "sourceArea": coverage.area})
+    return result
+
+
+def surface_finishes(reopened, storey_of, collection):
+    """Decorative skins only; the imported IFC meshes and their collision surfaces are untouched."""
+    faces, owners = [], {}
+    for obj, entity in sorted(reopened, key=lambda item: item[1].GlobalId):
+        if obj.type != "MESH":
+            continue
+        roof = entity.is_a("IfcSlab") and entity.PredefinedType == "ROOF"
+        wall = entity.is_a("IfcWall")
+        if not (roof or wall):
+            continue
+        owners[entity.GlobalId] = obj
+        vertices = [tuple(obj.matrix_world @ vertex.co) for vertex in obj.data.vertices]
+        rotation = obj.matrix_world.to_3x3().inverted().transposed()
+        level = (storey_of(entity) or entity).GlobalId
+        for polygon in obj.data.polygons:
+            normal = tuple((rotation @ polygon.normal).normalized())
+            if roof:
+                if normal[2] <= 0.7:
+                    continue
+            elif (obj.data.materials[polygon.material_index] != material("facade")
+                  or not facade_side(normal, vertices)):
+                continue
+            faces.append({"points": [vertices[index] for index in polygon.vertices], "normal": normal,
+                          "kind": "roof" if roof else "facade", "level": level, "owner": entity.GlobalId})
+    added = []
+    for index, finish in enumerate(coplanar_finishes(faces)):
+        name = f"arosa-finish-{finish['kind']}-{index}"
+        mesh = bpy.data.meshes.new(name)
+        mesh.from_pydata(finish["vertices"], [], finish["faces"])
+        mesh.update()
+        mesh.materials.append(material("slab" if finish["kind"] == "roof" else "facade"))
+        obj = bpy.data.objects.new(name, mesh)
+        collection.objects.link(obj)
+        obj.parent = owners[finish["owner"]]
+        obj.matrix_parent_inverse = obj.parent.matrix_world.inverted()
+        obj["presentation_only"] = True
+        added.append(obj)
+    return added
+
+
 def dress(reopened, storey_of, collection):
     """Materials, floor finishes and furniture for the imported building; returns the objects it added."""
     rooms, added = [], []
@@ -326,6 +432,7 @@ def dress(reopened, storey_of, collection):
             name = next((m for cls, m in ELEMENTS.items() if entity.is_a(cls)), "plaster")
         obj.data.materials.clear()
         obj.data.materials.append(material(name))
+    added += surface_finishes(reopened, storey_of, collection)
     return added
 
 

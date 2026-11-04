@@ -42,8 +42,11 @@ export async function loadArchitectureModel(url,index,levels,{signal,fetcher=fet
   const meshes=[],originals=new Set(),authoredRooms=new Set(),authoredFloors=new Set();
   scene.traverse(object=>{
     if(!object.isMesh)return;
-    let name=null,owner=null;
-    for(let node=object;node;node=node.parent)if(index.objects.has(node.name)){name=node.name;owner=node;break;}
+    let name=null,owner=null,presentationOnly=false;
+    for(let node=object;node;node=node.parent){
+      presentationOnly ||= node.name.startsWith('arosa-finish-');
+      if(index.objects.has(node.name)){name=node.name;owner=node;break;}
+    }
     const association=gltf.parser?.associations;
     const primitive=association?.get(object);
     const source=primitive&&gltf.parser.json?.meshes?.[primitive.meshes]?.primitives?.[primitive.primitives];
@@ -64,6 +67,7 @@ export async function loadArchitectureModel(url,index,levels,{signal,fetcher=fet
     };
     object.material=Array.isArray(object.material)?object.material.map(clone):clone(object.material);
     object.userData.node=name;
+    object.userData.presentationOnly=presentationOnly;
     object.userData.levelId=name?index.objects.get(name).levelId??null:null;
     object.userData.implicitWall=Boolean(source&&source.material===undefined&&index.objects.get(name)?.kind==='wall');
     object.userData.implicitDoor=Boolean(source&&source.material===undefined&&index.objects.get(name)?.kind==='door');
@@ -94,6 +98,7 @@ export async function loadArchitectureModel(url,index,levels,{signal,fetcher=fet
     if(!triangles){
       triangles={walls:[],floors:[]};
       for(const mesh of meshes){
+        if(mesh.userData.presentationOnly)continue;
         const name=mesh.userData.node;
         const target=index.walls.has(name)?triangles.walls:index.floors.has(name)?triangles.floors:null;
         if(target)target.push(...worldTriangles(mesh.geometry.attributes.position.array,mesh.geometry.index?.array??null,mesh.matrixWorld.elements));
