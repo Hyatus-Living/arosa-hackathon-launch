@@ -1,42 +1,17 @@
-# witharosa.ai
+# Arosa public site
 
-The public site: static pages in `public/`, hosted on Firebase Hosting in the Google Cloud
-project `hyatus-openclaw` (site `hyatus-openclaw`; config in `firebase.json`, project in
-`.firebaserc`, output directory `public`). The build, `node build.mjs`, copies the app's front-end
-modules and styles from `../app-starter/public` into `public/app`, so the product windows under
-`public/demo` run the app's own views on example data. Redeploy whenever `site/` or
-`app-starter/public` changes, so the demo windows always carry the current app code.
-`node site/demo-sites.mjs` (from the repo root, with the research dependencies installed)
-regenerates the example site states and `public/demo/calc.js` from the research service's own code.
+The static pages live in `public/`. `node build.mjs` copies the app's frontend modules and styles from `../app-starter/public` into `public/app`, so the product windows under `public/demo` use the app's views with example data. Rebuild after changing either surface. From the repository root, `node site/demo-sites.mjs` regenerates the example site states with the research dependencies installed.
 
-Deploy (needs Firebase Hosting rights on `hyatus-openclaw`):
+For local preview, run `node build.mjs` from this directory and serve `public/` with a static HTTP server. `PRODUCT.md` holds the product content and `DESIGN.md` the visual contract.
 
-```bash
+## Deploy your own site
+
+Select your own Firebase project and Hosting site. The checked-in configuration has no default cloud project. Review the API rewrite in `firebase.json`, including its region, and configure a proxy or remove that rewrite if your deployment does not use it.
+
+```sh
 cd site
 node build.mjs
-firebase deploy --only hosting
+firebase deploy --only hosting --project "$ACRES_GCP_PROJECT"
 ```
 
-API paths that land on the apex are handled by the `arosa-site-proxy` Cloud Run service
-(`site/proxy/`, project `hyatus-openclaw`, region `us-central1`), which `firebase.json` rewrites
-`/api/**` to: `/api/public/stats` and `/api/public/beta-apply` pass through to
-`build.witharosa.ai` (Origin and client IP forwarded; the app checks both), and every other
-`/api` path redirects there. Payment returns (`?wallet=`) are forwarded to `build.witharosa.ai`
-by a script in `public/index.html`. Redeploy the proxy only when its code changes:
-
-```bash
-gcloud run deploy arosa-site-proxy --source site/proxy --project hyatus-openclaw --region us-central1 --allow-unauthenticated
-```
-
-The apex `A` record for `witharosa.ai` in Cloudflare DNS points at Firebase Hosting
-(`199.36.158.100`) and is not proxied; the app stays behind the Cloudflare tunnel and Access at
-`build.witharosa.ai` (`app.witharosa.ai` serves it too). Preview locally by running
-`node build.mjs`, then any static server on `public/`, for example
-`python3 -m http.server --directory public`. Asset files are named
-`site.css` and `site.js` because the app that used to live on the apex served `styles.css` and
-`app.js`, and browsers that visited it keep those cached.
-
-Firebase Hosting is the only host for the apex.
-
-`PRODUCT.md` holds the product truth the copy is drawn from; `DESIGN.md` the visual contract, which
-inherits the HyatusOS monochrome system.
+`proxy/` contains a Cloud Run API bridge. Its public allowlist forwards aggregate stats and beta applications; other API requests redirect to the configured app origin. Set `AROSA_APP_ORIGIN` for your deployment. Preserve the application's origin checks and authentication policies. Keep custom-domain, DNS and cloud resource identifiers in private operator configuration.

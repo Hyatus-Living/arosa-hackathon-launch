@@ -1,9 +1,9 @@
-// Same-origin API bridge for witharosa.ai, deployed as Cloud Run service
-// arosa-site-proxy in hyatus-openclaw. Firebase Hosting rewrites /api/** here.
+// Same-origin API bridge deployed as a Cloud Run service. Firebase Hosting rewrites /api/** here.
 // Public paths pass through to the app; every other /api path redirects there.
 import http from 'node:http';
 
-const APP = 'https://build.witharosa.ai';
+const APP = process.env.AROSA_APP_ORIGIN;
+if (!APP) throw new Error('AROSA_APP_ORIGIN is required.');
 const PUBLIC = new Set(['/api/public/stats', '/api/public/beta-apply']);
 
 const server = http.createServer(async (req, res) => {

@@ -190,10 +190,10 @@ async function defaultOauth() {
     const {accessToken,chatgptAccountId}=JSON.parse(await readFile(EXPORTED_OAUTH,'utf8'));
     return {accessToken,chatgptAccountId};
   }
-  if (existsSync('/home/openclaw/.openclaw/openclaw.json')) {
+  if (existsSync('/var/lib/arosa/openclaw/openclaw.json')) {
     const {resolveApiKeyForProvider} = await import('/usr/local/lib/node_modules/openclaw/dist/plugin-sdk/provider-auth-runtime.js');
-    const cfg=JSON.parse(await readFile('/home/openclaw/.openclaw/openclaw.json','utf8'));
-    const auth=await resolveApiKeyForProvider({provider:'openai',cfg,agentDir:'/home/openclaw/.openclaw/agents/builder/agent'});
+    const cfg=JSON.parse(await readFile('/var/lib/arosa/openclaw/openclaw.json','utf8'));
+    const auth=await resolveApiKeyForProvider({provider:'openai',cfg,agentDir:'/var/lib/arosa/openclaw/agents/builder/agent'});
     const claims=JSON.parse(Buffer.from(auth.apiKey.split('.')[1],'base64url').toString());
     const accountId=claims['https://api.openai.com/auth'].chatgpt_account_id;
     if (!accountId) throw new Error('The configured subscription is unavailable.');

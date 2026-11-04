@@ -11,7 +11,7 @@ export function safeTrace(value) {
   return value;
 }
 
-export function createTrace(input, root='/home/openclaw/.openclaw/acres-state/traces') {
+export function createTrace(input, root='/var/lib/arosa/traces') {
   mkdirSync(root,{recursive:true,mode:0o700});
   const id=randomUUID(), path=join(root,`${id}.jsonl`);
   const emit=(event,data={})=>appendFileSync(path,JSON.stringify({traceId:id,time:new Date().toISOString(),event,...safeTrace(data)})+'\n',{mode:0o600});

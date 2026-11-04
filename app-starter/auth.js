@@ -26,7 +26,9 @@ export function createAccountResolver(accountLinks={}) {
   return (email)=>resolveAccount(email,accountLinks);
 }
 
-export function createAuthenticator({issuer,audience,accountLinks={},adminEmails=process.env.AROSA_ADMIN_EMAILS},key=createRemoteJWKSet(new URL('/cdn-cgi/access/certs',issuer))) {
+export function createAuthenticator({issuer,audience,accountLinks={},adminEmails=process.env.AROSA_ADMIN_EMAILS},key) {
+  if(!issuer||!audience)throw new Error('AROSA_ACCESS_ISSUER and AROSA_ACCESS_AUD are required.');
+  key??=createRemoteJWKSet(new URL('/cdn-cgi/access/certs',issuer));
   const resolve=createAccountResolver(accountLinks);
   return async (req,res,next)=>{
     const token=req.get('cf-access-jwt-assertion');
@@ -45,11 +47,11 @@ export function createAuthenticator({issuer,audience,accountLinks={},adminEmails
   };
 }
 
-export const authenticate=createAuthenticator({
-  issuer:process.env.AROSA_ACCESS_ISSUER||'https://hyatus-ai.cloudflareaccess.com',
-  audience:process.env.AROSA_ACCESS_AUD||'unconfigured',
+export const authenticate=process.env.AROSA_ACCESS_ISSUER&&process.env.AROSA_ACCESS_AUD?createAuthenticator({
+  issuer:process.env.AROSA_ACCESS_ISSUER,
+  audience:process.env.AROSA_ACCESS_AUD,
   accountLinks:envAccountLinks,
-});
+}):(_req,res)=>res.status(401).json({error:'Sign-in is not configured.'});
 
 // The architecture plan editor and walkthrough are shown only while the feature is switched on for the
 // deployment and, when an allowlist is configured, only to the listed accounts. An allowlist entry is

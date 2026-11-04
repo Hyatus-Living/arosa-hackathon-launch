@@ -3,7 +3,7 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
 # Deploy into the existing Acres project. This script does not create
 # a project, change the web/builder service, or provision credentials/networking.
-: "${ACRES_GCP_PROJECT:=hyatus-openclaw}"
+: "${ACRES_GCP_PROJECT:?Set your deployment project}"
 : "${ACRES_MCP_SERVICE_ACCOUNT:?Set the dedicated gateway service account email}"
 : "${ACRES_BUILD_SERVICE_ACCOUNT:?Set the Cloud Build service account email}"
 : "${MCP_PUBLIC_URL:?Set the stable HTTPS resource URL ending in /mcp}"

@@ -3,6 +3,7 @@ import {createRoot} from 'react-dom/client';
 import {OpenGenerativeUIActivityRenderer,SandboxFunctionsContext,OpenGenerativeUIContentSchema} from '@copilotkit/react-core/v2';
 import {z} from 'zod';
 import {skel} from '../public/skeleton.js';
+import {assertGeneratedUiLimits} from './generated-ui-limits.mjs';
 const roots=new Map();
 const functions=[{name:'sendPrompt',description:'Ask a follow-up question after the user clicks an interface control.',parameters:z.object({text:z.string().min(1).max(3000)}),handler:async args=>{if(!navigator.userActivation.isActive)throw new Error('Click an interface control to ask a follow-up.');const {text}=z.object({text:z.string().min(1).max(3000)}).parse(args);document.dispatchEvent(new CustomEvent('acres-follow-up',{detail:{text}}));return {queued:true};}}];
 const csp="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; base-uri 'none'; form-action 'none';";
@@ -20,6 +21,7 @@ const themed=new Set();
 new MutationObserver(()=>{for(const update of themed)update();}).observe(document.documentElement,{attributes:true,attributeFilter:['class']});
 window.acresGeneratedUi={
   render(container,value) {
+    assertGeneratedUiLimits(value);
     const content=OpenGenerativeUIContentSchema.parse(value);
     const html=content.html.join('').replace(/<head[^>]*>/i,'').replace(/<\/head>/i,'');
     content.html=[`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="${csp}"><style id="acres-theme">${themeCss()}</style></head><body inert>${html}</body></html>`];

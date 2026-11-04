@@ -152,7 +152,7 @@ re-run.
 
 ## Storage
 
-The state lives in the existing chat database, `/home/openclaw/.openclaw/acres-state/chat.sqlite`,
+The state lives in the existing chat database, `/var/lib/arosa/chat.sqlite`,
 next to the conversations it belongs to. It therefore shares that database's WAL mode, 0600
 permissions, daily disk snapshots and account scoping. Its tables:
 

@@ -19,8 +19,8 @@ if(!['report','approve','reject'].includes(command))throw new Error('Usage: drea
 if(command==='report'&&!values.out)throw new Error('dream:report needs --out <path>.');
 if(command!=='report'&&(!values.id||!values.kind))throw new Error(`dream:${command} needs --id and --kind memory|expansion|source.`);
 
-const store=new ChatStore(process.env.RESEARCH_STATE_PATH||'/home/openclaw/.openclaw/acres-state/chat.sqlite');
-const knowledge=new KnowledgeStore(process.env.KNOWLEDGE_DB_PATH||'/home/openclaw/.openclaw/acres-state/knowledge.sqlite');
+const store=new ChatStore(process.env.RESEARCH_STATE_PATH||'/var/lib/arosa/chat.sqlite');
+const knowledge=new KnowledgeStore(process.env.KNOWLEDGE_DB_PATH||'/var/lib/arosa/knowledge.sqlite');
 try{
   if(command==='report'){
     writeFileSync(values.out,dreamReport({store,knowledge,runs:Number(values.runs)}));

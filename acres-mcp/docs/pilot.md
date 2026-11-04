@@ -2,14 +2,11 @@
 
 The code milestone is the scoped gateway (six `acres:read` tools plus project state and admin tools) with account-scoped evidence. A deployed ChatGPT pilot requires these additional checks; local signed-token fixtures do not count as two real Google connections.
 
-## Exact external prerequisites
+## External prerequisites
 
-- Complete the real user-flow tests with the registered ChatGPT client. The supplied native setup evidence verifies issuer/JWKS, explicit consent, PKCE S256, the Arosa audience, manual ChatGPT CIMD registration, 600-second RS256 read tokens, rotating refresh-token configuration and the approved Google credential binding. Actual Google login, account linking and refresh/revocation still need tests. Auth0's built-in Try Connection stopped before Google because its internal tester is outside the approved audience grants; do not grant it access to make that test pass. Existing website IAP is retained. Do not create a second tenant or substitute IAP/Google ID-token endpoints for the MCP issuer.
-- Use the existing `hyatus-openclaw` project. Grant an authorized deployment identity access only for the approved new gateway, build artifacts and configuration. Do not create another project or alter billing.
-- Review a stable HTTPS endpoint and domain mapping, the new gateway service account, Secret Manager bindings, and its private network path to `10.42.0.2:18800`. Existing firewall access for the web app does not establish access for the new gateway.
-- Create two explicit invited memberships using verified Auth0 subjects and existing Google IAP subjects/account ownership. Test that each real Google user maps to their existing Arosa account, including the exact IAP subject format. Supply membership values securely, not in code, chat or screenshots.
-- Inventory the deployed knowledge database and release only reviewed public sources. Verify a known current snapshot, its coverage/freshness and an unsupported subject. An empty corpus is reported as a gap.
-- Enable Exa only after funded execution, usage rights and provider-side spending limits are verified. The pilot does not depend on Instant.
+Configure your managed OAuth issuer, trusted JWKS URL, audience, consent and PKCE flow. Test a fresh login, refresh, revocation and account switching with the actual client. Do not substitute a proxy header or unrelated ID token for the gateway's OAuth token.
+
+Choose your own cloud project, gateway identity, private backend route and Secret Manager bindings. Store verified identity memberships outside source control. Use two real accounts to verify ownership, scope enforcement and isolation. Release only reviewed public sources and validate provider rights, funding and spending limits before enabling optional search.
 
 ## Gateway deployment bindings
 
@@ -20,7 +17,7 @@ The native operator must supply and review these bindings before an authorized d
 | `ACRES_MCP_SERVICE_ACCOUNT` | Dedicated gateway identity with access only to the two required Secret Manager bindings. |
 | `ACRES_BUILD_SERVICE_ACCOUNT` | Authorized build identity for the existing project, artifact repository and staging bucket. |
 | `ACRES_ARTIFACT_REPOSITORY`, `ACRES_BUILD_SOURCE_BUCKET` | Existing repository in `us-central1` and existing source staging bucket; the repository defaults to `apps` but must be verified. |
-| `ACRES_MCP_VPC_CONNECTOR`, `MCP_BACKEND_URL` | Existing ready connector and verified private route/firewall access to `http://10.42.0.2:18800`. |
+| `ACRES_MCP_VPC_CONNECTOR`, `MCP_BACKEND_URL` | Existing ready connector and verified private route/firewall access to `http://127.0.0.1:18800`. |
 | `MCP_SERVICE_TOKEN_SECRET`, `MCP_SERVICE_TOKEN_VERSION` | Dedicated strong service credential also bound to the private service's `MCP_SERVICE_TOKEN`; distinct from its web credential. |
 | `MCP_MEMBERSHIPS_SECRET`, `MCP_MEMBERSHIPS_VERSION` | Reviewed private JSON containing the two invited Auth0 subjects and verified existing Arosa account/workspace mappings, each with its reviewed `scopes` (omitted means `["acres:read"]`). |
 | `MCP_PUBLIC_URL` | DNS/TLS mapping verified for `https://mcp.witharosa.ai/mcp`, matching the configured OAuth audience. |

@@ -10,7 +10,7 @@ import {once} from 'node:events';
 import {researchRuntimeOptions,architectureOptions} from './service.mjs';
 
 test('runtime defaults retain the deployed listener and colocated storage',()=>{
-  assert.deepEqual(researchRuntimeOptions({}),{statePath:'/home/openclaw/.openclaw/acres-state/chat.sqlite',stateDir:'/home/openclaw/.openclaw/acres-state',host:'10.42.0.2',port:18800});
+  assert.deepEqual(researchRuntimeOptions({}),{statePath:'/var/lib/arosa/chat.sqlite',stateDir:'/var/lib/arosa',host:'127.0.0.1',port:18800});
   const env={ACRES_STATE_DIR:'/local/state',RESEARCH_HOST:'127.0.0.1',RESEARCH_PORT:'18801',ACRES_ARCHITECTURE_ENABLED:'true'};
   assert.deepEqual(researchRuntimeOptions(env),{statePath:'/local/state/chat.sqlite',stateDir:'/local/state',host:'127.0.0.1',port:18801});
   assert.equal(architectureOptions({},env).stateDir,'/local/state');

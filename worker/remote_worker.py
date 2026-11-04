@@ -24,17 +24,17 @@ import tarfile
 import time
 from pathlib import Path
 
-PROJECT = "hyatus-openclaw"
-ZONE = "us-central1-a"
-HOST = "acres-render-gpu"
-HOME = "/var/lib/acres-runtime"
+PROJECT = os.environ.get("ACRES_GCP_PROJECT")
+ZONE = os.environ.get("ACRES_GCP_ZONE")
+HOST = os.environ.get("ACRES_GPU_HOST")
+RUNTIME_HOME = str(Path.home())
 READY_SECONDS = 150
 USER = None
 LOCAL_WORKER = Path(__file__).resolve().parents[1] / "bin" / "architecture-worker-unit"
 ADDRESS = f"{HOST}.{ZONE}.c.{PROJECT}.internal"
 GCLOUD = ["gcloud", f"--project={PROJECT}", "--quiet"]
 SSH_OPTIONS = [
-    "-i", f"{HOME}/.ssh/acres-render-gpu", "-o", f"UserKnownHostsFile={HOME}/.ssh/known_hosts",
+    "-i", os.environ.get("ACRES_GPU_SSH_KEY", f"{RUNTIME_HOME}/.ssh/acres-render-gpu"), "-o", f"UserKnownHostsFile={RUNTIME_HOME}/.ssh/known_hosts",
     "-o", "StrictHostKeyChecking=accept-new", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10", "-o", "ServerAliveInterval=15",
 ]
 
@@ -135,8 +135,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--job", required=True)
     job_dir = Path(parser.parse_args().job).resolve()
+    if not all((PROJECT, ZONE, HOST)):
+        parser.error("Set ACRES_GCP_PROJECT, ACRES_GCP_ZONE and ACRES_GPU_HOST for remote rendering.")
     json.loads((job_dir / "job.json").read_text())
-    os.environ.update(HOME=HOME, CLOUDSDK_CORE_DISABLE_PROMPTS="1")
+    os.environ["CLOUDSDK_CORE_DISABLE_PROMPTS"] = "1"
     signal.signal(signal.SIGTERM, on_signal)
     signal.signal(signal.SIGINT, on_signal)
     global USER

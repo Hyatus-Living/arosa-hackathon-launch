@@ -6,14 +6,14 @@ set -euo pipefail
 # incomplete release (that crash-looped the service on 2026-10-18). Reinstall and re-exec
 # the workspace copy once, before doing anything else.
 if [[ -z "${ACRES_DEPLOY_SELF_UPDATED:-}" ]]; then
-  SELF_SRC=/home/openclaw/.openclaw/workspace/acres/infra/acres-deploy-research
+  SELF_SRC=/srv/arosa/infra/acres-deploy-research
   if [[ -f "$SELF_SRC" && ! -L "$SELF_SRC" ]] && ! cmp -s "$SELF_SRC" "$0"; then
     install -m 755 "$SELF_SRC" "$0"
     export ACRES_DEPLOY_SELF_UPDATED=1
     exec "$0" "$@"
   fi
 fi
-ROOT=/home/openclaw/.openclaw/workspace/acres
+ROOT=/srv/arosa
 RESULT=$ROOT/.deploy-research-result
 REQUEST=$ROOT/.deploy-research
 # The release is staged as a tree mirroring / under a root-only directory, then handed to
@@ -105,11 +105,12 @@ runuser -u openclaw -- cat "$ROOT/acres-research/nyc-tax-rates.json" > "$REL/opt
 # The state directory is shared by openclaw (the sync and ledger units) and the research service's
 # user through ACLs set on the host. It is created once; resetting its mode on every deploy collapsed
 # the ACL mask and locked the research service out of every store (2026-10-19).
-STATE_DIR=/home/openclaw/.openclaw/acres-state
+STATE_DIR=/var/lib/arosa
 [[ -d "$STATE_DIR" ]] || install -d -o openclaw -g openclaw -m 700 "$STATE_DIR"
 RESEARCH_USER=$(systemctl show acres-research -p User --value 2>/dev/null || true)
 if [[ -n "$RESEARCH_USER" && "$RESEARCH_USER" != openclaw && "$RESEARCH_USER" != root ]] && id "$RESEARCH_USER" >/dev/null 2>&1; then
-  for DIR in /home/openclaw/.openclaw "$STATE_DIR"; do
+  for DIR in /var/lib/arosa/openclaw "$STATE_DIR"; do
+    [[ -d "$DIR" ]] || continue
     runuser -u "$RESEARCH_USER" -- test -x "$DIR" || setfacl -m "u:$RESEARCH_USER:rwx,m::rwx" "$DIR"
   done
   runuser -u "$RESEARCH_USER" -- test -w "$STATE_DIR" || setfacl -m "u:$RESEARCH_USER:rwx,m::rwx" "$STATE_DIR"
@@ -136,7 +137,7 @@ if [[ -f "$ROOT/infra/acres-dream.service" && ! -L "$ROOT/infra/acres-dream.serv
   systemctl enable --now acres-dream.timer
 fi
 if [[ -f "$ROOT/infra/acres-ledger.service" && ! -L "$ROOT/infra/acres-ledger.service" && -f "$ROOT/infra/acres-ledger.timer" && ! -L "$ROOT/infra/acres-ledger.timer" ]]; then
-  # The sync reads ACRES_SOCRATA_APP_TOKEN from /home/openclaw/.openclaw/gateway.env (EnvironmentFile).
+  # The sync reads ACRES_SOCRATA_APP_TOKEN from /var/lib/arosa/openclaw/gateway.env (EnvironmentFile).
   install -m 644 "$ROOT/infra/acres-ledger.service" /etc/systemd/system/acres-ledger.service
   install -m 644 "$ROOT/infra/acres-ledger.timer" /etc/systemd/system/acres-ledger.timer
   systemctl daemon-reload
@@ -208,13 +209,13 @@ report() {
   chmod 644 "$STAGE/result"
   mv -fT "$STAGE/result" "$RESULT"
 }
-active() { curl -fsS --max-time 5 http://10.42.0.2:18800/healthz 2>/dev/null | python3 -c 'import json,sys;print(json.load(sys.stdin)["active"])' 2>/dev/null; }
+active() { curl -fsS --max-time 5 http://127.0.0.1:18800/healthz 2>/dev/null | python3 -c 'import json,sys;print(json.load(sys.stdin)["active"])' 2>/dev/null; }
 # The new release is serving when the health check names it and the process is not draining. A
 # process that exits is a failure at once: connections wait in the socket backlog meanwhile.
 serving() {
   for _ in $(seq 1 30); do
     systemctl is-active --quiet acres-research.service || return 1
-    if curl -fsS --max-time 3 http://10.42.0.2:18800/healthz 2>/dev/null |
+    if curl -fsS --max-time 3 http://127.0.0.1:18800/healthz 2>/dev/null |
       python3 -c 'import json,sys;h=json.load(sys.stdin);sys.exit(0 if h["release"]==sys.argv[1] and not h["draining"] else 1)' "$1" 2>/dev/null; then
       return 0
     fi

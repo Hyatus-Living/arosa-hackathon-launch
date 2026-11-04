@@ -61,8 +61,7 @@ test('the research installer ships every module the service imports',async()=>{
 
 test('the secrets puller carries the Stripe subscription secrets as optional app env, never as boot requirements',async()=>{
   const pull=await readFile(join(here,'..','infra','acres-pull-secrets'),'utf8');
-  assert.ok(pull.includes("'STRIPE_SECRET_KEY': 'acres-stripe-secret-key'"),'Secret Manager name for the Stripe secret key');
-  assert.ok(pull.includes("'STRIPE_SUBSCRIPTION_WEBHOOK_SECRET': 'acres-stripe-subscription-webhook-secret'"),'Secret Manager name for the subscription webhook secret');
+  assert.ok(pull.includes("os.environ['ACRES_SECRET_MAP_JSON']"),'Secret Manager resource names come from private operator configuration');
   const optionalBlock=pull.slice(pull.indexOf('OPTIONAL_KEYS'),pull.indexOf('RESEARCH_JSON_KEYS'));
   assert.ok(optionalBlock.includes('STRIPE_SECRET_KEY')&&optionalBlock.includes('STRIPE_SUBSCRIPTION_WEBHOOK_SECRET'),'both Stripe secrets are optional, so billing stays closed instead of blocking boot');
   assert.ok(pull.includes("emit('app.env', [k for k in APP_KEYS if k not in OPTIONAL_KEYS]"),'app.env is still emitted while the Stripe secrets are missing');

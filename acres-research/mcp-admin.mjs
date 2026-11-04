@@ -2,7 +2,7 @@ import {EvidenceStore} from './mcp-store.mjs';
 
 // Host administration only; none of these operations is an MCP tool.
 const [command,...args]=process.argv.slice(2);
-const store=new EvidenceStore(process.env.ACRES_MCP_EVIDENCE_DB||'/home/openclaw/.openclaw/acres-state/mcp-evidence.sqlite');
+const store=new EvidenceStore(process.env.ACRES_MCP_EVIDENCE_DB||'/var/lib/arosa/mcp-evidence.sqlite');
 try {
   if(command==='backup'&&args.length===1) {await store.backup(args[0]);console.log('Evidence backup completed. Verify restoration before relying on it.');}
   else if(command==='prune'&&!args.length) {store.prune();console.log('Expired evidence and old quota counters removed.');}

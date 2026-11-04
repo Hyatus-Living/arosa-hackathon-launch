@@ -91,7 +91,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const {ChatStore} = await import('./store.mjs');
   const {openMarketStore} = await import('./market-store.mjs');
   const secrets = JSON.parse(readFileSync(process.env.ACRES_SECRETS_JSON || '/etc/acres-research/secrets.json', 'utf8'));
-  const store = new ChatStore('/home/openclaw/.openclaw/acres-state/chat.sqlite');
+  const store = new ChatStore('/var/lib/arosa/chat.sqlite');
   const sweep = createAlertSweep({
     store, mailer: mailerFromSecrets(secrets),
     openMarket: async () => openMarketStore({readOnly: true}),

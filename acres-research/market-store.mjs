@@ -31,7 +31,7 @@ const MIN_PEER_SALES = 6;
 const MIN_CLOSED_CONDO_SALES = MIN_PEER_SALES;
 // Only closings in this many months before the rollup set that benchmark: older ones describe another market.
 const CONDO_SALE_WINDOW_MONTHS = 24;
-export const marketDbPath = () => process.env.ACRES_MARKET_DB || '/home/openclaw/.openclaw/acres-state/market.sqlite';
+export const marketDbPath = () => process.env.ACRES_MARKET_DB || '/var/lib/arosa/market.sqlite';
 export const PLUTO_DATASET_URL = 'https://data.cityofnewyork.us/resource/64uk-42ks.json';
 export const HPD_REGISTRATIONS_URL = 'https://data.cityofnewyork.us/resource/tesw-yqqr.json';
 

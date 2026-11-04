@@ -16,7 +16,7 @@ beside it to run each job in a systemd unit with memory and CPU limits, or `bin/
 work and `POST .../jobs` answers 503, so a disabled feature never starts Blender.
 `ACRES_ARCHITECTURE_PIPELINE_VERSION` (default `1`) names the worker build; change it whenever the
 worker changes so completed jobs are not reused across versions. Files live under
-`/home/openclaw/.openclaw/acres-state/architecture/`, beside `chat.sqlite`, and are covered by the
+`/var/lib/arosa/architecture/`, beside `chat.sqlite`, and are covered by the
 same state backup.
 
 ## Plans per scheme

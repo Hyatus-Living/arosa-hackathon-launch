@@ -1,6 +1,5 @@
 {
   "hosting": {
-    "site": "hyatus-openclaw",
     "public": "public",
     "ignore": ["firebase.json", ".firebaserc", "proxy", "experiments", "**/*.md", "build.mjs", "demo-sites.mjs"],
     "cleanUrls": true,

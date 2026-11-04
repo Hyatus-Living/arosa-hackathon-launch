@@ -35,5 +35,13 @@
     "zod": "^3.25.76",
     "zustand": "^5.0.15"
   },
-  "license": "MIT"
+  "overrides": {
+    "katex": "0.18.2",
+    "@pascal-app/core": {
+      "zod": "4.6.7"
+    },
+    "@pascal-app/editor": {
+      "zod": "4.6.7"
+    }
+  }
 }

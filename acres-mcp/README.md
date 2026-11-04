@@ -47,7 +47,7 @@ Only user-delegated read access is granted. ChatGPT and other MCP clients regist
 | `OPENAI_APPS_CHALLENGE_TOKEN` | Optional exact OpenAI directory verification token, served as plain text at `/.well-known/openai-apps-challenge`. |
 | `MCP_OAUTH_ISSUER` | Exact managed issuer, including its trailing slash if applicable. |
 | `MCP_OAUTH_JWKS_URL` | Trusted HTTPS signing-key endpoint for that issuer. |
-| `MCP_BACKEND_URL` | Operator-configured private service origin, currently `http://10.42.0.2:18800`; not a user tool argument. |
+| `MCP_BACKEND_URL` | Operator-configured private service origin, currently `http://127.0.0.1:18800`; not a user tool argument. |
 | `MCP_SERVICE_TOKEN` | Strong, distinct service credential shared only with the private MCP API. Bind through Secret Manager; do not reuse `RESEARCH_TOKEN`. |
 | `MCP_MEMBERSHIPS_FILE` | Private JSON file containing reviewed subject/account/workspace memberships and their scopes. |
 | `MCP_ALLOWED_HOSTS` | Optional exact additional Cloud Run hostnames, comma-separated. The stable domain is always allowed. |
@@ -115,7 +115,7 @@ SQLite's backup API includes committed WAL state. The automated tests restore a 
 
 ## Deployment and release
 
-Use the existing GCP project `hyatus-openclaw`, region `us-central1`, and a new `acres-mcp` service. Keep `team-starter`, `openclaw-builder` and their IAP/access policies intact. This repository does not create a project or change billing.
+Choose your own Google Cloud project, region and dedicated gateway service identity. Preserve unrelated services and access policies. The deployment helper does not create a project or change billing.
 
 `deploy.sh` is a preparation artifact, not authorization to deploy. It requires a dedicated gateway/build identity, existing Artifact Registry and staging bucket, Secret Manager bindings, and a connector/network/firewall path to the private backend. The gateway needs secret access only for its two bindings. Review service and networking configuration before running it with an authorized native GCP identity. It publicly exposes the new MCP service at the transport layer while enforcing application OAuth; it does not remove IAP from the existing app. A successful Cloud Run revision alone does not establish that the proposed stable domain is mapped or usable.
 

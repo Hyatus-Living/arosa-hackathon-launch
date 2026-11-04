@@ -21,10 +21,11 @@ export class BillingError extends Error {
 // All changes to a balance, its operation and the append-only ledger commit together.
 // Uses the attached Google identity; there are no service-account key files.
 export class FirestoreWalletRepository {
-  constructor({token, fetcher = fetch} = {}) {
+  constructor({token, fetcher = fetch, project = process.env.ACRES_WALLET_PROJECT} = {}) {
+    this.project = project;
     this.fetcher = fetcher; this.token = token || (() => this.metadataToken());
-    this.root = 'https://firestore.googleapis.com/v1/projects/hyatus-openclaw/databases/(default)/documents';
-    this.prefix = 'projects/hyatus-openclaw/databases/(default)/documents';
+    this.prefix = `projects/${project}/databases/(default)/documents`;
+    this.root = `https://firestore.googleapis.com/v1/${this.prefix}`;
   }
   async metadataToken() {
     if (this.cachedToken && Date.now() < this.tokenExpiry) return this.cachedToken;
@@ -36,6 +37,7 @@ export class FirestoreWalletRepository {
     return this.cachedToken;
   }
   async request(path, options = {}) {
+    if(!this.project)throw new BillingError('ACRES_WALLET_PROJECT is required for Firestore wallet storage.');
     const response = await this.fetcher(this.root + path, {...options, headers:{'content-type':'application/json', authorization:`Bearer ${await this.token()}`}, signal:AbortSignal.timeout(15000)});
     if (response.status === 404 && options.method !== 'POST') return null;
     const data = await response.json();

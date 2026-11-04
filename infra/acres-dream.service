@@ -8,7 +8,7 @@ Type=oneshot
 User=openclaw
 Group=openclaw
 WorkingDirectory=/opt/acres-research
-Environment=HOME=/home/openclaw
+Environment=HOME=/var/lib/arosa
 Environment=DREAM_JUDGE=meta
 Environment=RESEARCH_SECRETS_PATH=/run/acres-secrets/secrets.json
 ExecStart=/usr/local/bin/node /opt/acres-research/dream.mjs
@@ -17,5 +17,5 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=read-only
-ReadWritePaths=/home/openclaw/.openclaw/acres-state /tmp
+ReadWritePaths=/var/lib/arosa /tmp
 UMask=0077
