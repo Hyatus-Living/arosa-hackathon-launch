@@ -6,6 +6,7 @@ import {fullState} from './project-state.mjs';
 const T0 = Date.UTC(2026, 9, 16, 15, 0);
 const plan = {
   schema: 'acres.architecture.plan/1', id: 'plan_fulton', revision: 3, parentRevision: 2,
+  objects: [], sources: [],
   ...JSON.parse(readFileSync(new URL('./architecture/sample-plan.json', import.meta.url), 'utf8')),
 };
 delete plan.version;

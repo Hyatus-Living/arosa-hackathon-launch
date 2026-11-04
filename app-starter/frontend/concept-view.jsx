@@ -12,6 +12,7 @@ import {GLTFExporter} from 'three/addons/exporters/GLTFExporter.js';
 import {solarPosition, shadowPolygonInFrame, SUN_MOMENTS} from './solar.mjs';
 import {LoadBoundary} from './load-boundary.jsx';
 import {VisualWorkbench} from './visual-workbench.jsx';
+import {useDarkTheme} from './use-dark-theme.mjs';
 
 const FOOT = 0.3048;
 class CameraBoundary extends React.Component {
@@ -284,7 +285,7 @@ function placeInFrame(context, latitude, longitude) {
 }
 const PLACE_COLORS = {transit: '#1f6f8b', retail: '#b35c1e', parks: '#3f7d3a', schools: '#7a3e9d'};
 const PLACE_COLORS_NIGHT = {transit: '#5db3d6', retail: '#e08a4a', parks: '#7fb873', schools: '#c49ae0'};
-const placeColors = () => (typeof document !== 'undefined' && document.documentElement.classList.contains('dark') ? PLACE_COLORS_NIGHT : PLACE_COLORS);
+const placeColors = night => night ? PLACE_COLORS_NIGHT : PLACE_COLORS;
 const PLACE_LABELS = {transit: 'Transit', retail: 'Retail', parks: 'Parks', schools: 'Schools'};
 const compassName = bearing => ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west'][Math.round(((bearing % 360) + 360) % 360 / 45) % 8];
 
@@ -374,7 +375,7 @@ function formatLength(metres, units) {
 // surrounding buildings, the existing building and a north arrow when the block is georeferenced.
 function PlanView({concept, geometry, showContext, showExisting, places, sun = null}) {
   // The plan follows the app theme: a light drawing sheet by day, a dark sheet at night.
-  const night = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+  const night = useDarkTheme();
   const P = night
     ? {sheet: '#1d1f1b', contextFill: '#2d302a', contextStroke: '#4d5148', lotFill: '#23261f', lotStroke: '#c9ccc2', parcel: '#8fce6e', envelope: '#d9a441', storeyFill: '#b08a5e', storeyStroke: '#ece7da', existing: '#7d9bff', ink: '#ece9e2', street: '#a9ada2', markerRing: '#1d1f1b'}
     : {sheet: '#eef0e9', contextFill: '#d6d8d0', contextStroke: '#aeb2a8', lotFill: '#f7f8f3', lotStroke: '#3a3f36', parcel: '#1f4632', envelope: '#a8761d', storeyFill: '#8c6a4a', storeyStroke: '#2b2520', existing: '#2f4fb5', ink: '#1f1b17', street: '#5d6356', markerRing: '#fff'};
@@ -457,7 +458,7 @@ function PlanView({concept, geometry, showContext, showExisting, places, sun = n
       <text x={(minX + maxX) / 2} y={minZ - unit * 2.2} fontSize={font * 0.9} textAnchor="middle" fill={P.street} fontFamily="system-ui, sans-serif" letterSpacing={unit * 0.3}>STREET</text>
       {placed.map((p, i) => (
         <g key={`p${i}`} transform={`translate(${p.at[0]} ${p.at[1]})`}>
-          <circle r={unit * 1.4} fill={placeColors()[p.group] || '#888'} stroke={P.markerRing} strokeWidth={stroke} />
+          <circle r={unit * 1.4} fill={placeColors(night)[p.group] || '#888'} stroke={P.markerRing} strokeWidth={stroke} />
           <text x={unit * 2} y={font * 0.35} fontSize={font * 0.8} fill={P.ink} fontFamily="system-ui, sans-serif">{p.name}</text>
         </g>
       ))}
@@ -478,6 +479,7 @@ function PlanView({concept, geometry, showContext, showExisting, places, sun = n
 }
 
 function ConceptScene({concept, places, tilesKey, threadId, modelingProjectId}) {
+  const night = useDarkTheme();
   const [view, setView] = useState('3d');
   const [exploded, setExploded] = useState(false);
   const [gpu, setGpu] = useState(true);
@@ -577,7 +579,7 @@ function ConceptScene({concept, places, tilesKey, threadId, modelingProjectId}) 
       {nearby.length > 0 && (
         <div className="concept-places" aria-label="Nearby places">
           {nearby.map(([group, label, list]) => (
-            <div key={group}><dt style={{color: placeColors()[group]}}>{label}</dt>
+            <div key={group}><dt style={{color: placeColors(night)[group]}}>{label}</dt>
               {list.map((p, i) => <dd key={i}>{p.name} <small>{p.distanceMeters} m {p.direction}</small></dd>)}
             </div>
           ))}

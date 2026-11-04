@@ -14,6 +14,18 @@ import dressing  # noqa: E402
 
 
 class RoomGeometryTest(unittest.TestCase):
+    def test_room_use_infers_only_missing_authored_uses(self):
+        entity = lambda name, kind=None: types.SimpleNamespace(Name=name, ObjectType=kind)
+        self.assertEqual(dressing.room_use(entity("Bedroom A")), "bedroom")
+        self.assertEqual(dressing.room_use(entity("Living / dining")), "living")
+        self.assertEqual(dressing.room_use(entity("Living / sleeping")), "studio")
+        self.assertEqual(dressing.room_use(entity("Full Bath")), "bath")
+        self.assertEqual(dressing.room_use(entity("Rear utility/storage")), "")
+        self.assertEqual(dressing.room_use(entity("Unspecified room")), "")
+        self.assertEqual(dressing.room_use(entity("Bedroom A", "workshop")), "workshop")
+        self.assertEqual(dressing.FLOORS.get(dressing.room_use(entity("Bedroom A"))), "oak")
+        self.assertEqual(dressing.FLOORS.get(dressing.room_use(entity("Unspecified room")), "concrete"), "concrete")
+
     def test_hull_drops_inner_and_collinear_points(self):
         ring = dressing.hull([(0, 0), (4, 0), (2, 0), (4, 3), (0, 3), (2, 1)])
         self.assertEqual(sorted(ring), [(0, 0), (0, 3), (4, 0), (4, 3)])

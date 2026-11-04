@@ -53,6 +53,14 @@ test('local research and web gateway start without provider credentials and pres
   assert.ok(existsSync(join(stateDir,'composio.sqlite')));
   assert.equal((await fetch(`${researchUrl}/conversations`)).status,401);
   const headers={authorization:`Bearer ${token}`};
+  const profileHeaders={...headers,'x-acres-account':'c'.repeat(24),'x-acres-email':'builder@example.com'};
+  const profile=await fetch(`${researchUrl}/market-store/user-settings`,{headers:profileHeaders});
+  assert.equal(profile.status,200,'onboarding remains available without the optional listing feed');
+  const settings=await profile.json();
+  assert.equal(settings.costsConfirmed,false);
+  assert.equal(typeof settings.baselineSettings.softCostPctOfHard,'number');
+  assert.ok(existsSync(join(stateDir,'market.sqlite')),'cost profiles stay inside the isolated state directory');
+  assert.equal((await fetch(`${researchUrl}/market-store/status`,{headers:profileHeaders})).status,404,'listing access remains disabled');
   const expected=await (await fetch(`${researchUrl}/public-stats`,{headers})).json();
   const webUrl=await launch(cleanups,'server.js',{cwd:join(root,'app-starter'),env:{HOST:'127.0.0.1',PORT:'0',ACRES_RESEARCH_ORIGIN:`${researchUrl}/`,RESEARCH_TOKEN:token,BILLING_ENABLED:'false'}},output=>output.match(/Listening on (http:\/\/127\.0\.0\.1:\d+)/)?.[1]);
   assert.equal((await (await fetch(`${webUrl}/healthz`)).json()).ok,true);

@@ -938,9 +938,12 @@ test('research service hides the deal routes from non-admins while the flag is o
   const previous = process.env.ACRES_DEAL_STORE_ENABLED;
   try {
     delete process.env.ACRES_DEAL_STORE_ENABLED;
-    for (const path of ['/market-store/deals', '/market-store/status', '/market-store/user-settings']) {
+    for (const path of ['/market-store/deals', '/market-store/status']) {
       assert.equal((await fetch(baseUrl + path, {headers: headers('visitor@gmail.com')})).status, 404, path);
     }
+    const profile = await fetch(`${baseUrl}/market-store/user-settings`, {headers: headers('visitor@gmail.com')});
+    assert.equal(profile.status, 200, 'the account can set its own costs without listing-feed access');
+    assert.equal((await profile.json()).costsConfirmed, false);
     assert.equal((await fetch(`${baseUrl}/market-store/deals`, {headers: headers(ADMIN)})).status, 200);
     const sync = await fetch(`${baseUrl}/admin/market-store/sync`, {method: 'POST', headers: headers(ADMIN), body: '{}'});
     assert.equal(sync.status, 403);

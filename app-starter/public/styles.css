@@ -2549,6 +2549,12 @@ dialog::backdrop {
 .arch-plan .arch-room:hover {
   fill: var(--arch-room-hover);
 }
+.arch-plan .arch-room:focus-visible {
+  outline: none;
+  stroke: var(--ink);
+  stroke-width: 2px;
+  vector-effect: non-scaling-stroke;
+}
 .arch-canvas .arch-minimap {
   inset: 12px 12px auto auto;
   width: min(34%, 200px);

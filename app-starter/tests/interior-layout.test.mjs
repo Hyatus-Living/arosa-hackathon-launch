@@ -42,6 +42,17 @@ test('existing furnishings are preserved without suppressing room finishes',()=>
   assert.equal(roomUse({name:'Common corridor'}),'hall');
 });
 
+test('room finishes sit below the overhead slab on every storey without changing the plan',()=>{
+  const source=plan();
+  source.levels[1].slabThickness=.3;
+  const before=structuredClone(source),rooms=interiorLayout(source);
+  const lower=rooms.find(room=>room.levelId==='ground'),upper=rooms.find(room=>room.levelId==='upper');
+  assert.ok(Math.abs(lower.height-2.6)<1e-9,'default 0.2 m slab agrees with the IFC exporter');
+  assert.equal(upper.height,2.5,'explicit slab thickness sets the clear height');
+  assert.equal(upper.elevation+upper.height,5.5,'upper-storey ceiling retains its placement');
+  assert.deepEqual(source,before);
+});
+
 test('baseboards follow the plan and leave door openings clear',()=>{
   const source=plan();
   source.openings.push({id:'second-door',wallId:'upper-south',kind:'door',offset:2.75,width:1});

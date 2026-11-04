@@ -1019,7 +1019,7 @@ function PlanShapes({plan, toView, ppu, selection, issueFor, onSelect}) {
     <g>
       {plan.rooms.map((r) => {
         const c = toView(interiorPoint(r.polygon));
-        const label = isSel('room', r.id) ? {name: r.name, area: true} : roomLabel(r, ppu);
+        const label = roomLabel(r, ppu);
         return (
           <g key={r.id} className={`plan-room${isSel('room', r.id) ? ' is-selected' : ''}${state('room', r.id)}`} data-kind="room" data-id={r.id} tabIndex={0} role="button" aria-label={`Room ${r.name}, ${sqft(roomArea(r))}`} onKeyDown={keySelect('room', r.id)}>
             <polygon points={r.polygon.map(toView).map((p) => p.join(',')).join(' ')} />

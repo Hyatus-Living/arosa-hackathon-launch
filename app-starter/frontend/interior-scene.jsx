@@ -122,11 +122,11 @@ function floorTexture(tile) {
   }
   const texture=new CanvasTexture(canvas);texture.colorSpace=SRGBColorSpace;texture.wrapS=texture.wrapT=RepeatWrapping;texture.repeat.set(.55,.55);return texture;
 }
-function RoomFloor({room,wood,tile}) {
+function RoomFloor({room,wood,tile,preserveFloor}) {
   const shape=useMemo(()=>{const s=new Shape();room.polygon.forEach(([x,y],i)=>i?s.lineTo(x,y):s.moveTo(x,y));s.closePath();return s;},[room]);
   const surface=room.use==='bath'?tile:wood;
   return <>
-    <mesh rotation={[-Math.PI/2,0,0]} position={[0,room.elevation+.015,0]} receiveShadow raycast={()=>null}><shapeGeometry args={[shape]}/><meshStandardMaterial map={surface.color} normalMap={surface.normal} roughnessMap={surface.roughness} roughness={.85}/></mesh>
+    {!preserveFloor&&<mesh rotation={[-Math.PI/2,0,0]} position={[0,room.elevation+.015,0]} receiveShadow raycast={()=>null}><shapeGeometry args={[shape]}/><meshStandardMaterial map={surface.color} normalMap={surface.normal} roughnessMap={surface.roughness} roughness={.85}/></mesh>}
     <mesh rotation={[-Math.PI/2,0,0]} position={[0,room.elevation+room.height-.015,0]} castShadow receiveShadow raycast={()=>null}><shapeGeometry args={[shape]}/><meshStandardMaterial color="#f2eee7" roughness={1} side={DoubleSide}/></mesh>
   </>;
 }
@@ -218,7 +218,7 @@ export function InteriorScene({plan,model,authoredRooms,authoredFloors,walker,le
   const nearby=centers.filter(({room})=>!walker||room.levelId===walker.levelId).sort((a,b)=>walker?Math.hypot(a.center[0]-walker.x,a.center[1]-walker.y)-Math.hypot(b.center[0]-walker.x,b.center[1]-walker.y):0).slice(0,2);
   const furnishings=useMemo(()=><group>
     {rooms.map(room=><group key={room.roomId}>
-      {!authoredFloors?.has(room.roomId)&&<RoomFloor room={room} wood={assets.wood} tile={assets.tile}/>}
+      <RoomFloor room={room} wood={assets.wood} tile={assets.tile} preserveFloor={authoredFloors?.has(room.roomId)}/>
       {room.items.map((item,i)=><Furniture key={`${item.type}-${i}`} item={item} models={assets.models}/>)}
       {legacyUnstyled&&(()=>{const center=room.polygon.reduce((a,p)=>[a[0]+p[0]/room.polygon.length,a[1]+p[1]/room.polygon.length],[0,0]);return pointInPolygon(center,room.polygon)&&<Cylinder at={[center[0],room.elevation+room.height-.04,-center[1]]} radius={.16} height={.035} color="#efebe3"/>;})()}
     </group>)}

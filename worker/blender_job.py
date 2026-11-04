@@ -8,8 +8,8 @@ architecture_worker.py runs it twice, each time in a fresh Blender process:
   blender ... output/model.blend --python blender_job.py -- <jobDir> publish
       Reopens that .blend, checks every IFC-linked object survived, dresses it for
       presentation (dressing.py: materials, floor finishes, furniture), renders a
-      preview, exports a GLB whose node names derive from IFC GlobalIds and writes the
-      companion manifest.
+      preview, exports a GLB whose node names derive from IFC GlobalIds, writes the
+      companion manifest and saves the finished presentation in the .blend.
 
 Both phases record their results in output/blender-report.json for the supervisor.
 Coordinates are Blender/IFC metres, Z up; the GLB itself is glTF Y up.
@@ -293,6 +293,12 @@ def publish_phase():
                               export_extras=False)
     (out / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     export_seconds = time.monotonic() - started
+
+    # The downloadable scene must contain the same materials, finishes and stable
+    # IFC node names as the published GLB, rather than the undressed import checkpoint.
+    step("save")
+    bpy.context.preferences.filepaths.save_version = 0
+    bpy.ops.wm.save_as_mainfile(filepath=str(out / "model.blend"))
 
     del report["globalIds"]
     report.update(phase="published", bounds={"min": low, "max": high})

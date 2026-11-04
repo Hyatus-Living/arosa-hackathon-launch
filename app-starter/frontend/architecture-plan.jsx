@@ -1,9 +1,9 @@
 import React from 'react';
 import {centroid, levelOf, roomsOn, unitCheck} from './architecture-model.mjs';
+import {useDarkTheme} from './use-dark-theme.mjs';
 
 // The plan follows the app theme like the concept plan: a light sheet by day, a dark one at night.
-function palette() {
-  const night = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+function palette(night) {
   return night
     ? {sheet: '#1d1f1b', room: '#262923', roomHover: '#30342c', selected: '#3d5fb8', wall: '#ece7da', opening: '#9aa093', glass: '#7fb3cf', ink: '#ece9e2', muted: '#a9ada2', walker: '#ff8a4c', whole: '#24382b', short: '#4a3a1c', shortLine: '#e0a64a'}
     : {sheet: '#eef0e9', room: '#f7f8f3', roomHover: '#e6e9df', selected: '#c9d6f5', wall: '#2b2520', opening: '#6d7266', glass: '#5d97b8', ink: '#1f1b17', muted: '#5d6356', walker: '#d4561c', whole: '#dcebd9', short: '#f6deb0', shortLine: '#b9771b'};
@@ -33,7 +33,7 @@ function wallPieces(wall, openings) {
 
 // check marks each room as part of a whole apartment, a space too small for a unit, or shared space.
 export function ArchitecturePlan({plan, levelId, roomId, onSelectRoom, walker, compact, check}) {
-  const P = palette();
+  const P = palette(useDarkTheme());
   const walls = plan.walls.filter(w => levelOf(plan, w) === levelId);
   const rooms = roomsOn(plan, levelId);
   const points = [...walls.flatMap(w => [w.start, w.end]), ...rooms.flatMap(r => r.polygon)];
@@ -47,7 +47,7 @@ export function ArchitecturePlan({plan, levelId, roomId, onSelectRoom, walker, c
   const status = check ? unitCheck(plan, levelId) : null;
   const fill = room => room.id === roomId ? P.selected : status ? {whole: P.whole, short: 'url(#arch-short)', shared: P.room}[status.rooms.get(room.id)] : P.room;
   return (
-    <svg className={`concept-plan arch-plan${compact ? ' arch-minimap' : ''}`} viewBox={`${view.x} ${view.y} ${view.w} ${view.h}`} preserveAspectRatio="xMidYMid meet" role="img" aria-label={`Plan of ${plan.name || 'the building'}, ${level.name}`}>
+    <svg className={`concept-plan arch-plan${compact ? ' arch-minimap' : ''}`} viewBox={`${view.x} ${view.y} ${view.w} ${view.h}`} preserveAspectRatio="xMidYMid meet" role={onSelectRoom ? 'group' : 'img'} aria-label={`Plan of ${plan.name || 'the building'}, ${level.name}`}>
       <rect x={view.x} y={view.y} width={view.w} height={view.h} fill={P.sheet} />
       {status && (
         <defs>
@@ -59,8 +59,17 @@ export function ArchitecturePlan({plan, levelId, roomId, onSelectRoom, walker, c
       )}
       {rooms.map(room => (
         <path key={room.id} className="arch-room" d={path(room.polygon)} data-room={room.id} data-check={status?.rooms.get(room.id)} fill={fill(room)}
+          role={onSelectRoom ? 'button' : undefined} tabIndex={onSelectRoom ? 0 : undefined}
+          aria-label={onSelectRoom ? `${room.name}, ${formatArea(room.polygon)}` : undefined}
+          aria-pressed={onSelectRoom ? room.id === roomId : undefined}
           style={{'--arch-room-hover': room.id === roomId ? P.selected : P.roomHover}}
-          onClick={onSelectRoom ? () => onSelectRoom(room.id === roomId ? null : room.id) : undefined}>
+          onClick={onSelectRoom ? () => onSelectRoom(room.id === roomId ? null : room.id) : undefined}
+          onKeyDown={onSelectRoom ? event => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              onSelectRoom(room.id === roomId ? null : room.id);
+            }
+          } : undefined}>
           <title>{room.name}</title>
         </path>
       ))}
@@ -96,7 +105,7 @@ export function ArchitecturePlan({plan, levelId, roomId, onSelectRoom, walker, c
         return (
           <g key={room.id} className="arch-label" fontFamily="system-ui, sans-serif" textAnchor="middle" pointerEvents="none">
             <text x={cx} y={-cy} fontSize={size} fill={P.ink} fontWeight="600">{room.name}</text>
-            <text x={cx} y={-cy + size * 1.3} fontSize={size * 0.8} fill={P.muted}>{formatArea(room.polygon)}</text>
+            <text x={cx} y={-cy + size * 1.3} fontSize={size * 0.8} fill={room.id === roomId ? P.ink : P.muted}>{formatArea(room.polygon)}</text>
           </g>
         );
       })}
