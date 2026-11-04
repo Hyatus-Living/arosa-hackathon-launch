@@ -4,6 +4,8 @@ Help more people explore how to create homes. Arosa connects source-backed prope
 
 This repository contains the full Arosa application source: the website, web application and API, research service, independent Modeling and Underwriting workflows, planning tools, Pascal integration, Blender worker, MCP service, tests and deployment recipes. This is the public launch repository for the Meta Global AI Developer Hackathon. Its Git history begins with the complete application snapshot published here; source provenance and project attribution are recorded in [CONTRIBUTIONS.md](CONTRIBUTIONS.md).
 
+Run the research service, gateway and rendering worker with your own providers and sign-in using the [self-hosting guide](docs/SELF_HOSTING.md). Local startup keeps authentication enabled; paid billing is documented separately.
+
 ## Try the interface locally
 
 Use Node 24 or newer. From this directory:

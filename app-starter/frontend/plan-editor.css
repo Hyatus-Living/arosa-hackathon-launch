@@ -367,7 +367,7 @@ html.dark .plan-underlay { opacity: 0.4; filter: invert(1) hue-rotate(180deg); }
 .plan-editor .plan-drawings button { flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; padding: 6px 10px; text-align: left; white-space: normal; }
 .plan-drawing-name { overflow-wrap: anywhere; }
 .plan-drawing-meta { font-size: 12px; opacity: 0.75; }
-.plan-list li button { justify-content: flex-start; width: 100%; font-family: "Geist Mono", ui-monospace, monospace; font-size: 12px; }
+.plan-list li button { justify-content: flex-start; width: 100%; height: auto; min-height: 44px; padding-block: 8px; text-align: left; white-space: normal; overflow-wrap: anywhere; font-family: "Geist Mono", ui-monospace, monospace; font-size: 12px; }
 
 @media (max-width: 760px) {
   .plan-body { grid-template-columns: minmax(0, 1fr); }
