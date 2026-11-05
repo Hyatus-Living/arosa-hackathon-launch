@@ -3713,7 +3713,8 @@ const accountMenu=$('.account-menu'), accountTrigger=accountMenu.querySelector('
 $('#account-appearance').remove();
 accountActions.id='account-actions';accountActions.setAttribute('role','menu');accountActions.setAttribute('aria-label','Account');
 accountTrigger.setAttribute('aria-haspopup','menu');accountTrigger.setAttribute('aria-controls','account-actions');accountTrigger.setAttribute('aria-expanded','false');
-for (const item of [$('#wallet-button'),$('#theme'),document.querySelector('.app-nav a[href="/whats-new"]'),$('#beta-feedback-button'),$('#admin-button'),$('#sign-out')]) {
+$('#manage-sign-in').hidden = !['app.witharosa.ai', 'build.witharosa.ai'].includes(location.hostname);
+for (const item of [$('#wallet-button'),$('#manage-sign-in'),$('#theme'),document.querySelector('.app-nav a[href="/whats-new"]'),$('#source-and-licenses'),$('#beta-feedback-button'),$('#admin-button'),$('#sign-out')]) {
   item.setAttribute('role','menuitem');item.tabIndex=-1;accountActions.append(item);
 }
 $('#sign-out .sr-only').className='';

@@ -237,6 +237,8 @@ body.chat-docked:not(.chat-dock-open) .chat-panel { display: none; }
 .chat-panel-title > strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13.5px; font-weight: 550; }
 .chat-panel-meta { display: flex; align-items: baseline; gap: 6px; min-width: 0; color: var(--ink-faint); font: 400 11.5px/1.35 var(--sans); }
 .chat-attached { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat-panel-meta { flex-wrap: wrap; }
+.chat-panel-meta .research-credit { font-weight: 600; }
 .chat-panel-meta .saved-label { flex: none; white-space: nowrap; }
 .chat-panel-meta .saved-label::before { content: "·"; margin-right: 6px; }
 .chat-panel-meta .saved-label[hidden] { display: none; }
