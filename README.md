@@ -1,8 +1,14 @@
 # Arosa Hackathon Launch
 
-Help New York build more housing. Arosa helps homeowners, small builders and developers understand what a New York lot could become, connecting property and zoning research with building options, independent Underwriting, editable plans and interactive walkthroughs. The goal is to make housing opportunities clearer in a city facing a housing affordability crisis, before professional design and approvals.
+For a New York homeowner or small builder, an early question can be as small as one apartment. Could one more home fit on this lot while keeping the existing building? Arosa brings property records, zoning sources and an editable plan together so people can explore that question before paying for detailed design.
 
-Explore the product at [witharosa.ai](https://witharosa.ai/) or [open Modeling](https://app.witharosa.ai/modeling). [Watch One more home, with Muse](https://videos.gptguest.com/s/j8yg9afw1qhfz7s). The demonstration follows an Astoria question: could one more home fit while keeping the existing building? Sources and assumptions remain visible, and conceptual illustrations stay separate from measured geometry.
+## Try the Astoria study
+
+1. [Watch the submitted film on YouTube](https://www.youtube.com/watch?v=gMufeJYi64Y) (2:46, English captions). Michael Ort follows the question at 23-29 Broadway in Astoria using an assumed second-floor plan. An [English transcript](docs/hackathon/narration.txt) is also available.
+2. [Explore the public Brooklyn example](https://witharosa.ai/#site) without signing in. It uses a different property, 39 Winthrop Street, to show how parcel records, zoning and value estimates fit together.
+3. [Open Modeling](https://app.witharosa.ai/modeling) and sign in. Choose **New model**, enter **23-29 Broadway, Astoria** in **Property address**, select the matching parcel and choose **Create model**. Ask “Could one more home fit while keeping the existing building?” Read the cited records and check which dimensions the plan assumes. Underwriting is a separate workspace for the financial question.
+
+During the hackathon, Muse Spark gained a role in both research workflows. It chooses which tools to call and uses the sources they return. Geometry tools work from the saved plan revision, which carries through the IFC export, Pascal scene and Blender walkthrough. SAM selections and Muse Image show a possible addition in a photo. The earlier Acres prototype supplied the property research, Underwriting, plan editor and rendering foundation. [See what changed during the event](CONTRIBUTIONS.md#demonstrated-hackathon-additions).
 
 This repository contains the full Arosa application source: the website, web application and API, research service, independent Modeling and Underwriting workflows, planning tools, Pascal integration, Blender worker, MCP service, tests and deployment recipes. This is the public launch repository for the Meta Global AI Developer Hackathon. Its Git history begins with the complete application snapshot published here; source provenance and project attribution are recorded in [CONTRIBUTIONS.md](CONTRIBUTIONS.md).
 
@@ -59,7 +65,7 @@ SAM 3.1 selections guide Muse Image illustrations. Editable plans and geometric 
 
 Jev is retained for decision and selection tasks, including listing-filter interpretation and knowledge-source routing. Its role is disclosed alongside Meta rather than presenting Arosa as exclusively Meta-powered.
 
-New listing and CRM deep research use durable Meta responses; historical Gemini jobs retain their provider for recovery. Feedback and the scheduled improvement judge also use Meta, with operator-owned usage logging. Data retrieval continues through configured services such as Exa and Firecrawl. The [submission guide](docs/hackathon/index.html) records the remaining migration and live verification steps.
+New listing and CRM deep research use durable Meta responses; historical Gemini jobs retain their provider for recovery. Feedback and the scheduled improvement judge also use Meta, with operator-owned usage logging. Data retrieval continues through configured services such as Exa and Firecrawl. The [contribution record](CONTRIBUTIONS.md#demonstrated-hackathon-additions) identifies which Meta workflows were demonstrated during the event.
 
 ## Verify
 
@@ -76,7 +82,7 @@ Python 3.13 is the reference interpreter. The worker contract tests use a fake B
 
 ## Hackathon contributions
 
-Arosa is being built for the Meta Global AI Developer Hackathon. [CONTRIBUTIONS.md](CONTRIBUTIONS.md) records the project timeline supplied by Michael Ort, the exact source snapshot used for this launch repository, and third-party attribution. The [Startup submission guide](docs/hackathon/index.html) maps the requirements, architecture and three-minute demonstration.
+Arosa is being built for the Meta Global AI Developer Hackathon. [CONTRIBUTIONS.md](CONTRIBUTIONS.md) records the project timeline supplied by Michael Ort, the exact source snapshot used for this launch repository, and third-party attribution. The [Astoria walkthrough](#try-the-astoria-study) links the submitted film, public example and live Modeling workspace.
 
 ## License and data
 
