@@ -15,9 +15,11 @@
 <link rel="stylesheet" href="/help/help.css">
 <style>
 .sms-request { margin: 1.5rem 0 2.5rem; padding: 1.5rem; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+#text-support, .sms-request { scroll-margin-top: 5.5rem; }
 .sms-request h3 { margin: 0 0 1rem; font-size: 1.1rem; font-weight: 500; }
 .sms-request label { display: block; }
-.sms-request textarea { width: 100%; margin: .5rem 0 1rem; padding: .75rem; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); font: inherit; resize: vertical; }
+.sms-request textarea, .sms-request input[type="tel"] { width: 100%; margin: .5rem 0 1rem; padding: .75rem; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); font: inherit; }
+.sms-request textarea { resize: vertical; }
 .sms-request .sms-consent { display: flex; align-items: flex-start; gap: .7rem; font-size: .9rem; line-height: 1.6; }
 .sms-consent input { flex: none; width: 1rem; height: 1rem; margin: .3rem 0 0; accent-color: var(--ink); }
 .sms-request .sms-note { font-size: .85rem; color: var(--ink-muted); }
@@ -59,11 +61,14 @@
 
 <form class="sms-request" id="sms-support-request">
   <h3>Request a reply by text</h3>
+  <label for="sms-phone">Your mobile number</label>
+  <input id="sms-phone" name="phone" type="tel" autocomplete="tel" placeholder="+1 212 555 0123" pattern="[+()0-9 .-]{7,25}" required aria-describedby="sms-phone-note">
+  <p class="sms-note" id="sms-phone-note">Use the mobile number you will text us from.</p>
   <label for="sms-question">How can we help?</label>
   <textarea id="sms-question" name="question" rows="3" minlength="5" maxlength="1000" required></textarea>
   <label class="sms-consent" for="sms-consent">
     <input id="sms-consent" name="consent" type="checkbox" required>
-    <span>I agree to receive customer-service text messages from AROSA AI LLC (Arosa) about my request and related follow-up. Message frequency varies. Msg &amp; data rates may apply. Reply STOP to opt out or HELP for help. I understand that consent is not a condition of purchase or use of Arosa.</span>
+    <span>I agree to receive customer-service text messages from AROSA AI LLC (Arosa) at the mobile number provided above about my request and related follow-up. Message frequency varies. Msg &amp; data rates may apply. Reply STOP to opt out or HELP for help. I understand that consent is not a condition of purchase or use of Arosa.</span>
   </label>
   <p class="sms-note">Read the <a href="/privacy">Privacy Policy</a> and <a href="/terms#sms-terms">SMS Terms</a>. No marketing or recurring notifications.</p>
   <a class="sms-action" id="sms-open-message" role="link" aria-disabled="true" tabindex="0">Continue in my messaging app</a>
