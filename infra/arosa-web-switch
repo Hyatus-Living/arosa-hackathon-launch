@@ -7,6 +7,7 @@
 # stopped and the old color keeps serving. Run by arosa-acres.service (systemctl restart
 # arosa-acres) and by app-starter/deploy.sh.
 set -euo pipefail
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
 exec 9>/run/arosa-web-switch.lock
 flock 9
 STATE=/etc/arosa-acres
@@ -23,11 +24,13 @@ case "$(cat "$TARGET" 2>/dev/null || true)" in
 esac
 NEXT_PORT=$(port "$NEXT")
 front() { curl -fsS --max-time 5 --unix-socket "$ADMIN" http://front/; }
-front_target() { front | python3 -c 'import json,sys;print(json.load(sys.stdin)["target"])'; }
+front_target() { front | /usr/bin/python3 -I -S -c 'import json,sys;print(json.load(sys.stdin)["target"])'; }
 # Plain requests in flight to a color; open event streams are not counted, their clients reconnect.
-front_requests() { front | python3 -c 'import json,sys;print(json.load(sys.stdin)["inflight"].get(sys.argv[1],{}).get("requests",0))' "$1"; }
+front_requests() { front | /usr/bin/python3 -I -S -c 'import json,sys;print(json.load(sys.stdin)["inflight"].get(sys.argv[1],{}).get("requests",0))' "$1"; }
 point_front() {
   printf '%s\n' "$1" > "$TARGET.next"
+  # The DynamicUser front reads this port number after SIGHUP.
+  chmod 0644 "$TARGET.next"
   mv -f "$TARGET.next" "$TARGET"
   systemctl kill --kill-whom=main --signal=SIGHUP arosa-web-front.service
   for _ in $(seq 1 20); do

@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
 import net from 'node:net';
-import {mkdtempSync,rmSync,writeFileSync} from 'node:fs';
+import {mkdtempSync,readFileSync,rmSync,statSync,writeFileSync} from 'node:fs';
+import {execFileSync} from 'node:child_process';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {createFront} from '../infra/arosa-web-front.mjs';
@@ -50,6 +51,25 @@ test('a switch sends new requests to the next color while the old one finishes i
   f.blue.release.resolve();
   assert.equal(await slow,'blue:GET:');
   await until(()=>f.front.status().inflight[f.bluePort].requests===0);
+});
+
+test('a restrictive operator umask still publishes a readable port for the DynamicUser front',async t=>{
+  const f=await fixture(t);
+  const source=readFileSync(new URL('../infra/arosa-web-switch',import.meta.url),'utf8');
+  const writer=source.match(/^point_front\(\) \{[\s\S]*?^\}/m)[0];
+  // Exercise the production atomic writer and stub only the host systemd signal and acknowledgement.
+  execFileSync('bash',['-ec',`umask 077
+    TARGET=$1
+    systemctl() { :; }
+    front_target() { cat "$TARGET"; }
+    ${writer}
+    point_front "$2"
+    : > "$TARGET.private"
+  `,'switch',f.targetFile,String(f.greenPort)]);
+  assert.equal(statSync(f.targetFile).mode & 0o777,0o644);
+  assert.equal(statSync(f.targetFile+'.private').mode & 0o777,0o600);
+  f.front.reload();
+  assert.equal(await (await fetch(f.url('/after-switch'))).text(),'green:GET:');
 });
 
 test('event streams are counted apart from plain requests and end when their color stops',async t=>{
