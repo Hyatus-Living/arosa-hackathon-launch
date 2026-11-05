@@ -1,4 +1,4 @@
-> Public release update: the complete product source is now included, including the independent Underwriting workflow. The earlier extraction proposal below is historical. Use [the current submission guide](hackathon/index.html), [README](../README.md) and [license inventory](../LICENSES.md) for current scope.
+> Public release update: the complete product source is now included, including the independent Underwriting workflow. The earlier extraction proposal below is historical. Use [the Astoria walkthrough](../README.md#try-the-astoria-study) and [license inventory](../LICENSES.md) for current scope.
 
 # Housing modeling hackathon
 
