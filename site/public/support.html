@@ -13,6 +13,19 @@
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site.css">
 <link rel="stylesheet" href="/help/help.css">
+<style>
+.sms-request { margin: 1.5rem 0 2.5rem; padding: 1.5rem; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.sms-request h3 { margin: 0 0 1rem; font-size: 1.1rem; font-weight: 500; }
+.sms-request label { display: block; }
+.sms-request textarea { width: 100%; margin: .5rem 0 1rem; padding: .75rem; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); font: inherit; resize: vertical; }
+.sms-request .sms-consent { display: flex; align-items: flex-start; gap: .7rem; font-size: .9rem; line-height: 1.6; }
+.sms-consent input { flex: none; width: 1rem; height: 1rem; margin: .3rem 0 0; accent-color: var(--ink); }
+.sms-request .sms-note { font-size: .85rem; color: var(--ink-muted); }
+.sms-request .sms-action { display: inline-flex; padding: .75rem 1rem; border-radius: 6px; background: var(--ink); color: var(--bg); text-decoration: none; font-weight: 500; }
+.sms-action[aria-disabled="true"] { opacity: .45; cursor: not-allowed; }
+.sms-request :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+</style>
+<script src="/sms-support.js" defer></script>
 <script>try{if(localStorage.theme==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
 </head>
 <body>
@@ -43,6 +56,20 @@
 <h2 id="text-support">Text customer support</h2>
 <p>To request help from Arosa (AROSA AI LLC), <a href="sms:+12406982365">text your question to (240) 698-2365</a>. Texting us requests replies and any follow-up needed for your support conversation. We send support texts only when you initiate contact or explicitly request an SMS reply. We do not send unsolicited marketing texts or enroll you in recurring notifications.</p>
 <p>Message frequency varies with your request. Message and data rates may apply. Reply <strong>STOP</strong> to unsubscribe or <strong>HELP</strong> for help. SMS consent is not a condition of purchase or use of Arosa; you can email <a href="mailto:michael@witharosa.ai">michael@witharosa.ai</a> instead. See our <a href="/privacy">Privacy Policy</a> and <a href="/terms#sms-terms">SMS Terms</a>.</p>
+
+<form class="sms-request" id="sms-support-request">
+  <h3>Request a reply by text</h3>
+  <label for="sms-question">How can we help?</label>
+  <textarea id="sms-question" name="question" rows="3" minlength="5" maxlength="1000" required></textarea>
+  <label class="sms-consent" for="sms-consent">
+    <input id="sms-consent" name="consent" type="checkbox" required>
+    <span>I agree to receive customer-service text messages from AROSA AI LLC (Arosa) about my request and related follow-up. Message frequency varies. Msg &amp; data rates may apply. Reply STOP to opt out or HELP for help. I understand that consent is not a condition of purchase or use of Arosa.</span>
+  </label>
+  <p class="sms-note">Read the <a href="/privacy">Privacy Policy</a> and <a href="/terms#sms-terms">SMS Terms</a>. No marketing or recurring notifications.</p>
+  <a class="sms-action" id="sms-open-message" role="link" aria-disabled="true" tabindex="0">Continue in my messaging app</a>
+  <p class="sms-note">This prepares your request for (240) 698-2365. Send the message in your messaging app to request a reply. You can also use <a href="mailto:michael@witharosa.ai">email support</a>.</p>
+  <noscript><p>To request SMS support, text your question to (240) 698-2365. Sending your question requests a reply under the SMS Terms above.</p></noscript>
+</form>
 
 <h2>Accounts</h2>
 <ul>
