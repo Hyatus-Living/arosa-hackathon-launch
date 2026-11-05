@@ -4,7 +4,7 @@ For a New York homeowner or small builder, an early question can be as small as 
 
 ## Try the Astoria study
 
-1. [Watch the submitted film on YouTube](https://www.youtube.com/watch?v=gMufeJYi64Y) (2:46, English captions). Michael Ort follows the question at 23-29 Broadway in Astoria using an assumed second-floor plan. An [English transcript](docs/hackathon/narration.txt) is also available.
+1. [Watch the submitted film on YouTube](https://www.youtube.com/watch?v=bJp2e1-7ZbE) (2:52, English captions). The Astoria report compares a two-story, 3,200 sq ft option that keeps the front building with a four-story, 8,960 sq ft redevelopment that replaces it. Both are preliminary studies. An [English transcript](docs/hackathon/narration.txt) is also available.
 2. [Explore the public Brooklyn example](https://witharosa.ai/#site) without signing in. It uses a different property, 39 Winthrop Street, to show how parcel records, zoning and value estimates fit together.
 3. [Open Modeling](https://app.witharosa.ai/modeling) and sign in. Choose **New model**, enter **23-29 Broadway, Astoria** in **Property address**, select the matching parcel and choose **Create model**. Ask “Could one more home fit while keeping the existing building?” Read the cited records and check which dimensions the plan assumes. Underwriting is a separate workspace for the financial question.
 

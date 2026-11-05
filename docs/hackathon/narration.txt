@@ -6,16 +6,16 @@ Yet more than half of households renting in New York spend at least thirty perce
 
 I discovered an opportunity many people never get to explore: what could the land we already have become? With Muse, I built Arosa to help people ask that question, and see the possibilities for themselves.
 
-Start with an address. Muse Spark researches the site through our tools, bringing sources and assumptions into view. In Astoria, we asked: could one more home fit while keeping the existing building?
-
-Muse Spark chooses the tools: property records, zoning rules, and source search. Results return to the conversation with their sources. Muse helps turn that evidence into a structured plan. Each saved revision keeps rooms, walls and dimensions editable, so a person can check the assumptions and decide what comes next.
+Start with an address. Muse Spark researches the site through our tools, bringing sources and assumptions into view. In Astoria, we asked: could one more home fit while keeping the existing building? Here’s what the Astoria study found. The two-story option keeps the front building and models thirty-two hundred square feet. The four-story comparison reaches eight thousand nine hundred sixty square feet, but it’s a different scheme: it doesn’t keep the front building.
 
 Muse helps turn that question into a plan you can inspect. Rooms, walls, openings, and dimensions stay editable. Compare possibilities, revisit an assumption, and understand what still needs an architect's review.
 
 A beautiful idea also needs workable numbers. With Muse guiding the conversation, Arosa keeps design and underwriting separate, so people can explore both a place to live and the economics of making it real.
 
-Muse Wonder Full helped improve lighting and materials in our Blender test while preserving the original geometry. Muse Image works from a selected reference photograph to create a concept illustration, separate from measured plans. These are early possibilities, not approved buildings.
+Muse Wonder Full helped improve lighting and materials in our Blender test while preserving the original geometry. Muse Image works from a selected reference photograph to create a concept illustration, separate from measured plans.
 
-But clearer possibilities can start better conversations among homeowners, architects, and communities. Muse makes that first step more accessible, from a question to something people can examine together.
+We also tested what happens when a source tries to give Muse instructions. It couldn't authorize a new destination or a change to the project.
+
+These are early possibilities, not approved buildings. But clearer possibilities can start better conversations among homeowners, architects, and communities. Muse makes that first step more accessible, from a question to something people can examine together.
 
 New York has always made room for ambition. With Muse, I want to help it make room for people. One lot. One possibility. One more home.
